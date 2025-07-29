@@ -1,0 +1,61 @@
+# Automates dependency updates for a project using pnpm.
+version: 2
+updates:
+  # pnpm Dependencies
+  - package-ecosystem: "pnpm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "02:00" # Run checks at 2 AM UTC - 7:30 am IST
+    ignore:
+      - dependency-name: "eslint"
+        versions: ["<8.0.0"]
+    commit-message:
+      prefix: "chore(deps):"
+    reviewers:
+      - UjjwalSaini07
+    assignees:
+      - UjjwalSaini07
+
+  # GitHub Actions Dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday" # Run checks every Monday
+      time: "03:00" # Run checks at 3 AM UTC - 8:30 am IST
+    commit-message:
+      prefix: "chore(actions):"
+    reviewers:
+      - UjjwalSaini07
+
+  # Docker Dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "04:00" # Run checks at 4 AM UTC
+    ignore:
+      - dependency-name: "alpine"
+        versions: ["<3.15"] # Ensure compatibility with Alpine 3.15 or higher
+    commit-message:
+      prefix: "fix(docker-deps):"
+    reviewers:
+      - UjjwalSaini07
+
+  # Other Dependencies (Add more ecosystems if needed)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+    commit-message:
+      prefix: "fix(python-deps):"
+    reviewers:
+      - UjjwalSaini07
+
+assignees:
+  - UjjwalSaini07
+
+versioning-strategy: "increase"
