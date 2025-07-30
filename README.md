@@ -3,7 +3,6 @@
 Experience the Future of Quillix AI 🌟
 
 NexGen-Quillix is an AI-powered content creation platform built to generate high-impact, platform-ready posts for LinkedIn, Instagram, X (formerly Twitter), and more—within seconds. By analyzing real-time trends and adapting to your specific tone, industry, and goals, it delivers tailored content that drives engagement and strengthens your digital presence.
-
 Whether you're a marketer, entrepreneur, or content creator, NexGen-Quillix simplifies your workflow by combining intelligent automation with creative flexibility. Let AI handle the heavy lifting—so you can focus on growth. ✨
 
 [![Github License](https://img.shields.io/github/license/UjjwalSaini07/NexGen-Quillix)](https://github.com/UjjwalSaini07/NexGen-Quillix/blob/main/LICENSE)
@@ -162,7 +161,7 @@ This creates a new folder named venv/ in your project backend directory.
     brew services start redis
 ```
 
-- Now Similar Connection Setup for all three
+#### Similar Connection Setup
 - Connect to Redis at 127.0.0.1:6379
 ```bash
     redis-cli
@@ -195,7 +194,71 @@ This creates a new folder named venv/ in your project backend directory.
 6. **If u Want Direct Image Without Cloning So Contact with Me.**
 
 ## Prerequisites-Setup
-This is Empty Now..
+### Redis Setup
+ - Refer Original Redis Guide - [Guide Reference](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/)
+ - Added basic command-line instructions for Windows and Linux users.
+### Windows
+#### However, there is a different process to install this on Windows. Take a look below:
+Windows you must use WSL (Windows subsystem for Linux). Install all other dependencies through the Linux terminal.
+```bash
+wsl --install
+```
+- By default, WSL installs Ubuntu. You can open a Linux terminal by searching "Ubuntu" in the Search bar.
+- The Ubuntu screen looks like this:
+
+<details>	
+ <summary><b>Image Reference CLICK TO OPEN</b></summary><br>
+    
+![image](https://github.com/user-attachments/assets/b8b4dd7b-4884-4d06-bdb9-9afcf3acc724)
+
+</details>
+- Now Refer these Commands and Hit on Ubuntu
+
+```bash
+    curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+```
+```bash
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+```
+```bash
+    sudo apt-get update
+```
+```bash
+    sudo apt-get install redis
+```
+- Now Start the Redis server like so
+```bash
+    sudo service redis-server start
+```
+
+### Linux
+- Add the repository to the APT index, update it, and install Redis
+```bash
+    sudo apt-get install lsb-release curl gpg
+    curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+    sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+    sudo apt-get update
+    sudo apt-get install redis
+```
+```bash
+    sudo systemctl enable redis-server
+    sudo systemctl start redis-server
+```
+- Install on Red Hat/Rocky
+```bash
+    sudo yum install redis
+    sudo systemctl enable redis
+    sudo systemctl start redis
+```
+- Redis will restart at boot time.
+
+## Resources 📚
+- [Nodejs Docs](https://nodejs.org/en)
+- [Tailwind Docs](https://tailwindcss.com/docs/installation/using-vite)
+- [Nextjs Docs](https://nextjs.org/docs)
+- [Redis Docs](https://redis.io/docs/latest/)
+- [Fast API Docs](https://fastapi.tiangolo.com/)
 
 ## Author ✍️
 - [@Ujjwal Saini](https://github.com/UjjwalSaini07)
