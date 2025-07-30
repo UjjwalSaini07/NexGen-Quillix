@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { generatePost } from "../utils/generatePost";
+import { generatePost } from "../../utils/generatePost";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
