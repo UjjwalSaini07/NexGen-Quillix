@@ -7,11 +7,19 @@ import hashlib
 import json
 from dotenv import load_dotenv
 import os
+import logging
 
+# Load environment variables
 load_dotenv()
+
+# Logger setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# FastAPI app
 app = FastAPI()
 
-# CORS (allow access from frontend)
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -20,9 +28,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Redis cache
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
+# Redis client with decoding enabled
+redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
+# Request body schema
 class GenerateRequest(BaseModel):
     prompt: str
     words: int = 200
@@ -32,20 +41,26 @@ class GenerateRequest(BaseModel):
     add_emojis: bool = False
     variations: int = 1
 
-@app.post("/generate")
-async def generate_post(request: GenerateRequest):
+# LinkedIn post generation endpoint
+@app.post("/generate/linkedin")
+async def generate_linkedin_post(request: GenerateRequest):
     try:
         cache_key = hashlib.sha256(json.dumps(request.dict(), sort_keys=True).encode()).hexdigest()
+
+        # Return from cache if available
         if redis_client.exists(cache_key):
             cached = redis_client.get(cache_key)
             return json.loads(cached)
 
+        # Generate LinkedIn post
         generator = LinkedInPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
         results = generator.generate_post(**request.dict())
         response = {"success": True, "results": results}
 
+        # Cache for 1 hour
         redis_client.setex(cache_key, 3600, json.dumps(response))
         return response
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"LinkedIn generation error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
