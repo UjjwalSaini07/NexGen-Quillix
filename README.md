@@ -49,6 +49,8 @@ You can visit the live site here : --Temporarily Not Deployed--
 - Redis (Ensure Redis is installed locally or accessible via a cloud service like Redis Enterprise or Upstash)
 - Browsers (Latest versions of Chrome, Firefox, or Edge for development and testing)
 
+- [Full Setup of Prerequisites](#Prerequisites-Setup)
+
 ## Installation 🛠️
 - First Read this [License](https://github.com/UjjwalSaini07/NexGen-Quillix/blob/main/LICENSE) & their terms then proceed.
 - Star ⭐ the [Repository](https://github.com/UjjwalSaini07/NexGen-Quillix)
@@ -117,6 +119,7 @@ This creates a new folder named venv/ in your project backend directory.
 <img width="1462" height="918" alt="image" src="https://github.com/user-attachments/assets/ef00fb4c-5265-4941-abd4-69ecf250febb" />
 
 ## Start the web app 🖥️
+### For Frontend
 - Start the Frontend Development server
 ```bash
     cd frontend
@@ -124,8 +127,49 @@ This creates a new folder named venv/ in your project backend directory.
 ```bash
     pnpm dev
 ```
+### For Backend
 - Start the Backend Development server
     - Refer to the backend setup guide for instructions on running the backend.
+
+### Redis Caching Setup Guide
+
+#### For Windows (Using Ubuntu / WSL)
+
+- If you're on **Windows** and have completed the prerequisite setup, open **Ubuntu** and start the Redis server:
+```bash
+  sudo service redis-server start
+```
+- Enter your Ubuntu password when prompted.
+
+#### For Linux 🐧
+- Start the Redis server (if not already running)
+```bash
+    sudo systemctl start redis
+```
+- Optionally enable Redis to start on boot:
+```bash
+    sudo systemctl enable redis
+```
+#### For macOS (Using Homebrew)
+- Install Redis using Homebrew:
+```bash
+    brew install redis
+```
+- Start the Redis server
+```bash
+    brew services start redis
+```
+
+- Now Similar Connection Setup for all three
+- Connect to Redis at 127.0.0.1:6379
+```bash
+    redis-cli
+```
+- Test the connection with the ping command
+```bash
+    127.0.0.1:6379> ping
+    PONG
+``` 
 
 - Open your browser and navigate to http://localhost:3000 to view the localhost website
 
@@ -147,6 +191,9 @@ This creates a new folder named venv/ in your project backend directory.
 
 5. Now Simply use the Project using Docker Container
 6. **If u Want Direct Image Without Cloning So Contact with Me.**
+
+## Prerequisites-Setup
+This is Empty Now..
 
 ## Author ✍️
 - [@Ujjwal Saini](https://github.com/UjjwalSaini07)
