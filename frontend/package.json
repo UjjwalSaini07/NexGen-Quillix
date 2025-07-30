@@ -1,7 +1,43 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "nexgen-quillix-frontend",
+  "version": "0.1.2",
   "private": true,
+  "type": "module",
+  "title": "NexGen-Quillix: AI-Powered Content Creation",
+  "description": "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
+  "keywords": [
+    "NexGen-Quillix",
+    "AI content creation",
+    "social media posts",
+    "LinkedIn",
+    "Instagram",
+    "X",
+    "Twitter",
+    "trend analysis",
+    "content automation",
+    "Next.js",
+    "React.js",
+    "TypeScript",
+    "Python",
+    "TailwindCSS",
+    "Redis",
+    "Docker",
+    "GitHub Actions"
+  ],
+  "author": "UjjwalS <ujjwalsaini0007+quillix@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/UjjwalSaini07/NexGen-Quillix",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UjjwalSaini07/NexGen-Quillix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/UjjwalSaini07/NexGen-Quillix/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,12 +45,34 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.534.0",
+    "next": "15.4.4",
+    "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.4.4"
+    "react-toastify": "^11.0.5",
+    "sonner": "^2.0.6",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.6"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
