@@ -1,5 +1,7 @@
 # NexGen-Quillix
 
+Experience the Future of Quillix AI 🌟
+
 NexGen-Quillix is an AI-powered content creation platform built to generate high-impact, platform-ready posts for LinkedIn, Instagram, X (formerly Twitter), and more—within seconds. By analyzing real-time trends and adapting to your specific tone, industry, and goals, it delivers tailored content that drives engagement and strengthens your digital presence.
 
 Whether you're a marketer, entrepreneur, or content creator, NexGen-Quillix simplifies your workflow by combining intelligent automation with creative flexibility. Let AI handle the heavy lifting—so you can focus on growth. ✨
@@ -56,7 +58,7 @@ You can visit the live site here : --Temporarily Not Deployed--
 ```bash
     git clone https://github.com/UjjwalSaini07/NexGen-Quillix.git
 ```
-2. Navigate to the project Frontend directory:
+2. Navigate to the project main directory:
 ```bash
     cd NexGen-Quillix
 ```
@@ -84,7 +86,7 @@ You can visit the live site here : --Temporarily Not Deployed--
 ```bash
     python -m venv venv
 ```
-This creates a new folder named venv/ in your project directory.
+This creates a new folder named venv/ in your project backend directory.
 -  Activate the Virtual Environment
 ```bash
   .\venv\Scripts\Activate.ps1
@@ -126,6 +128,25 @@ This creates a new folder named venv/ in your project directory.
     - Refer to the backend setup guide for instructions on running the backend.
 
 - Open your browser and navigate to http://localhost:3000 to view the localhost website
+
+## Project Setup Using Docker Containerization:
+1. Start the Docker Engine Locally or Use Any Service Globally
+2. Navigate to the project Root directory:
+```bash
+    cd NexGen-Quillix
+```
+3. Run DockerFile:
+```bash
+    docker-compose up --build
+```
+4. Wait for Generating the Image
+
+#### How Docker Image Builds Looks
+
+#### Project Docker Container
+
+5. Now Simply use the Project using Docker Container
+6. **If u Want Direct Image Without Cloning So Contact with Me.**
 
 ## Author ✍️
 - [@Ujjwal Saini](https://github.com/UjjwalSaini07)
