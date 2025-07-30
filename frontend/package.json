@@ -6,7 +6,23 @@
   "title": "NexGen-Quillix: AI-Powered Content Creation",
   "description": "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
   "keywords": [
-    "NexGen-Quillix", "AI content creation", "social media posts", "LinkedIn", "Instagram", "X", "Twitter", "trend analysis", "content automation", "Next.js", "React.js", "TypeScript", "Python", "TailwindCSS", "Redis", "Docker", "GitHub Actions"
+    "NexGen-Quillix",
+    "AI content creation",
+    "social media posts",
+    "LinkedIn",
+    "Instagram",
+    "X",
+    "Twitter",
+    "trend analysis",
+    "content automation",
+    "Next.js",
+    "React.js",
+    "TypeScript",
+    "Python",
+    "TailwindCSS",
+    "Redis",
+    "Docker",
+    "GitHub Actions"
   ],
   "author": "UjjwalS <ujjwalsaini0007+quillix@gmail.com>",
   "license": "MIT",
@@ -29,6 +45,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
