@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import "./index.css";
 import Header from "../components/common/Header";
 import LinkedinPost from "../components/linkedin/linkedinPost";
 
