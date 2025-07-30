@@ -11,14 +11,13 @@ Whether you're a marketer, entrepreneur, or content creator, NexGen-Quillix simp
 [![Github Release](https://img.shields.io/github/v/release/UjjwalSaini07/NexGen-Quillix)](https://github.com/UjjwalSaini07/NexGen-Quillix)
 
 ## Key Features 🎯
-- ⚡ **Instant Content Generation:** Create compelling posts in seconds, tailored for LinkedIn, Instagram, X, and more—no creative block, no delays.
-- 🔍 **Trend-Aware AI Engine:** Leverage real-time trending topics to keep your content fresh, relevant, and engaging.
-- ✍️ **Tone & Style Customization:** Match your unique voice or brand persona with AI-tuned copy that speaks your language.
-- 🎯 **Platform Optimization:** Automatically adapts posts for each social platform’s best practices—so you never miss the mark.
-- 🧠 **Smart Learning Algorithms:** The more you use it, the better it understands your preferences and audience dynamics.
-- 📊 **Performance-Driven Suggestions:** Get intelligent recommendations to boost engagement and visibility based on current content trends.
-- 🛠️ **Minimal Effort, Maximum Impact:** Designed for creators, marketers, and founders who want to do more—without doing more.
-
+- ⚡ **Instant Content Creation:** Generate platform-ready posts in seconds—no creative block, no delays.  
+- 🔍 **Trend-Aware AI:** Tap into real-time trends to keep your content fresh and relevant.  
+- ✍️ **Custom Tone & Style:** Tailor posts to match your voice, brand, or audience.  
+- 🎯 **Platform Smartness:** Auto-optimized for LinkedIn, Instagram, X, and more.  
+- 🧠 **Adaptive Learning:** Gets smarter with every use, understanding your preferences.  
+- 📊 **Smart Suggestions:** AI-driven tips to boost engagement and visibility.  
+- 🛠️ **Effortless Workflow:** Built for creators, marketers, and founders to move fast.
 
 ## Demo 🖥️
 > [!IMPORTANT]  
@@ -29,12 +28,12 @@ You can visit the live site here : --Temporarily Not Deployed--
 ## Technologies Used 👨🏻‍💻
 - **Next.js** – A powerful high-performance frontend for building fast and scalable web applications.
 - **React.js** – A powerful JavaScript library for building fast and scalable web applications.
-- **TypeScript** {Workflow} – A statically typed superset of JavaScript that enhances code reliability and maintainability.
+- **TypeScript** {Workflow} – A typed superset of JavaScript for more reliable, maintainable code.
 - **Python** – Used for data processing, automation, or backend tasks.
 - **TailwindCSS** – A utility-first CSS framework for creating stunning, responsive designs effortlessly.
 - **GitHub Actions** – CI/CD automation for streamlined development workflows.
 - **Redis Integration** – High-performance in-memory data storage for fast caching and real-time processing.
-- **Docker** – A containerization platform enabling seamless deployment, scalability, and efficient application management.  
+- **Docker** – A container platform for easy deployment, scalability, and app management.
 
 ## Getting Started ⚙️
 ### Prerequisites
@@ -49,85 +48,58 @@ You can visit the live site here : --Temporarily Not Deployed--
 - Browsers (Latest versions of Chrome, Firefox, or Edge for development and testing)
 
 ## Installation 🛠️
-- First Read this [License](https://github.com/UjjwalSaini07/InvestIQ/blob/main/LICENSE) & their terms then proceed.
-- Star ⭐ the [Repository](https://github.com/UjjwalSaini07/InvestIQ)
+- First Read this [License](https://github.com/UjjwalSaini07/NexGen-Quillix/blob/main/LICENSE) & their terms then proceed.
+- Star ⭐ the [Repository](https://github.com/UjjwalSaini07/NexGen-Quillix)
 - Fork the repository **(Optional)**
 - Project Setup:
 1. Clone the repository:
 ```bash
-    git clone https://github.com/UjjwalSaini07/InvestIQ.git
+    git clone https://github.com/UjjwalSaini07/NexGen-Quillix.git
 ```
 2. Navigate to the project Frontend directory:
 ```bash
-    cd InvestIQ
+    cd NexGen-Quillix
 ```
-- Install Frontend dependencies:
-```bash
-    npm install
-```
-3. Navigate to the project Backend directory:
-```bash
-    cd Backend
-```
-- Install Backend dependencies:
-```bash
-    npm install
-```
-4. Navigate to the project WorkFlow directory:
-```bash
-    cd ActionWorkFlow_Integration
-```
-- Install Backend dependencies:
-```bash
-    npm install
-```
-5. Navigate to the functions directory:
-```bash
-    cd functions
-```
-- Install firebase functions dependencies:
-```bash
-    npm install
-```
+
 > [!IMPORTANT]  
 > All these cd directory paths are relative to the root directory of the cloned project.
 
-## Start the web app 🖥️
-- Start the Frontend Development server
+### Frontend Setup:
+-  Navigate to the project Frontend directory:
 ```bash
-    npm run dev
+    cd frontend
 ```
-- Start the Backend Development server
+- Install Frontend dependencies:
 ```bash
-    cd Backend
-```
-```bash
-     npm run dev
+    pnpm install
 ```
 
-- Open your browser and navigate to http://localhost:5173 to view the localhost website
-
-
-## Starting Backend Data
-- Open PowerShell
- Directory : \NexGen-Quillix\backend>
+### Backend Setup:
+- Navigate to the project Backend directory from Folder:
+- Press `Shift + Right-Click` inside the backend folder and select “Open PowerShell window here.”
+```bash
+    Directory : \NexGen-Quillix\backend>
+```
 -  Create the Virtual Environment
 ```bash
-python -m venv venv
+    python -m venv venv
 ```
 This creates a new folder named venv/ in your project directory.
 -  Activate the Virtual Environment
-  ```bash
+```bash
   .\venv\Scripts\Activate.ps1
 ```
-  ```bash
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```bash
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 - Press A - stands for "Yes to All"
 - Install Your Dependencies
 ```bash
   pip install -r requirements.txt
 ```
+> [!WARNING]
+> If you encounter an error, make sure to follow the prerequisite setup properly. You need to have Redis installed correctly on your system along with all necessary files. Once installed, ensure it’s running and configured correctly before proceeding.
+
 - Run FastAPI Server
 ```bash
   uvicorn main:app --reload
@@ -138,10 +110,22 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
   deactivate
 ```
 
-## Image Reference:
+### Image Reference Guide:
 <img width="1466" height="1002" alt="image" src="https://github.com/user-attachments/assets/806ec34d-7d78-473c-be5d-631e3de51def" />
 <img width="1462" height="918" alt="image" src="https://github.com/user-attachments/assets/ef00fb4c-5265-4941-abd4-69ecf250febb" />
 
+## Start the web app 🖥️
+- Start the Frontend Development server
+```bash
+    cd frontend
+```
+```bash
+    pnpm dev
+```
+- Start the Backend Development server
+    - Refer to the backend setup guide for instructions on running the backend.
+
+- Open your browser and navigate to http://localhost:3000 to view the localhost website
 
 ## Author ✍️
 - [@Ujjwal Saini](https://github.com/UjjwalSaini07)
