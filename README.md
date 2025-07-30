@@ -49,6 +49,8 @@ You can visit the live site here : --Temporarily Not Deployed--
 - Redis (Ensure Redis is installed locally or accessible via a cloud service like Redis Enterprise or Upstash)
 - Browsers (Latest versions of Chrome, Firefox, or Edge for development and testing)
 
+<img width="1437" height="565" alt="image" src="https://github.com/user-attachments/assets/a7cf7114-579f-46bb-b5b9-46516500c8d6" />
+
 - [Full Setup of Prerequisites](#Prerequisites-Setup)
 
 ## Installation 🛠️
