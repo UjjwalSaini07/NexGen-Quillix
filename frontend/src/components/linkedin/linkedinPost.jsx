@@ -13,12 +13,35 @@ import {
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Slider } from "../ui/slider";
+import { Checkbox } from "../ui/checkbox";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
+
 import "react-toastify/dist/ReactToastify.css";
+
+const postStyles = [
+  "Professional",
+  "Casual",
+  "Informative",
+  "Motivational",
+  "Witty",
+  "Inspirational",
+  "Direct",
+  "Narrative",
+  "Concise",
+  "Technical",
+];
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
-  const [results, setResults] = useState([]);
+  const [idea, setIdea] = useState("");
+  const [wordCount, setWordCount] = useState(200);
+  const [useHashtags, setUseHashtags] = useState(true);
+  const [useEmojis, setUseEmojis] = useState(true);
+  const [postStyle, setPostStyle] = useState("Professional");
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -29,17 +52,18 @@ export default function Home() {
     setLoading(true);
     setResults([]);
 
-    try {
-      const data = {
-        prompt,
-        tone: "professional",
-        template: "informative",
-        words: 200,
-        add_hashtags: true,
-        add_emojis: true,
-        variations: 2,
-      };
+    const data = {
+      prompt,
+      idea,
+      tone: postStyle.toLowerCase(),
+      template: "informative",
+      words: wordCount,
+      add_hashtags: useHashtags,
+      add_emojis: useEmojis,
+      variations: 2,
+    };
 
+    try {
       const res = await generatePost(data);
       setResults(res.results);
       toast.success("✨ Posts generated successfully!");
@@ -71,38 +95,95 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="bg-neutral-900/70 border border-neutral-800 rounded-2xl p-6 shadow-lg backdrop-blur-md">
-          <div className="space-y-2">
-            <Label className="text-white text-md">What's your post idea?</Label>
-            <Textarea
-              rows={5}
-              className="bg-neutral-950 border border-neutral-800 focus-visible:ring-1 focus-visible:ring-purple-600 text-white resize-none placeholder:text-neutral-500"
-              placeholder="e.g. I want to write about AI trends in 2025..."
-              value={prompt}
-              maxLength={1000}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-            <div className="text-right text-sm text-neutral-500">
-              {prompt.length}/1000 characters
+        <Card className="bg-neutral-900/70 border border-neutral-800 p-6 rounded-2xl shadow-lg backdrop-blur-md">
+          <div className="space-y-4">
+            {/* Post Prompt */}
+            <div>
+              <Label className="text-white text-md">What’s your post prompt?</Label>
+              <Textarea
+                rows={4}
+                className="bg-neutral-950 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
+                placeholder="e.g. I want to write about AI trends in 2025..."
+                value={prompt}
+                maxLength={1000}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+              <div className="text-right text-sm text-neutral-500">
+                {prompt.length}/1000 characters
+              </div>
             </div>
+
+            {/* Post Idea */}
+            <div>
+              <Label className="text-white text-md">What's your post idea?</Label>
+              <Input
+                className="bg-neutral-950 border border-neutral-800 text-white"
+                placeholder="e.g. How AI will change job roles..."
+                value={idea}
+                onChange={(e) => setIdea(e.target.value)}
+              />
+            </div>
+
+            {/* Word Count Slider */}
+            <div>
+              <Label className="text-white text-md">Word Count: {wordCount} words</Label>
+              <Slider
+                min={50}
+                max={1000}
+                step={50}
+                defaultValue={[wordCount]}
+                onValueChange={(val) => setWordCount(val[0])}
+              />
+            </div>
+
+            {/* Checkboxes */}
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2">
+                <Checkbox checked={useHashtags} onCheckedChange={setUseHashtags} />
+                <span className="text-sm text-white">Use Hashtags</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <Checkbox checked={useEmojis} onCheckedChange={setUseEmojis} />
+                <span className="text-sm text-white">Use Emojis</span>
+              </label>
+            </div>
+
+            {/* Post Style */}
+            <div>
+              <Label className="text-white text-md mb-1">Post Style</Label>
+              <Select value={postStyle} onValueChange={setPostStyle}>
+                <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectValue placeholder="Choose style" />
+                </SelectTrigger>
+                <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  {postStyles.map((style) => (
+                    <SelectItem key={style} value={style}>
+                      {style}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Generate Button */}
+            <Button
+              onClick={handleGenerate}
+              disabled={loading || !prompt.trim()}
+              className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Post"
+              )}
+            </Button>
           </div>
+        </Card>
 
-          <Button
-            onClick={handleGenerate}
-            disabled={loading || !prompt.trim()}
-            className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                Generating...
-              </>
-            ) : (
-              "Generate Post"
-            )}
-          </Button>
-        </div>
-
+        {/* Result Section */}
         {results.length > 0 && (
           <div className="space-y-6">
             {results.map((result, i) => (
