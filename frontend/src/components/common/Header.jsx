@@ -1,7 +1,7 @@
 "use client";
 
 import { Orbitron } from "next/font/google";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import {
@@ -18,6 +18,19 @@ const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
 const Header = () => {
   const [selectedSocial, setSelectedSocial] = useState(null);
 
+  useEffect(() => {
+    const savedBot = localStorage.getItem("selectedBot");
+    if (savedBot) {
+      setSelectedSocial(savedBot);
+    }
+  }, []);
+
+  const handleSocialClick = (name) => {
+    setSelectedSocial(name);
+    localStorage.setItem("selectedBot", name);
+    toast.success(`${name} Bot Activated!`);
+  };
+
   const socialPlatforms = [
     { name: "LinkedIn", icon: <FaLinkedinIn className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-400", href: "/linkedin" },
     { name: "Instagram", icon: <FaInstagram className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-pink-400", href: "/instagram" },
@@ -25,11 +38,6 @@ const Header = () => {
     { name: "Facebook", icon: <FaFacebookF className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-600", href: "/facebook" },
     { name: "YouTube", icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-red-500", href: "/youtube" },
   ];
-
-  const handleSocialClick = (name) => {
-    setSelectedSocial(name);
-    toast.success(`${name} Bot Activated!`);
-  };
 
   return (
     <header className="fixed top-0 z-50 w-full flex justify-center mt-4 px-4">
