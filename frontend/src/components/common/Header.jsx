@@ -35,8 +35,8 @@ const Header = () => {
     { name: "LinkedIn", icon: <FaLinkedinIn className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-400", href: "/linkedin" },
     { name: "Instagram", icon: <FaInstagram className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-pink-400", href: "/instagram" },
     { name: "X", icon: <FaXTwitter className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-gray-400", href: "/x" },
-    { name: "Facebook", icon: <FaFacebookF className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-600", href: "/facebook" },
-    { name: "YouTube", icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-red-500", href: "/youtube" },
+    { name: "Facebook", icon: <FaFacebookF className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-400", href: "/facebook" },
+    { name: "YouTube", icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-pink-400", href: "/youtube" },
   ];
 
   return (
