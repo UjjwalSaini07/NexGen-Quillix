@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import Header from "../components/common/Header";
-import "./index.css";
+import "../index.css";
+import Header from "../../components/common/Header";
+import LinkedinPost from "../../components/linkedin/linkedinPost";
 
-export default function HomePage() {
+export default function PageWrapper() {
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
       <Header />
       <main className="flex flex-1 items-center justify-center mt-18">
-        <h1 className="text-4xl">Welcome to the Homepage</h1>
+        <LinkedinPost />
       </main>
     </div>
   );
