@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { generatePost } from "../../utils/linkedingeneratePost";
+import { generatePost } from "../../utils/youtubegeneratePost";
 import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
 import { toast } from "react-toastify";
 import {
