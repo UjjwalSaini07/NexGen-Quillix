@@ -38,6 +38,7 @@ const postStyles = [
   "Concise",
   "Technical",
 ];
+const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const variationOptions = ["1", "2", "3", "4", "5", "6"];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
@@ -110,6 +111,7 @@ export default function Home() {
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(true);
   const [postStyle, setPostStyle] = useState("Professional");
+  const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [variations, setVariations] = useState("1");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -226,6 +228,21 @@ export default function Home() {
                 </Select>
               </div>
               <div>
+                <Label className="text-white text-md mb-2">Post Generation</Label>
+                <Select value={postGenerations} onValueChange={setPostGenerations}>
+                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
+                    <SelectValue placeholder="Choose number" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                    {postGenerationOptions.map((postGeneration) => (
+                      <SelectItem key={postGeneration} value={postGeneration}>
+                        {postGeneration}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
                   <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
@@ -247,10 +264,10 @@ export default function Home() {
                   Call to Action
                 </label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-2xl shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
-                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-xl">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="Let's connect!">Let's connect!</SelectItem>
                     <SelectItem value="Share your thoughts below.">Share your thoughts below.</SelectItem>
@@ -269,10 +286,10 @@ export default function Home() {
                   Target Audience
                 </label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-2xl shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
-                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-xl">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="Developers">Developers</SelectItem>
                     <SelectItem value="Designers">Designers</SelectItem>
