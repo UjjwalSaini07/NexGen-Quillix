@@ -233,11 +233,11 @@ export default function Home() {
               </label>
             </div>
 
-            <div className="flex flex-row items-center gap-4">
-              <div>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
                     <SelectValue placeholder="Choose style" />
                   </SelectTrigger>
                   <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
@@ -249,10 +249,11 @@ export default function Home() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
                 <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
@@ -264,10 +265,11 @@ export default function Home() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
@@ -280,13 +282,13 @@ export default function Home() {
                 </Select>
               </div>
             </div>
-            <div className="flex flex-row gap-4 w-full">
-              <div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="w-full sm:w-auto">
                 <label className="block text-sm font-semibold text-white mb-2">
                   Call to Action
                 </label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -303,12 +305,12 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div>
+              <div className="w-full sm:w-auto">
                 <label className="block text-sm font-semibold text-white mb-2">
                   Language
                 </label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -326,12 +328,12 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div>
+              <div className="w-full sm:w-auto">
                 <label className="block text-sm font-semibold text-white mb-2">
                   Target Audience
                 </label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
