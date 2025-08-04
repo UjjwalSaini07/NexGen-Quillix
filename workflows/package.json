@@ -1,0 +1,32 @@
+{
+  "name": "nexgen-quillix-workflows",
+  "version": "0.1.2",
+  "title": "NexGen-Quillix: AI-Powered Content Creation",
+  "description": "A workflow automation package for Quillix document management, built with TypeScript. Provides tools and scripts to streamline document processing, enhance productivity, and integrate with Quillix systems for efficient enterprise document workflow management.",
+  "main": "index.js",
+  "type": "module",
+  "keywords": ["workflow", "automation", "quillix", "document-management", "typescript"],
+  "author": "UjjwalS <ujjwalsaini0007+quillix@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/UjjwalSaini07/NexGen-Quillix",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UjjwalSaini07/NexGen-Quillix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/UjjwalSaini07/NexGen-Quillix/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node index.ts",
+    "build": "tsc",
+    "start": "node index.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
