@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
 import { Checkbox } from "../ui/checkbox";
+import { Switch } from "../ui/switch";
 import {
   Select,
   SelectTrigger,
@@ -83,8 +84,18 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center">
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">Tone: Informative</span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">Category: Social Media</span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Category: {result.category || "General"}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              CTA: {result.call_to_action || "Basic"}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Target Audience: {result.audience || "General"}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -102,6 +113,8 @@ export default function Home() {
   const [variations, setVariations] = useState("1");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
+  const [cta, setCta] = useState("none");
+  const [audience, setAudience] = useState("");
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -187,11 +200,11 @@ export default function Home() {
 
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2">
-                <Checkbox checked={useHashtags} onCheckedChange={setUseHashtags} />
+                <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
               </label>
               <label className="flex items-center gap-2">
-                <Checkbox checked={useEmojis} onCheckedChange={setUseEmojis} />
+                <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
               </label>
             </div>
@@ -213,7 +226,7 @@ export default function Home() {
                 </Select>
               </div>
               <div>
-                <Label className="text-white text-md mb-2">How many variations</Label>
+                <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
                   <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
                     <SelectValue placeholder="Choose number" />
@@ -228,7 +241,52 @@ export default function Home() {
                 </Select>
               </div>
             </div>
+            <div className="flex flex-row gap-4 w-full">
+              <div>
+                <label className="block text-sm font-semibold text-white mb-2">
+                  Call to Action
+                </label>
+                <Select value={cta} onValueChange={setCta}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-2xl shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                    <SelectValue placeholder="Select CTA" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-xl">
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Let's connect!">Let's connect!</SelectItem>
+                    <SelectItem value="Share your thoughts below.">Share your thoughts below.</SelectItem>
+                    <SelectItem value="Visit my website.">Visit my website.</SelectItem>
+                    <SelectItem value="Contact me to collaborate.">Contact me to collaborate.</SelectItem>
+                    <SelectItem value="DM me to collaborate!">DM me to collaborate!</SelectItem>
+                    <SelectItem value="Check out the link in my bio.">Check out the link in my bio.</SelectItem>
+                    <SelectItem value="Stay tuned for updates.">Stay tuned for updates.</SelectItem>
+                    <SelectItem value="Tag someone who should see this.">Tag someone who should see this.</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-white mb-2">
+                  Target Audience
+                </label>
+                <Select value={audience} onValueChange={setAudience}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-2xl shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                    <SelectValue placeholder="Select Audience" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-xl shadow-xl">
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Developers">Developers</SelectItem>
+                    <SelectItem value="Designers">Designers</SelectItem>
+                    <SelectItem value="Marketers">Marketers</SelectItem>
+                    <SelectItem value="Tech Enthusiasts">Tech Enthusiasts</SelectItem>
+                    <SelectItem value="Product Managers">Product Managers</SelectItem>
+                    <SelectItem value="Entrepreneurs">Entrepreneurs</SelectItem>
+                    <SelectItem value="Students">Students</SelectItem>
+                    <SelectItem value="Hiring Managers">Hiring Managers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <Button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
@@ -246,17 +304,28 @@ export default function Home() {
           </div>
         </Card>
 
-        {results.length > 0 ? (
-          <div className="space-y-6">
-            {results.map((result, i) => (
-              <ResultCard key={i} result={result} index={i} onCopy={copyToClipboard} />
-            ))}
+        {!loading && results.length === 0 ? (
+          <div className="text-center text-neutral-500 py-2">
+            <p className="text-lg font-medium">No results found</p>
+            <p className="text-sm text-neutral-400 mt-2">
+              Start by generating a post to see results appear here ✨
+            </p>
           </div>
         ) : (
-          !loading && (
-            <p className="text-center text-neutral-500">No results yet. Generate a post to see magic happen ✨</p>
-          )
+          <div className="space-y-6">
+            {results.map((result, index) => (
+              <ResultCard
+                key={index}
+                result={result}
+                index={index}
+                onCopy={copyToClipboard}
+              />
+            ))}
+          </div>
         )}
+        <div className="text-center text-sm text-neutral-500 -mt-4">
+          Powered by <a href="https://github.com/UjjwalSaini07/NexGen-Quillix" className="text-blue-400 hover:underline">Quillix AI</a>
+        </div>
       </div>
     </main>
   );
