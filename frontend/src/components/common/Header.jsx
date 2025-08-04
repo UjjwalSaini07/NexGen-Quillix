@@ -18,6 +18,7 @@ const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
 
 const Header = () => {
   const [selectedSocial, setSelectedSocial] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { width } = useWindowSize();
 
   useEffect(() => {
@@ -44,30 +45,79 @@ const Header = () => {
   return (
     <header className="fixed top-0 z-50 w-full flex justify-center mt-4 px-4">
       <div className="relative w-full max-w-8xl bg-black rounded-full shadow-xl py-3 px-4 flex items-center justify-between flex-wrap sm:flex-nowrap">
+        
+        {/* Logo */}
         <Link
           href="/"
           aria-label="Go to homepage"
-          className={`text-white font-extrabold text-lg sm:text-2xl tracking-wide hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white transition-colors duration-200 mb-2 sm:mb-0 sm:mr-4 ${orbitron.className}`}
+          className={`text-white font-extrabold text-lg sm:text-2xl tracking-wide hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white transition duration-200 mb-2 sm:mb-0 sm:mr-4 ${orbitron.className}`}
         >
           NexGen<span className="text-white">-Quillix</span>
         </Link>
 
-        <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-2 sm:mb-0">
-          {socialPlatforms.map(({ name, icon, color, href }) => (
-            <Link
-              key={name}
-              href={href}
-              aria-label={name}
-              onClick={() => handleSocialClick(name)}
-              className={`transition-colors duration-200 text-white hover:${color} ${
-                selectedSocial === name ? color : ""
-              } focus:outline-none focus:ring-2 rounded`}
+        {/* Navigation */}
+        {width < 500 ? (
+          <>
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              aria-label="Toggle Menu"
+              className="relative z-50 w-9 h-9 flex flex-col items-center justify-center gap-1 group"
             >
-              {icon}
-            </Link>
-          ))}
-        </nav>
-        {width > 1023 && 
+              <span
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+              />
+              <span
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "opacity-0" : ""}`}
+              />
+              <span
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "-rotate-50 -translate-y-1.5" : ""}`}
+              />
+            </button>
+
+            {/* Mobile Dropdown */}
+            <div
+              className={`absolute top-full left-0 w-full bg-zinc-900 text-white rounded-xl shadow-2xl p-4 flex flex-col gap-3 mt-2 transition-all duration-300 ${
+                isMenuOpen ? "opacity-100 visible scale-100" : "opacity-0 invisible scale-95"
+              }`}
+            >
+              {socialPlatforms.map(({ name, href }) => (
+                <Link
+                  key={name}
+                  href={href}
+                  onClick={() => {
+                    handleSocialClick(name);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`text-sm font-medium transition-colors hover:text-blue-400 ${
+                    selectedSocial === name ? "text-blue-400" : "text-white"
+                  }`}
+                >
+                  {name}
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : (
+          <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-2 sm:mb-0">
+            {socialPlatforms.map(({ name, icon, color, href }) => (
+              <Link
+                key={name}
+                href={href}
+                aria-label={name}
+                onClick={() => handleSocialClick(name)}
+                className={`transition-colors duration-200 text-white hover:${color} ${
+                  selectedSocial === name ? color : ""
+                } focus:outline-none focus:ring-2 rounded`}
+              >
+                {icon}
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        {/* Bot Status Button (Only on large screens) */}
+        {width > 1023 && (
           <button
             onClick={() =>
               toast.success(
@@ -82,7 +132,7 @@ const Header = () => {
             {selectedSocial ? `${selectedSocial} Bot` : "Select Any Bot"}
             <span className="w-2.5 h-2.5 bg-black rounded-full animate-pulse" />
           </button>
-        }
+        )}
       </div>
     </header>
   );
