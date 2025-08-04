@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generatePost } from "../../utils/linkedingeneratePost";
-import { Loader2, Copy,  Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
+import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -14,7 +14,6 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
-import { Checkbox } from "../ui/checkbox";
 import { Switch } from "../ui/switch";
 import {
   Select,
@@ -42,6 +41,10 @@ const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen 
 const variationOptions = ["1", "2", "3", "4", "5", "6"];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
+  const savedCta = localStorage.getItem("cta") || "Basic";
+  const savedAudience = localStorage.getItem("audience") || "General";
+  const savedLanguage = localStorage.getItem("language") || "en";
+
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
       <CardHeader className="flex justify-between items-start px-6 pt-6 pb-4">
@@ -84,7 +87,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
         </div>
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
@@ -92,10 +95,13 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Category: {result.category || "General"}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              CTA: {result.call_to_action || "Basic"}
+              CTA: {savedCta}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              Target Audience: {result.audience || "General"}
+              Target Audience: {savedAudience}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Language: {savedLanguage.toUpperCase()}
             </span>
           </div>
         </div>
@@ -106,7 +112,6 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
-  const [idea, setIdea] = useState("");
   const [wordCount, setWordCount] = useState(200);
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(true);
@@ -118,6 +123,17 @@ export default function Home() {
   const [cta, setCta] = useState("none");
   const [audience, setAudience] = useState("");
   const [language, setLanguage] = useState("en");
+  useEffect(() => {
+    localStorage.setItem("cta", cta);
+  }, [cta]);
+
+  useEffect(() => {
+    localStorage.setItem("audience", audience);
+  }, [audience]);
+
+  useEffect(() => {
+    localStorage.setItem("language", language);
+  }, [language]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -130,13 +146,14 @@ export default function Home() {
 
     const data = {
       prompt,
-      idea,
+      words: wordCount,
       tone: postStyle.toLowerCase(),
       template: "informative",
-      words: wordCount,
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
       variations: parseInt(variations),
+      call_to_action: cta === "none" ? null : cta,
+      audience: audience === "none" ? null : audience,
     };
 
     try {
