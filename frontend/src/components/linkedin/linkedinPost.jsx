@@ -110,7 +110,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
   );
 };
 
-export default function Home() {
+export default function LinkedinPost() {
   const [prompt, setPrompt] = useState("");
   const [wordCount, setWordCount] = useState(200);
   const [useHashtags, setUseHashtags] = useState(true);
