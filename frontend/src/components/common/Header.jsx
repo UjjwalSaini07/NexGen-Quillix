@@ -45,8 +45,7 @@ const Header = () => {
   return (
     <header className="fixed top-0 z-50 w-full flex justify-center mt-4 px-4">
       <div className="relative w-full max-w-8xl bg-black rounded-full shadow-xl py-3 px-4 flex items-center justify-between flex-wrap sm:flex-nowrap">
-        
-        {/* Logo */}
+ 
         <Link
           href="/"
           aria-label="Go to homepage"
@@ -55,7 +54,6 @@ const Header = () => {
           NexGen<span className="text-white">-Quillix</span>
         </Link>
 
-        {/* Navigation */}
         {width < 500 ? (
           <>
             {/* Hamburger Button */}
@@ -116,7 +114,6 @@ const Header = () => {
           </nav>
         )}
 
-        {/* Bot Status Button (Only on large screens) */}
         {width > 1023 && (
           <button
             onClick={() =>
