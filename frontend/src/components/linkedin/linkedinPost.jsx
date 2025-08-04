@@ -366,7 +366,7 @@ export default function Home() {
           </div>
         </Card>
 
-        {!loading && results.length === 0 ? (
+        {!loading && results.length === 0 && prompt.trim() ? (
           <div className="text-center text-neutral-500 py-2">
             <p className="text-lg font-medium">No results found</p>
             <p className="text-sm text-neutral-400 mt-2">
@@ -386,7 +386,7 @@ export default function Home() {
           </div>
         )}
         <div className="text-center text-sm text-neutral-500 -mt-4">
-          Powered by <a href="https://github.com/UjjwalSaini07/NexGen-Quillix" className="text-blue-400 hover:underline">Quillix AI</a>
+          Developed by <a href="https://ujjwalsaini.dev" className="text-cyan-500 hover:underline">UjjwalS</a>
         </div>
       </div>
     </main>

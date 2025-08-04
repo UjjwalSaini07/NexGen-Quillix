@@ -11,12 +11,14 @@ import {
   FaFacebookF,
   FaYoutube,
 } from "react-icons/fa6";
+import useWindowSize from "../hooks/use-WindowSize";
 import "react-toastify/dist/ReactToastify.css";
 
 const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
 
 const Header = () => {
   const [selectedSocial, setSelectedSocial] = useState(null);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     const savedBot = localStorage.getItem("selectedBot");
@@ -65,21 +67,22 @@ const Header = () => {
             </Link>
           ))}
         </nav>
-
-        <button
-          onClick={() =>
-            toast.success(
-              selectedSocial
-                ? `${selectedSocial} Bot Active`
-                : "Bot is Not Activated!"
-            )
-          }
-          className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm sm:text-base font-semibold rounded-full shadow-md hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black transition-all duration-300"
-          aria-label="Toggle Bot Mode"
-        >
-          {selectedSocial ? `${selectedSocial} Bot` : "Select Any Bot"}
-          <span className="w-2.5 h-2.5 bg-black rounded-full animate-pulse" />
-        </button>
+        {width > 1023 && 
+          <button
+            onClick={() =>
+              toast.success(
+                selectedSocial
+                  ? `${selectedSocial} Bot Active`
+                  : "Bot is Not Activated!"
+              )
+            }
+            className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm sm:text-base font-semibold rounded-full shadow-md hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black transition-all duration-300"
+            aria-label="Toggle Bot Mode"
+          >
+            {selectedSocial ? `${selectedSocial} Bot` : "Select Any Bot"}
+            <span className="w-2.5 h-2.5 bg-black rounded-full animate-pulse" />
+          </button>
+        }
       </div>
     </header>
   );
