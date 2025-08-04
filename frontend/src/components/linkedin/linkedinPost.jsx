@@ -117,6 +117,7 @@ export default function Home() {
   const [results, setResults] = useState([]);
   const [cta, setCta] = useState("none");
   const [audience, setAudience] = useState("");
+  const [language, setLanguage] = useState("en");
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -168,18 +169,22 @@ export default function Home() {
     <main className="min-h-screen text-white px-4 py-12">
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">LinkedIn Post Generator</h1>
-          <p className="text-neutral-400 text-lg">Create engaging, on-brand LinkedIn content in seconds.</p>
+          <h1 style={{ fontFamily: "'Times New Roman', Times, serif" }} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight text-white">
+            LinkedIn Post Generator
+          </h1>
+          <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto">
+            Create engaging, on-brand LinkedIn content in seconds.
+          </p>
         </div>
 
-        <Card className="bg-neutral-900/70 border border-neutral-800 p-6 rounded-2xl shadow-lg backdrop-blur-md">
+        <Card className="bg-black/10 backdrop-blur-md border border-white/40 text-white p-6 rounded-2xl shadow-lg ">
           <div className="space-y-4">
             <div>
               <Label className="text-white text-md mb-3">What’s your post prompt?</Label>
               <Textarea
                 rows={4}
-                className="bg-neutral-950 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
-                placeholder="e.g. I want to write about AI trends in 2025..."
+                className="bg-neutral-960 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
+                placeholder="e.g. Write a post announcing my new role at Google"
                 value={prompt}
                 maxLength={1000}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -277,6 +282,29 @@ export default function Home() {
                     <SelectItem value="Check out the link in my bio.">Check out the link in my bio.</SelectItem>
                     <SelectItem value="Stay tuned for updates.">Stay tuned for updates.</SelectItem>
                     <SelectItem value="Tag someone who should see this.">Tag someone who should see this.</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-white mb-2">
+                  Language
+                </label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition">
+                    <SelectValue placeholder="Select Language" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                    <SelectItem value="es">Spanish</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="de">German</SelectItem>
+                    <SelectItem value="zh">Chinese</SelectItem>
+                    <SelectItem value="ja">Japanese</SelectItem>
+                    <SelectItem value="ar">Arabic</SelectItem>
+                    <SelectItem value="pt">Portuguese</SelectItem>
+                    <SelectItem value="ru">Russian</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
