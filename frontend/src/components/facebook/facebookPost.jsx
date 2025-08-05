@@ -139,6 +139,15 @@ export default function FacebookPost() {
     localStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
 
+  const allowedGenerationOption = "Text Gen LLM's";
+  const handlePostGenerationChange = (value) => {
+    if (value !== allowedGenerationOption) {
+      toast.error("Only 'Text Gen LLM's' is currently supported. Please select that option.");
+      return;
+    }
+    setPostGenerations(value);
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Prompt cannot be empty.");
@@ -148,7 +157,7 @@ export default function FacebookPost() {
     setLoading(true);
     setResults([]);
 
-    const data = { //Todo: Work to left
+    const data = {
       prompt,
       words: wordCount,
       tone: postStyle.toLowerCase(),
@@ -240,26 +249,26 @@ export default function FacebookPost() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
-              <label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
-              </label>
-              <label className="flex items-center gap-2">
+              </Label>
+              <Label className="flex items-center gap-2">
                 <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              </Label>
+              <Label className="flex items-center gap-2 cursor-pointer">
                 <Switch checked={useMusic} onCheckedChange={setUseMusic} />
                 <span className="text-sm text-white">Add background music</span>
-              </label>
+              </Label>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-fulll">
-                    <SelectValue placeholder="Choose style" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-fulll">
+                    <SelectValue placeholder="Choose Post Style" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postStyles.map((style) => (
@@ -274,7 +283,7 @@ export default function FacebookPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Type</Label>
                 <Select value={postType} onValueChange={setPostType}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose Type of Post" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -289,9 +298,9 @@ export default function FacebookPost() {
 
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
-                <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
-                    <SelectValue placeholder="Choose number" />
+                <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Generation" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postGenerationOptions.map((postGeneration) => (
@@ -306,8 +315,8 @@ export default function FacebookPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Goal of the Post</Label>
                 <Select value={postGoals} onValueChange={setPostGoals}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Goal of the Post" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postGoalsOptions.map((postGoal) => (
@@ -325,8 +334,8 @@ export default function FacebookPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose number of Variation" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {variationOptions.map((variation) => (
@@ -339,9 +348,9 @@ export default function FacebookPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">Call to Action</label>
+                <Label className="block text-sm font-semibold text-white mb-2">Call to Action</Label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -355,11 +364,9 @@ export default function FacebookPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Language
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Language</Label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -373,12 +380,10 @@ export default function FacebookPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Target Audience
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Target Audience</Label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
-                    <SelectValue placeholder="Select Audience" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select Target Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                       {audienceOptions.map((audienceOption) => (
@@ -392,11 +397,9 @@ export default function FacebookPost() {
 
               {useMusic && (
                 <div className="w-full sm:w-auto">
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Music Preferences
-                  </label>
+                  <Label className="block text-sm font-semibold text-white mb-2">Music Preferences</Label>
                   <Select value={musicPreferences} onValueChange={setMusicPreferences}>
-                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-rose-500 transition w-full">
+                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                       <SelectValue placeholder="Select Music Preferences"/>
                     </SelectTrigger>
                     <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -409,7 +412,6 @@ export default function FacebookPost() {
                   </Select>
                 </div>
               )}
-
             </div>
             
             <Button

@@ -172,6 +172,15 @@ export default function XPost() {
     }
   };
 
+  const allowedGenerationOption = "Text Gen LLM's";
+  const handlePostGenerationChange = (value) => {
+    if (value !== allowedGenerationOption) {
+      toast.error("Only 'Text Gen LLM's' is currently supported. Please select that option.");
+      return;
+    }
+    setPostGenerations(value);
+  };
+
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -231,29 +240,29 @@ export default function XPost() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
-              <label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
-              </label>
-              <label className="flex items-center gap-2">
+              </Label>
+              <Label className="flex items-center gap-2">
                 <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              </Label>
+              <Label className="flex items-center gap-2 cursor-pointer">
                 <Switch checked={useMentions} onCheckedChange={setUseMentions} />
                 <span className="text-sm text-white">Add Mentions</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              </Label>
+              <Label className="flex items-center gap-2 cursor-pointer">
                 <Switch checked={useEvent} onCheckedChange={setUseEvent} />
                 <span className="text-sm text-white">Special Event</span>
-              </label>
+              </Label>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose style" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -269,7 +278,7 @@ export default function XPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Tweet Type</Label>
                 <Select value={postTweetsType} onValueChange={setPostTweetsType}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -284,8 +293,8 @@ export default function XPost() {
 
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
-                <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -301,7 +310,7 @@ export default function XPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Goal of the Post</Label>
                 <Select value={postGoals} onValueChange={setPostGoals}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -319,7 +328,7 @@ export default function XPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -333,11 +342,9 @@ export default function XPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Language
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Language</Label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -351,11 +358,9 @@ export default function XPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Target Audience
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Target Audience</Label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -370,11 +375,9 @@ export default function XPost() {
 
               {useEvent && (
                 <div className="w-full sm:w-auto">
-                  <label className="block text-sm font-semibold text-white mb-2">
-                    Event details
-                  </label>
+                  <Label className="block text-sm font-semibold text-white mb-2">Event details</Label>
                   <Select value={eventDetails} onValueChange={setEventDetails}>
-                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                       <SelectValue placeholder="Select Event Details"/>
                     </SelectTrigger>
                     <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">

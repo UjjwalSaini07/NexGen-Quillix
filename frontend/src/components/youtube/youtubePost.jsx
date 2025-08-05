@@ -165,6 +165,15 @@ export default function YoutubePost() {
     }
   };
 
+  const allowedGenerationOption = "Text Gen LLM's";
+  const handlePostGenerationChange = (value) => {
+    if (value !== allowedGenerationOption) {
+      toast.error("Only 'Text Gen LLM's' is currently supported. Please select that option.");
+      return;
+    }
+    setPostGenerations(value);
+  };
+
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -224,22 +233,22 @@ export default function YoutubePost() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
-              <label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
-              </label>
-              <label className="flex items-center gap-2">
+              </Label>
+              <Label className="flex items-center gap-2">
                 <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
-              </label>
+              </Label>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Tone</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
-                    <SelectValue placeholder="Choose tone" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post tone" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postStyles.map((style) => (
@@ -254,8 +263,8 @@ export default function YoutubePost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Type</Label>
                 <Select value={postType} onValueChange={setPostType}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
-                    <SelectValue placeholder="Choose Type" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Type" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postTypeOptions.map((postType) => (
@@ -269,8 +278,8 @@ export default function YoutubePost() {
 
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
-                <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose Post Generation" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -288,8 +297,8 @@ export default function YoutubePost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
-                    <SelectValue placeholder="Choose variations" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose number of variations" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {variationOptions.map((variation) => (
@@ -302,9 +311,9 @@ export default function YoutubePost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">Call to Action</label>
+                <Label className="block text-sm font-semibold text-white mb-2">Call to Action</Label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -318,11 +327,9 @@ export default function YoutubePost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Language
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Language</Label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
@@ -336,12 +343,10 @@ export default function YoutubePost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Target Audience
-                </label>
+                <Label className="block text-sm font-semibold text-white mb-2">Target Audience</Label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
-                    <SelectValue placeholder="Select Audience" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select Target Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                       {audienceOptions.map((audienceOption) => (
