@@ -1,55 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { generatePost } from "../../utils/youtubegeneratePost";
-import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-} from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
 import { Switch } from "../ui/switch";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "../ui/select";
+import { Card, CardHeader, CardContent, CardTitle, } from "../ui/card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue, } from "../ui/select";
+import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
+import { generatePost } from "../../utils/youtubegeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postStyles = [
-  "Professional",
-  "Casual",
-  "Informative",
-  "Motivational",
-  "Witty",
-  "Inspirational",
-  "Direct",
-  "Narrative",
-  "Concise",
-  "Technical",
-];
+const postStyles = [ "Professional", "Friendly", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational" ];
+const postTypeOptions = [ "Community Text Post", "Video Title", "Video Description", "Video Caption", "Poll", "Shorts Caption", "Question Post", "Image Post Caption", "Behind-the-Scenes Post", "Announcement" ];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
-const variationOptions = ["1", "2", "3", "4", "5", "6"];
+const variationOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+const ctaOptions = [ "None", "Watch Now", "Like & Subscribe", "Comment Below", "Share This Video", "Turn On Notifications", "Watch Next Video", "Join Channel Membership", "Check Description", "Support the Channel"];
+const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
+const audienceOptions = [ "None", "General Viewers", "Kids", "Gamers", "Vlog Fans", "Tech Review Watchers", "DIY & How-To Seekers", "Education & Study Community", "Fitness & Wellness Enthusiasts", "Music & Entertainment Fans", "Aspiring YouTubers & Creators" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
-  const savedAudience = localStorage.getItem("audience") || "General";
+  const savedcta = localStorage.getItem("cta") || "Watch Now";
+  const savedAudience = localStorage.getItem("audience") || "General Viewers";
   const savedLanguage = localStorage.getItem("language") || "en";
+  const savedPostType = localStorage.getItem("postType") || "Video Description";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
       <CardHeader className="flex justify-between items-start px-6 pt-6 pb-4">
         <div>
           <CardTitle className="text-xl font-semibold tracking-tight">
-            ✨ Variation {index + 1}
+            ✨ Variation Post {index + 1}
           </CardTitle>
         </div>
         <div className="flex gap-2">
@@ -94,13 +77,16 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Category: {result.category || "General"}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              CTA: {savedCta}
+              Call to Action: {savedcta}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
               Target Audience: {savedAudience}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
               Language: {savedLanguage.toUpperCase()}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Post Type: {savedPostType.toUpperCase()}
             </span>
           </div>
         </div>
@@ -111,17 +97,19 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
 export default function YoutubePost() {
   const [prompt, setPrompt] = useState("");
-  const [wordCount, setWordCount] = useState(200);
+  const [wordCount, setWordCount] = useState(80);
   const [useHashtags, setUseHashtags] = useState(true);
-  const [useEmojis, setUseEmojis] = useState(true);
-  const [postStyle, setPostStyle] = useState("Professional");
+  const [useEmojis, setUseEmojis] = useState(false);
+  const [postStyle, setPostStyle] = useState("Friendly");
+  const [postType, setPostType] = useState("Video Description");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
-  const [variations, setVariations] = useState("1");
+  const [variations, setVariations] = useState("3");
+  const [cta, setCta] = useState("None");
+  const [language, setLanguage] = useState("en");
+  const [audience, setAudience] = useState("None");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
-  const [cta, setCta] = useState("none");
-  const [audience, setAudience] = useState("");
-  const [language, setLanguage] = useState("en");
+
   useEffect(() => {
     localStorage.setItem("cta", cta);
   }, [cta]);
@@ -133,6 +121,10 @@ export default function YoutubePost() {
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem("postType", postType);
+  }, [postType]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -147,11 +139,12 @@ export default function YoutubePost() {
       prompt,
       words: wordCount,
       tone: postStyle.toLowerCase(),
-      template: "informative",
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
+      postTypeOptions: postType,
       variations: parseInt(variations),
       call_to_action: cta === "none" ? null : cta,
+      language: language,
       audience: audience === "none" ? null : audience,
     };
 
@@ -181,47 +174,56 @@ export default function YoutubePost() {
     }
   };
 
+  const regeneratePost = async (text) => {
+    try {
+      await handleGenerate();
+      toast.success("✨ Posts regenerated successfully!");
+    } catch {
+      toast.error("Failed to regenerate posts!");
+    }
+  };
+
   return (
     <main className="min-h-screen text-white px-4 py-12">
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="text-center">
           <h1 style={{ fontFamily: "'Times New Roman', Times, serif" }} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight text-white">
-            Youtube Post Generator
+            YouTube Post Generator
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto">
-             Generate engaging YouTube community posts that drive views, boost subscriber interaction, and keep your channel buzzing.
+             Boost channel buzz with posts your audience can't ignore
           </p>
         </div>
 
         <Card className="bg-black/10 backdrop-blur-md border border-white/40 text-white p-6 rounded-2xl shadow-lg ">
           <div className="space-y-4">
             <div>
-              <Label className="text-white text-md mb-3">What’s your post prompt?</Label>
+              <Label className="text-white text-md mb-3">What’s the main focus of your YouTube video?</Label>
               <Textarea
                 rows={4}
                 className="bg-neutral-960 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
-                placeholder="e.g. Write a post announcing my new role at Google"
+                placeholder="e.g. Generate an engaging video description for my skincare routine"
                 value={prompt}
-                maxLength={1000}
+                maxLength={200}
                 onChange={(e) => setPrompt(e.target.value)}
               />
               <div className="text-right text-sm text-neutral-500">
-                {prompt.length}/1000 characters
+                {prompt.length}/200 characters
               </div>
             </div>
 
             <div>
               <Label className="text-white text-md mb-3">Word Count: {wordCount} words</Label>
               <Slider
-                min={50}
-                max={1000}
+                min={20}
+                max={200}
                 step={1}
                 defaultValue={[wordCount]}
                 onValueChange={(val) => setWordCount(val[0])}
               />
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
               <label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
@@ -234,12 +236,12 @@ export default function YoutubePost() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Style</Label>
+                <Label className="text-white text-md mb-2">Post Tone</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose style" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose tone" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postStyles.map((style) => (
                       <SelectItem key={style} value={style}>
                         {style}
@@ -250,12 +252,28 @@ export default function YoutubePost() {
               </div>
 
               <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Type</Label>
+                <Select value={postType} onValueChange={setPostType}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose Type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTypeOptions.map((postType) => (
+                      <SelectItem key={postType} value={postType}>
+                        {postType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
                 <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose Post Generation" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postGenerationOptions.map((postGeneration) => (
                       <SelectItem key={postGeneration} value={postGeneration}>
                         {postGeneration}
@@ -264,14 +282,16 @@ export default function YoutubePost() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose variations" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {variationOptions.map((variation) => (
                       <SelectItem key={variation} value={variation}>
                         {variation}
@@ -280,26 +300,19 @@ export default function YoutubePost() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
+
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Call to Action
-                </label>
+                <label className="block text-sm font-semibold text-white mb-2">Call to Action</label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Let's connect!">Let's connect!</SelectItem>
-                    <SelectItem value="Share your thoughts below.">Share your thoughts below.</SelectItem>
-                    <SelectItem value="Visit my website.">Visit my website.</SelectItem>
-                    <SelectItem value="Contact me to collaborate.">Contact me to collaborate.</SelectItem>
-                    <SelectItem value="DM me to collaborate!">DM me to collaborate!</SelectItem>
-                    <SelectItem value="Check out the link in my bio.">Check out the link in my bio.</SelectItem>
-                    <SelectItem value="Stay tuned for updates.">Stay tuned for updates.</SelectItem>
-                    <SelectItem value="Tag someone who should see this.">Tag someone who should see this.</SelectItem>
+                      {ctaOptions.map((ctaOption) => (
+                        <SelectItem key={ctaOption} value={ctaOption}>
+                          {ctaOption}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -309,20 +322,15 @@ export default function YoutubePost() {
                   Language
                 </label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="hi">Hindi</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="zh">Chinese</SelectItem>
-                    <SelectItem value="ja">Japanese</SelectItem>
-                    <SelectItem value="ar">Arabic</SelectItem>
-                    <SelectItem value="pt">Portuguese</SelectItem>
-                    <SelectItem value="ru">Russian</SelectItem>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -332,19 +340,15 @@ export default function YoutubePost() {
                   Target Audience
                 </label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Developers">Developers</SelectItem>
-                    <SelectItem value="Designers">Designers</SelectItem>
-                    <SelectItem value="Marketers">Marketers</SelectItem>
-                    <SelectItem value="Tech Enthusiasts">Tech Enthusiasts</SelectItem>
-                    <SelectItem value="Product Managers">Product Managers</SelectItem>
-                    <SelectItem value="Entrepreneurs">Entrepreneurs</SelectItem>
-                    <SelectItem value="Students">Students</SelectItem>
-                    <SelectItem value="Hiring Managers">Hiring Managers</SelectItem>
+                      {audienceOptions.map((audienceOption) => (
+                        <SelectItem key={audienceOption} value={audienceOption}>
+                          {audienceOption}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -382,6 +386,7 @@ export default function YoutubePost() {
                 result={result}
                 index={index}
                 onCopy={copyToClipboard}
+                onRegenerate={regeneratePost}
               />
             ))}
           </div>
