@@ -1,55 +1,39 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { generatePost } from "../../utils/xgeneratePost";
-import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-} from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
 import { Switch } from "../ui/switch";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "../ui/select";
+import { Card, CardHeader, CardContent, CardTitle, } from "../ui/card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue, } from "../ui/select";
+import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
+import { generatePost } from "../../utils/xgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postStyles = [
-  "Professional",
-  "Casual",
-  "Informative",
-  "Motivational",
-  "Witty",
-  "Inspirational",
-  "Direct",
-  "Narrative",
-  "Concise",
-  "Technical",
-];
+const postStyles = [ "Professional", "Witty", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational", "Minimal" ];
+const postTweetTypeOptions = ["Single Tweet", "Poll", "Thread", "Quote Tweet", "Reply", "Retweet"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
-const variationOptions = ["1", "2", "3", "4", "5", "6"];
+const postGoalsOptions = ["Drive traffic", "Increase engagement", "Get Retweets", "Start Conversations", "Share News", "Go Viral", "Build community", "Educate audience", "Showcase creativity"];
+const variationOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
+const audienceOptions = [ "None", "General Public", "Tech Enthusiasts", "Startup Founders", "Investors & VCs", "Content Creators", "Influencers", "Journalists & Media", "Students & Learners", "Professionals & Executives" ];
+const eventDetailOptions = [ "Breaking News", "Trending Topic", "Product Launch", "Sports Event", "Award Show", "Concert", "Holiday", "Company Milestone", "Viral Meme", "Movie/Series Release" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
   const savedAudience = localStorage.getItem("audience") || "General";
   const savedLanguage = localStorage.getItem("language") || "en";
+  const savedTweetType = localStorage.getItem("tweetType") || "Single Tweet";
+  const savedPostGoal = localStorage.getItem("postGoal") || "Go Viral";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
       <CardHeader className="flex justify-between items-start px-6 pt-6 pb-4">
         <div>
           <CardTitle className="text-xl font-semibold tracking-tight">
-            ✨ Variation {index + 1}
+            ✨ Variation Post {index + 1}
           </CardTitle>
         </div>
         <div className="flex gap-2">
@@ -94,13 +78,16 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Category: {result.category || "General"}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              CTA: {savedCta}
-            </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
               Target Audience: {savedAudience}
             </span>
             <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
               Language: {savedLanguage.toUpperCase()}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Tweet Type: {savedTweetType.toUpperCase()}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Goal of the Post: {savedPostGoal.toUpperCase()}
             </span>
           </div>
         </div>
@@ -111,20 +98,21 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
 export default function XPost() {
   const [prompt, setPrompt] = useState("");
-  const [wordCount, setWordCount] = useState(200);
+  const [wordCount, setWordCount] = useState(30);
   const [useHashtags, setUseHashtags] = useState(true);
-  const [useEmojis, setUseEmojis] = useState(true);
+  const [useEmojis, setUseEmojis] = useState(false);
+  const [useMentions, setUseMentions] = useState(false);
+  const [useEvent, setUseEvent] = useState(false);
   const [postStyle, setPostStyle] = useState("Professional");
+  const [postTweetsType, setPostTweetsType] = useState("Single Tweet");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
-  const [variations, setVariations] = useState("1");
+  const [postGoals, setPostGoals] = useState("Go Viral");
+  const [variations, setVariations] = useState("5");
+  const [language, setLanguage] = useState("en");
+  const [audience, setAudience] = useState("None");
+  const [eventDetails, setEventDetails] = useState("Trending Topic");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
-  const [cta, setCta] = useState("none");
-  const [audience, setAudience] = useState("");
-  const [language, setLanguage] = useState("en");
-  useEffect(() => {
-    localStorage.setItem("cta", cta);
-  }, [cta]);
 
   useEffect(() => {
     localStorage.setItem("audience", audience);
@@ -133,6 +121,14 @@ export default function XPost() {
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem("tweetType", postTweetsType);
+  }, [postTweetsType]);
+
+  useEffect(() => {
+    localStorage.setItem("postGoal", postGoals);
+  }, [postGoals]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -147,12 +143,16 @@ export default function XPost() {
       prompt,
       words: wordCount,
       tone: postStyle.toLowerCase(),
-      template: "informative",
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
+      add_mentions: useMentions,
+      add_event: useEvent,
+      postTweetTypeOptions: postTweetsType,
+      postgoal: postGoals,
       variations: parseInt(variations),
-      call_to_action: cta === "none" ? null : cta,
+      language: language,
       audience: audience === "none" ? null : audience,
+      eventDetails: eventDetails === "none" ? null : eventDetails,
     };
 
     try {
@@ -196,32 +196,32 @@ export default function XPost() {
         <Card className="bg-black/10 backdrop-blur-md border border-white/40 text-white p-6 rounded-2xl shadow-lg ">
           <div className="space-y-4">
             <div>
-              <Label className="text-white text-md mb-3">What’s your post prompt?</Label>
+              <Label className="text-white text-md mb-3">What would you like the tweet to be about?</Label>
               <Textarea
                 rows={4}
                 className="bg-neutral-960 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
-                placeholder="e.g. Write a post announcing my new role at Google"
+                placeholder="e.g. Create a thought-provoking tweet about AI replacing jobs"
                 value={prompt}
-                maxLength={1000}
+                maxLength={200}
                 onChange={(e) => setPrompt(e.target.value)}
               />
               <div className="text-right text-sm text-neutral-500">
-                {prompt.length}/1000 characters
+                {prompt.length}/200 characters
               </div>
             </div>
 
             <div>
               <Label className="text-white text-md mb-3">Word Count: {wordCount} words</Label>
               <Slider
-                min={50}
-                max={1000}
+                min={20}
+                max={200}
                 step={1}
                 defaultValue={[wordCount]}
                 onValueChange={(val) => setWordCount(val[0])}
               />
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
               <label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
@@ -230,16 +230,24 @@ export default function XPost() {
                 <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
               </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Switch checked={useMentions} onCheckedChange={setUseMentions} />
+                <span className="text-sm text-white">Add Mentions</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Switch checked={useEvent} onCheckedChange={setUseEvent} />
+                <span className="text-sm text-white">Special Event</span>
+              </label>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Choose style" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postStyles.map((style) => (
                       <SelectItem key={style} value={style}>
                         {style}
@@ -250,12 +258,28 @@ export default function XPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Generation</Label>
-                <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
+                <Label className="text-white text-md mb-2">Tweet Type</Label>
+                <Select value={postTweetsType} onValueChange={setPostTweetsType}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTweetTypeOptions.map((postTweetType) => (
+                      <SelectItem key={postTweetType} value={postTweetType}>
+                        {postTweetType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Generation</Label>
+                <Select value={postGenerations} onValueChange={setPostGenerations}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose number" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postGenerationOptions.map((postGeneration) => (
                       <SelectItem key={postGeneration} value={postGeneration}>
                         {postGeneration}
@@ -266,40 +290,35 @@ export default function XPost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Variation count</Label>
-                <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
+                <Label className="text-white text-md mb-2">Goal of the Post</Label>
+                <Select value={postGoals} onValueChange={setPostGoals}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
-                    {variationOptions.map((variation) => (
-                      <SelectItem key={variation} value={variation}>
-                        {variation}
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postGoalsOptions.map((postGoal) => (
+                      <SelectItem key={postGoal} value={postGoal}>
+                        {postGoal}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full sm:w-auto">
-                <label className="block text-sm font-semibold text-white mb-2">
-                  Call to Action
-                </label>
-                <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
-                    <SelectValue placeholder="Select CTA" />
+                <Label className="text-white text-md mb-2">Variation count</Label>
+                <Select value={variations} onValueChange={setVariations}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                    <SelectValue placeholder="Choose number" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Let's connect!">Let's connect!</SelectItem>
-                    <SelectItem value="Share your thoughts below.">Share your thoughts below.</SelectItem>
-                    <SelectItem value="Visit my website.">Visit my website.</SelectItem>
-                    <SelectItem value="Contact me to collaborate.">Contact me to collaborate.</SelectItem>
-                    <SelectItem value="DM me to collaborate!">DM me to collaborate!</SelectItem>
-                    <SelectItem value="Check out the link in my bio.">Check out the link in my bio.</SelectItem>
-                    <SelectItem value="Stay tuned for updates.">Stay tuned for updates.</SelectItem>
-                    <SelectItem value="Tag someone who should see this.">Tag someone who should see this.</SelectItem>
+                    {variationOptions.map((variation) => (
+                      <SelectItem key={variation} value={variation}>
+                        {variation}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -309,20 +328,15 @@ export default function XPost() {
                   Language
                 </label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="hi">Hindi</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="zh">Chinese</SelectItem>
-                    <SelectItem value="ja">Japanese</SelectItem>
-                    <SelectItem value="ar">Arabic</SelectItem>
-                    <SelectItem value="pt">Portuguese</SelectItem>
-                    <SelectItem value="ru">Russian</SelectItem>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -332,22 +346,38 @@ export default function XPost() {
                   Target Audience
                 </label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Developers">Developers</SelectItem>
-                    <SelectItem value="Designers">Designers</SelectItem>
-                    <SelectItem value="Marketers">Marketers</SelectItem>
-                    <SelectItem value="Tech Enthusiasts">Tech Enthusiasts</SelectItem>
-                    <SelectItem value="Product Managers">Product Managers</SelectItem>
-                    <SelectItem value="Entrepreneurs">Entrepreneurs</SelectItem>
-                    <SelectItem value="Students">Students</SelectItem>
-                    <SelectItem value="Hiring Managers">Hiring Managers</SelectItem>
+                      {audienceOptions.map((audienceOption) => (
+                        <SelectItem key={audienceOption} value={audienceOption}>
+                          {audienceOption}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              {useEvent && (
+                <div className="w-full sm:w-auto">
+                  <label className="block text-sm font-semibold text-white mb-2">
+                    Event details
+                  </label>
+                  <Select value={eventDetails} onValueChange={setEventDetails}>
+                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-600 transition w-full">
+                      <SelectValue placeholder="Select Event Details"/>
+                    </SelectTrigger>
+                    <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                      {eventDetailOptions.map((eventDetail) => (
+                        <SelectItem key={eventDetail} value={eventDetail}>
+                          {eventDetail}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             
             <Button
