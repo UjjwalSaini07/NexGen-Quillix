@@ -1,44 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { generatePost } from "../../utils/linkedingeneratePost";
-import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-} from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Slider } from "../ui/slider";
 import { Switch } from "../ui/switch";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "../ui/select";
-
+import { Card, CardHeader, CardContent, CardTitle, } from "../ui/card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue, } from "../ui/select";
+import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
+import { generatePost } from "../../utils/linkedingeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postStyles = [
-  "Professional",
-  "Casual",
-  "Informative",
-  "Motivational",
-  "Witty",
-  "Inspirational",
-  "Direct",
-  "Narrative",
-  "Concise",
-  "Technical",
-];
+const postStyles = [ "Professional", "Casual", "Informative", "Motivational", "Witty", "Inspirational", "Direct", "Narrative", "Concise", "Technical", ];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const variationOptions = ["1", "2", "3", "4", "5", "6"];
+const ctaOptions = [ "None", "Let's connect!", "Share your thoughts below", "Comment Below", "Visit my website", "Contact me to collaborate", "Check out the link in my bio", "Stay tuned for updates", "Tag someone who should see this" ];
+const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
+const audienceOptions = [ "None", "Developers", "Designers", "Marketers", "Tech Enthusiasts", "Product Managers", "Entrepreneurs", "Students", "Hiring Managers"];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
   const savedCta = localStorage.getItem("cta") || "Basic";
@@ -50,7 +30,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
       <CardHeader className="flex justify-between items-start px-6 pt-6 pb-4">
         <div>
           <CardTitle className="text-xl font-semibold tracking-tight">
-            ✨ Variation {index + 1}
+            ✨ Variation Post {index + 1}
           </CardTitle>
         </div>
         <div className="flex gap-2">
@@ -120,9 +100,10 @@ export default function LinkedinPost() {
   const [variations, setVariations] = useState("1");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
-  const [cta, setCta] = useState("none");
-  const [audience, setAudience] = useState("");
+  const [cta, setCta] = useState("None");
+  const [audience, setAudience] = useState("Developers");
   const [language, setLanguage] = useState("en");
+
   useEffect(() => {
     localStorage.setItem("cta", cta);
   }, [cta]);
@@ -199,7 +180,7 @@ export default function LinkedinPost() {
             LinkedIn Post Generator
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto">
-            Create engaging, on-brand LinkedIn content in seconds.
+            Generate scroll-worthy LinkedIn posts in just seconds.
           </p>
         </div>
 
@@ -224,14 +205,14 @@ export default function LinkedinPost() {
               <Label className="text-white text-md mb-3">Word Count: {wordCount} words</Label>
               <Slider
                 min={50}
-                max={1000}
+                max={800}
                 step={1}
                 defaultValue={[wordCount]}
                 onValueChange={(val) => setWordCount(val[0])}
               />
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
               <label className="flex items-center gap-2">
                 <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
@@ -246,10 +227,10 @@ export default function LinkedinPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose style" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose post style" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postStyles.map((style) => (
                       <SelectItem key={style} value={style}>
                         {style}
@@ -262,10 +243,10 @@ export default function LinkedinPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
                 <Select value={postGenerations} onValueChange={setPostGenerations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Generation" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {postGenerationOptions.map((postGeneration) => (
                       <SelectItem key={postGeneration} value={postGeneration}>
                         {postGeneration}
@@ -278,10 +259,10 @@ export default function LinkedinPost() {
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
-                  <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white w-full">
-                    <SelectValue placeholder="Choose number" />
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Variation" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
                     {variationOptions.map((variation) => (
                       <SelectItem key={variation} value={variation}>
                         {variation}
@@ -297,19 +278,15 @@ export default function LinkedinPost() {
                   Call to Action
                 </label>
                 <Select value={cta} onValueChange={setCta}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select CTA" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Let's connect!">Let's connect!</SelectItem>
-                    <SelectItem value="Share your thoughts below.">Share your thoughts below.</SelectItem>
-                    <SelectItem value="Visit my website.">Visit my website.</SelectItem>
-                    <SelectItem value="Contact me to collaborate.">Contact me to collaborate.</SelectItem>
-                    <SelectItem value="DM me to collaborate!">DM me to collaborate!</SelectItem>
-                    <SelectItem value="Check out the link in my bio.">Check out the link in my bio.</SelectItem>
-                    <SelectItem value="Stay tuned for updates.">Stay tuned for updates.</SelectItem>
-                    <SelectItem value="Tag someone who should see this.">Tag someone who should see this.</SelectItem>
+                    {ctaOptions.map((ctaOption) => (
+                      <SelectItem key={ctaOption} value={ctaOption}>
+                        {ctaOption}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -319,20 +296,15 @@ export default function LinkedinPost() {
                   Language
                 </label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Language" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="hi">Hindi</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="zh">Chinese</SelectItem>
-                    <SelectItem value="ja">Japanese</SelectItem>
-                    <SelectItem value="ar">Arabic</SelectItem>
-                    <SelectItem value="pt">Portuguese</SelectItem>
-                    <SelectItem value="ru">Russian</SelectItem>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -342,19 +314,15 @@ export default function LinkedinPost() {
                   Target Audience
                 </label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-cyan-500 transition w-full">
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Select Audience" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="Developers">Developers</SelectItem>
-                    <SelectItem value="Designers">Designers</SelectItem>
-                    <SelectItem value="Marketers">Marketers</SelectItem>
-                    <SelectItem value="Tech Enthusiasts">Tech Enthusiasts</SelectItem>
-                    <SelectItem value="Product Managers">Product Managers</SelectItem>
-                    <SelectItem value="Entrepreneurs">Entrepreneurs</SelectItem>
-                    <SelectItem value="Students">Students</SelectItem>
-                    <SelectItem value="Hiring Managers">Hiring Managers</SelectItem>
+                    {audienceOptions.map((audienceOption) => (
+                      <SelectItem key={audienceOption} value={audienceOption}>
+                        {audienceOption}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
