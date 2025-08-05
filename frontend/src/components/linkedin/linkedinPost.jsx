@@ -1,47 +1,120 @@
 "use client";
 
-import { useState } from "react";
-import { generatePost } from "../../utils/linkedingeneratePost";
-import { Loader2, Copy } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-} from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { Slider } from "../ui/slider";
-import { Checkbox } from "../ui/checkbox";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
-
+import { Switch } from "../ui/switch";
+import { Card, CardHeader, CardContent, CardTitle, } from "../ui/card";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue, } from "../ui/select";
+import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } from "lucide-react";
+import { generatePost } from "../../utils/linkedingeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postStyles = [
-  "Professional",
-  "Casual",
-  "Informative",
-  "Motivational",
-  "Witty",
-  "Inspirational",
-  "Direct",
-  "Narrative",
-  "Concise",
-  "Technical",
-];
+const postStyles = [ "Professional", "Casual", "Informative", "Motivational", "Witty", "Inspirational", "Direct", "Narrative", "Concise", "Technical", ];
+const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
+const variationOptions = ["1", "2", "3", "4", "5", "6"];
+const ctaOptions = [ "None", "Let's connect!", "Share your thoughts below", "Comment Below", "Visit my website", "Contact me to collaborate", "Check out the link in my bio", "Stay tuned for updates", "Tag someone who should see this" ];
+const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
+const audienceOptions = [ "None", "Developers", "Designers", "Marketers", "Tech Enthusiasts", "Product Managers", "Entrepreneurs", "Students", "Hiring Managers"];
 
-export default function Home() {
+const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
+  const savedCta = localStorage.getItem("cta") || "Basic";
+  const savedAudience = localStorage.getItem("audience") || "General";
+  const savedLanguage = localStorage.getItem("language") || "en";
+
+  return (
+    <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
+      <CardHeader className="flex justify-between items-start px-6 pt-6 pb-4">
+        <div>
+          <CardTitle className="text-xl font-semibold tracking-tight">
+            ✨ Variation Post {index + 1}
+          </CardTitle>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" className="text-white/70 hover:text-black" onClick={() => onCopy(result.post)} title="Copy">
+            <Copy className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-white/70 hover:text-black" onClick={() => onSave(result)} title="Save">
+            <Save className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-white/70 hover:text-black" onClick={() => onRegenerate(index)} title="Regenerate">
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="px-6 pb-4">
+        <p className="whitespace-pre-line text-white/90 leading-relaxed text-[1rem] tracking-wide">
+          {result.post}
+        </p>
+
+        <div className="mt-6 flex flex-row gap-6 text-sm text-white/80 border-t border-white/10 pt-4">
+          <div className="flex items-center gap-2">
+            <Type className="w-4 h-4 opacity-70" />
+            Words: <span className="font-semibold text-white">{result.analysis.word_count}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 opacity-70" />
+            Characters: <span className="font-semibold text-white">{result.analysis.char_count}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MessageSquareText className="w-4 h-4 opacity-70" />
+            Sentences: <span className="font-semibold text-white">{result.analysis.sentence_count}</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
+          <div className="flex gap-2 items-center flex-wrap">
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Category: {result.category || "General"}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              CTA: {savedCta}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Target Audience: {savedAudience}
+            </span>
+            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+              Language: {savedLanguage.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default function LinkedinPost() {
   const [prompt, setPrompt] = useState("");
-  const [idea, setIdea] = useState("");
   const [wordCount, setWordCount] = useState(200);
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(true);
   const [postStyle, setPostStyle] = useState("Professional");
+  const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
+  const [variations, setVariations] = useState("1");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
+  const [cta, setCta] = useState("None");
+  const [audience, setAudience] = useState("Developers");
+  const [language, setLanguage] = useState("en");
+
+  useEffect(() => {
+    localStorage.setItem("cta", cta);
+  }, [cta]);
+
+  useEffect(() => {
+    localStorage.setItem("audience", audience);
+  }, [audience]);
+
+  useEffect(() => {
+    localStorage.setItem("language", language);
+  }, [language]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -54,17 +127,24 @@ export default function Home() {
 
     const data = {
       prompt,
-      idea,
+      words: wordCount,
       tone: postStyle.toLowerCase(),
       template: "informative",
-      words: wordCount,
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
-      variations: 2,
+      variations: parseInt(variations),
+      call_to_action: cta === "none" ? null : cta,
+      audience: audience === "none" ? null : audience,
     };
 
     try {
       const res = await generatePost(data);
+
+      if (!res?.results || !Array.isArray(res.results)) {
+        toast.error("Invalid response from server.");
+        return;
+      }
+
       setResults(res.results);
       toast.success("✨ Posts generated successfully!");
     } catch (err) {
@@ -72,6 +152,15 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const allowedGenerationOption = "Text Gen LLM's";
+  const handlePostGenerationChange = (value) => {
+    if (value !== allowedGenerationOption) {
+      toast.error("Only 'Text Gen LLM's' is currently supported. Please select that option.");
+      return;
+    }
+    setPostGenerations(value);
   };
 
   const copyToClipboard = async (text) => {
@@ -83,27 +172,35 @@ export default function Home() {
     }
   };
 
+  const regeneratePost = async (text) => {
+    try {
+      await handleGenerate();
+      toast.success("✨ Posts regenerated successfully!");
+    } catch {
+      toast.error("Failed to regenerate posts!");
+    }
+  };
+
   return (
     <main className="min-h-screen text-white px-4 py-12">
       <div className="max-w-4xl mx-auto space-y-10">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">
+          <h1 style={{ fontFamily: "'Times New Roman', Times, serif" }} className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight text-white">
             LinkedIn Post Generator
           </h1>
-          <p className="text-neutral-400 text-lg">
-            Create engaging, on-brand LinkedIn content in seconds.
+          <p className="text-base sm:text-lg lg:text-xl text-neutral-400 max-w-2xl mx-auto">
+            Generate scroll-worthy LinkedIn posts in just seconds.
           </p>
         </div>
 
-        <Card className="bg-neutral-900/70 border border-neutral-800 p-6 rounded-2xl shadow-lg backdrop-blur-md">
+        <Card className="bg-black/10 backdrop-blur-md border border-white/40 text-white p-6 rounded-2xl shadow-lg ">
           <div className="space-y-4">
-            {/* Post Prompt */}
             <div>
-              <Label className="text-white text-md">What’s your post prompt?</Label>
+              <Label className="text-white text-md mb-3">What’s your post prompt?</Label>
               <Textarea
                 rows={4}
-                className="bg-neutral-950 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
-                placeholder="e.g. I want to write about AI trends in 2025..."
+                className="bg-neutral-960 border border-neutral-800 text-white placeholder:text-neutral-500 resize-none"
+                placeholder="e.g. Write a post announcing my new role at Google"
                 value={prompt}
                 maxLength={1000}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -113,59 +210,128 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Post Idea */}
             <div>
-              <Label className="text-white text-md">What's your post idea?</Label>
-              <Input
-                className="bg-neutral-950 border border-neutral-800 text-white"
-                placeholder="e.g. How AI will change job roles..."
-                value={idea}
-                onChange={(e) => setIdea(e.target.value)}
-              />
-            </div>
-
-            {/* Word Count Slider */}
-            <div>
-              <Label className="text-white text-md">Word Count: {wordCount} words</Label>
+              <Label className="text-white text-md mb-3">Word Count: {wordCount} words</Label>
               <Slider
                 min={50}
-                max={1000}
-                step={50}
+                max={800}
+                step={1}
                 defaultValue={[wordCount]}
                 onValueChange={(val) => setWordCount(val[0])}
               />
             </div>
 
-            {/* Checkboxes */}
-            <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2">
-                <Checkbox checked={useHashtags} onCheckedChange={setUseHashtags} />
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row items-center sm:gap-6">
+              <Label className="flex items-center gap-2">
+                <Switch checked={useHashtags} onCheckedChange={setUseHashtags} />
                 <span className="text-sm text-white">Use Hashtags</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <Checkbox checked={useEmojis} onCheckedChange={setUseEmojis} />
+              </Label>
+              <Label className="flex items-center gap-2">
+                <Switch checked={useEmojis} onCheckedChange={setUseEmojis} />
                 <span className="text-sm text-white">Use Emojis</span>
-              </label>
+              </Label>
             </div>
 
-            {/* Post Style */}
-            <div>
-              <Label className="text-white text-md mb-1">Post Style</Label>
-              <Select value={postStyle} onValueChange={setPostStyle}>
-                <SelectTrigger className="bg-neutral-950 border border-neutral-800 text-white">
-                  <SelectValue placeholder="Choose style" />
-                </SelectTrigger>
-                <SelectContent className="bg-neutral-950 border border-neutral-800 text-white">
-                  {postStyles.map((style) => (
-                    <SelectItem key={style} value={style}>
-                      {style}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Style</Label>
+                <Select value={postStyle} onValueChange={setPostStyle}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose post style" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postStyles.map((style) => (
+                      <SelectItem key={style} value={style}>
+                        {style}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Generation</Label>
+                <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Generation" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postGenerationOptions.map((postGeneration) => (
+                      <SelectItem key={postGeneration} value={postGeneration}>
+                        {postGeneration}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Variation count</Label>
+                <Select value={variations} onValueChange={setVariations}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose number of Variation" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {variationOptions.map((variation) => (
+                      <SelectItem key={variation} value={variation}>
+                        {variation}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Generate Button */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="w-full sm:w-auto">
+                <Label className="block text-sm font-semibold text-white mb-2">Call to Action</Label>
+                <Select value={cta} onValueChange={setCta}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select CTA" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {ctaOptions.map((ctaOption) => (
+                      <SelectItem key={ctaOption} value={ctaOption}>
+                        {ctaOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="block text-sm font-semibold text-white mb-2">Language</Label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select Language" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="block text-sm font-semibold text-white mb-2">Target Audience</Label>
+                <Select value={audience} onValueChange={setAudience}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select Audience" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {audienceOptions.map((audienceOption) => (
+                      <SelectItem key={audienceOption} value={audienceOption}>
+                        {audienceOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <Button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
@@ -183,41 +349,29 @@ export default function Home() {
           </div>
         </Card>
 
-        {/* Result Section */}
-        {results.length > 0 && (
+        {!loading && results.length === 0 && prompt.trim() ? (
+          <div className="text-center text-neutral-500 py-2">
+            <p className="text-lg font-medium">No results found</p>
+            <p className="text-sm text-neutral-400 mt-2">
+              Start by generating a post to see results appear here ✨
+            </p>
+          </div>
+        ) : (
           <div className="space-y-6">
-            {results.map((result, i) => (
-              <Card
-                key={i}
-                className="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 text-white rounded-xl shadow-lg"
-              >
-                <CardHeader className="flex justify-between items-center px-5 pt-5 pb-3">
-                  <CardTitle className="text-lg font-semibold">
-                    ✨ Variation {i + 1}
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-neutral-400 hover:text-white"
-                    onClick={() => copyToClipboard(result.post)}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="px-5 pb-5">
-                  <p className="whitespace-pre-line text-neutral-200 leading-relaxed text-base">
-                    {result.post}
-                  </p>
-                  <div className="mt-4 text-sm text-neutral-500 border-t border-neutral-800 pt-3">
-                    Words: <span className="font-medium">{result.analysis.word_count}</span> &nbsp;|&nbsp;
-                    Characters: <span className="font-medium">{result.analysis.char_count}</span> &nbsp;|&nbsp;
-                    Sentences: <span className="font-medium">{result.analysis.sentence_count}</span>
-                  </div>
-                </CardContent>
-              </Card>
+            {results.map((result, index) => (
+              <ResultCard
+                key={index}
+                result={result}
+                index={index}
+                onCopy={copyToClipboard}
+                onRegenerate={regeneratePost}
+              />
             ))}
           </div>
         )}
+        <div className="text-center text-sm text-neutral-500 -mt-4">
+          Developed by <a href="https://ujjwalsaini.dev" className="text-cyan-500 hover:underline">UjjwalS</a>
+        </div>
       </div>
     </main>
   );
