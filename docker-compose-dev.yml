@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    labels:
+      author: "Ujjwal Saini"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+    labels:
+      author: "Ujjwal Saini"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    labels:
+      author: "Ujjwal Saini"
+
+  workflows:
+    build:
+      context: ./workflows
+      dockerfile: Dockerfile
+    container_name: workflows
+    volumes:
+      - ./workflows:/app
+    command: ["pnpm", "dev"]
+    depends_on:
+      - backend
+    labels:
+      author: "Ujjwal Saini"
