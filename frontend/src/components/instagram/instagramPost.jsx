@@ -194,6 +194,15 @@ export default function InstagramPost() {
     }
   };
 
+  const regeneratePost = async (text) => {
+    try {
+      await handleGenerate();
+      toast.success("✨ Posts regenerated successfully!");
+    } catch {
+      toast.error("Failed to regenerate posts!");
+    }
+  };
+
   return (
     <main className="min-h-screen text-white px-4 py-12">
       <div className="max-w-4xl mx-auto space-y-10">
@@ -461,6 +470,7 @@ export default function InstagramPost() {
                 result={result}
                 index={index}
                 onCopy={copyToClipboard}
+                onRegenerate={regeneratePost}
               />
             ))}
           </div>
