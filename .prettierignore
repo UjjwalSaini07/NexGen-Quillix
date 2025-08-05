@@ -1,0 +1,15 @@
+node_modules
+build
+dist
+.next
+out
+.env
+.env.*
+*.log
+coverage
+.git
+.gitignore
+.vscode
+.idea
+public
+static
