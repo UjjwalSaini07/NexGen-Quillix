@@ -37,7 +37,7 @@ class LinkedInGenerateRequest(BaseModel):
     prompt: str
     words: int = 200
     tone: str = "professional"
-    template: str = "informative"
+    template: str = "formal"
     add_hashtags: bool = False
     add_emojis: bool = False
     variations: int = 1
