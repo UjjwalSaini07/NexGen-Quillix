@@ -135,6 +135,7 @@ export default function LinkedinPost() {
       variations: parseInt(variations),
       call_to_action: cta === "none" ? null : cta,
       audience: audience === "none" ? null : audience,
+      language: language === "none" ? null : language,
     };
 
     try {

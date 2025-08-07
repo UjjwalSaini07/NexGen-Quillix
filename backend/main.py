@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from linkedin.linkedin_generator import LinkedInPostGenerator
+from typing import Optional
 import redis
 import hashlib
 import json
@@ -32,7 +33,7 @@ app.add_middleware(
 redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
 # Request body schema
-class GenerateRequest(BaseModel):
+class LinkedInGenerateRequest(BaseModel):
     prompt: str
     words: int = 200
     tone: str = "professional"
@@ -40,10 +41,13 @@ class GenerateRequest(BaseModel):
     add_hashtags: bool = False
     add_emojis: bool = False
     variations: int = 1
+    language: str = "en"
+    call_to_action: Optional[str] = None
+    audience: Optional[str] = None
 
 # LinkedIn post generation endpoint
 @app.post("/generate/linkedin")
-async def generate_linkedin_post(request: GenerateRequest):
+async def generate_linkedin_post(request: LinkedInGenerateRequest):
     try:
         cache_key = hashlib.sha256(json.dumps(request.dict(), sort_keys=True).encode()).hexdigest()
 
