@@ -14,6 +14,7 @@ import { generatePost } from "../../utils/xgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
 const postStyles = [ "Professional", "Witty", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational", "Minimal" ];
+const postToneOptions = ["Formal", "Informal", "Friendly", "Neutral", "Assertive", "Empathetic", "Humorous", "Optimistic", "Pessimistic", "Inspirational", "Persuasive", "Candid"];
 const postTweetTypeOptions = ["Single Tweet", "Poll", "Thread", "Quote Tweet", "Reply", "Retweet"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const postGoalsOptions = ["Drive traffic", "Increase engagement", "Get Retweets", "Start Conversations", "Share News", "Go Viral", "Build community", "Educate audience", "Showcase creativity"];
@@ -104,6 +105,7 @@ export default function XPost() {
   const [useMentions, setUseMentions] = useState(false);
   const [useEvent, setUseEvent] = useState(false);
   const [postStyle, setPostStyle] = useState("Professional");
+  const [postTone, setPostTone] = useState("Optimistic");
   const [postTweetsType, setPostTweetsType] = useState("Single Tweet");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [postGoals, setPostGoals] = useState("Go Viral");
@@ -142,7 +144,8 @@ export default function XPost() {
     const data = {
       prompt,
       words: wordCount,
-      tone: postStyle.toLowerCase(),
+      template: postStyle.toLowerCase(),
+      tone: postTone.toLowerCase(),
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
       add_mentions: useMentions,
@@ -260,7 +263,7 @@ export default function XPost() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Style</Label>
+                <Label className="text-white text-md mb-2">Post Template</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
                     <SelectValue placeholder="Choose style" />
@@ -292,6 +295,22 @@ export default function XPost() {
               </div>
 
               <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Tone of Post</Label>
+                <Select value={postTone} onValueChange={setPostTone}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose tone" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postToneOptions.map((postTone) => (
+                      <SelectItem key={postTone} value={postTone}>
+                        {postTone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Generation</Label>
                 <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
@@ -301,22 +320,6 @@ export default function XPost() {
                     {postGenerationOptions.map((postGeneration) => (
                       <SelectItem key={postGeneration} value={postGeneration}>
                         {postGeneration}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Goal of the Post</Label>
-                <Select value={postGoals} onValueChange={setPostGoals}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
-                    <SelectValue placeholder="Choose number" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    {postGoalsOptions.map((postGoal) => (
-                      <SelectItem key={postGoal} value={postGoal}>
-                        {postGoal}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -369,6 +372,22 @@ export default function XPost() {
                           {audienceOption}
                         </SelectItem>
                       ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Goal of the Post</Label>
+                <Select value={postGoals} onValueChange={setPostGoals}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose number" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postGoalsOptions.map((postGoal) => (
+                      <SelectItem key={postGoal} value={postGoal}>
+                        {postGoal}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
