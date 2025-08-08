@@ -73,25 +73,25 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Category: {result.category || "General"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Call to Action: {savedCta}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Target Audience: {savedAudience}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Language: {savedLanguage.toUpperCase()}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Post Type: {savedPostType.toUpperCase()}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Goal of the Post: {savedPostGoal.toUpperCase()}
             </span>
           </div>
