@@ -16,6 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 const postStyles = [ "Professional", "Casual", "Informative", "Motivational", "Witty", "Inspirational", "Direct", "Narrative", "Concise", "Technical", ];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const variationOptions = ["1", "2", "3", "4", "5", "6"];
+const postTonesOptions = [ "Formal", "Conversational", "Clear", "Clever", "Warm", "Expert", "Storytelling", "Assertive", "Energetic", "Confident", "Encouraging", "Hopeful", "Direct", "Friendly", "Motivational" ];
 const ctaOptions = [ "None", "Let's connect!", "Share your thoughts below", "Comment Below", "Visit my website", "Contact me to collaborate", "Check out the link in my bio", "Stay tuned for updates", "Tag someone who should see this" ];
 const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
 const audienceOptions = [ "None", "Developers", "Designers", "Marketers", "Tech Enthusiasts", "Product Managers", "Entrepreneurs", "Students", "Hiring Managers"];
@@ -68,19 +69,19 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Category: {result.category || "General"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               CTA: {savedCta}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Target Audience: {savedAudience}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Language: {savedLanguage.toUpperCase()}
             </span>
           </div>
@@ -96,6 +97,7 @@ export default function LinkedinPost() {
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(true);
   const [postStyle, setPostStyle] = useState("Professional");
+  const [postTone, setPostTone] = useState("Formal");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [variations, setVariations] = useState("1");
   const [loading, setLoading] = useState(false);
@@ -128,13 +130,14 @@ export default function LinkedinPost() {
     const data = {
       prompt,
       words: wordCount,
-      tone: postStyle.toLowerCase(),
-      template: "informative",
+      template: postStyle.toLowerCase(),
+      tone: postTone.toLowerCase(),
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
       variations: parseInt(variations),
       call_to_action: cta === "none" ? null : cta,
       audience: audience === "none" ? null : audience,
+      language: language === "none" ? null : language,
     };
 
     try {
@@ -283,6 +286,22 @@ export default function LinkedinPost() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="w-full sm:w-auto">
+                <Label className="block text-sm font-semibold text-white mb-2">Tone of the Post</Label>
+                <Select value={postTone} onValueChange={setPostTone}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Select Tone" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTonesOptions.map((postToneOption) => (
+                      <SelectItem key={postToneOption} value={postToneOption}>
+                        {postToneOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="w-full sm:w-auto">
                 <Label className="block text-sm font-semibold text-white mb-2">Call to Action</Label>
                 <Select value={cta} onValueChange={setCta}>

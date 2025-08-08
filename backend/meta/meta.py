@@ -8,6 +8,7 @@ metadata = {
         "marketers, entrepreneurs, and creators to boost engagement and streamline content workflows."
     ),
     "author": "UjjwalS",
+    "authorUrl": "https://www.ujjwalsaini.dev/",
     "keywords": (
         "NexGen-Quillix, AI content creation, social media posts, LinkedIn, Instagram, X, Twitter, "
         "trend analysis, content automation, Next.js, React.js, TypeScript, Python, TailwindCSS, Redis, "

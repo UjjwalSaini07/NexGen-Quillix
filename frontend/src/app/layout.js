@@ -19,6 +19,7 @@ export const metadata = {
     "NexGen-Quillix is an AI-powered content creation platform that crafts tailored, high-impact posts for LinkedIn, Instagram, X (Twitter), and more in seconds. Leveraging real-time trend analysis and customizable tone adaptation, it empowers marketers, entrepreneurs, and creators to boost engagement and streamline content workflows.",
   applicationName: "NexGen-Quillix",
   authors: [{ name: "UjjwalS" }],
+  authorUrl: "https://www.ujjwalsaini.dev/",
   keywords: [
     "NexGen-Quillix", "AI content creation", "social media posts", "LinkedIn", "Instagram", "X", "Twitter", "trend analysis", "content automation", "Next.js", "React.js", "TypeScript", "Python", "TailwindCSS", "Redis", "Docker", "GitHub Actions",
   ],
@@ -37,6 +38,7 @@ export const metadata = {
       "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
     url: "http://localhost:3000/",
     authors: [{ name: "UjjwalS" }],
+    authorUrl: "https://www.ujjwalsaini.dev/",
     siteName: "NexGen-Quillix",
     images: [
       {
