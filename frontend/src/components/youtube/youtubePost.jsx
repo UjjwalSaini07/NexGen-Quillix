@@ -15,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const postStyles = [ "Professional", "Friendly", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational" ];
 const postTypeOptions = [ "Community Text Post", "Video Title", "Video Description", "Video Caption", "Poll", "Shorts Caption", "Question Post", "Image Post Caption", "Behind-the-Scenes Post", "Announcement" ];
+const postTemplateOptions = [ "Technology", "Professional", "Lifestyle", "Educational", "Entertainment", "Inspirational", "Behind the Scenes", "Tutorial", "Review", "News Updates" ];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const variationOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const ctaOptions = [ "None", "Watch Now", "Like & Subscribe", "Comment Below", "Share This Video", "Turn On Notifications", "Watch Next Video", "Join Channel Membership", "Check Description", "Support the Channel"];
@@ -70,23 +71,24 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            {/* Todo: For Reference */}
+            {/* <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white/90 px-3 py-1 rounded-full shadow-sm">
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+            </span> */}
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              Category: {result.category || "General"}
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Type: {result.category || "General"}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Call to Action: {savedcta}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Target Audience: {savedAudience}
             </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Language: {savedLanguage.toUpperCase()}
-            </span>
-            <span className="bg-white/10 text-white/80 px-2 py-1 rounded-full">
-              Post Type: {savedPostType.toUpperCase()}
             </span>
           </div>
         </div>
@@ -101,6 +103,7 @@ export default function YoutubePost() {
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(false);
   const [postStyle, setPostStyle] = useState("Friendly");
+  const [postTemplates, setPostTemplates] = useState("Entertainment");
   const [postType, setPostType] = useState("Video Description");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [variations, setVariations] = useState("3");
@@ -138,6 +141,7 @@ export default function YoutubePost() {
     const data = {
       prompt,
       words: wordCount,
+      template: postTemplates.toLowerCase(),
       tone: postStyle.toLowerCase(),
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
@@ -163,15 +167,6 @@ export default function YoutubePost() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const allowedGenerationOption = "Text Gen LLM's";
-  const handlePostGenerationChange = (value) => {
-    if (value !== allowedGenerationOption) {
-      toast.error("Only 'Text Gen LLM's' is currently supported. Please select that option.");
-      return;
-    }
-    setPostGenerations(value);
   };
 
   const copyToClipboard = async (text) => {
@@ -277,15 +272,15 @@ export default function YoutubePost() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Generation</Label>
-                <Select value={postGenerations} onValueChange={handlePostGenerationChange}>
+                <Label className="text-white text-md mb-2">Post Template</Label>
+                <Select value={postTemplates} onValueChange={setPostTemplates}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
-                    <SelectValue placeholder="Choose Post Generation" />
+                    <SelectValue placeholder="Choose Post Template" />
                   </SelectTrigger>
                   <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    {postGenerationOptions.map((postGeneration) => (
-                      <SelectItem key={postGeneration} value={postGeneration}>
-                        {postGeneration}
+                    {postTemplateOptions.map((postTemplate) => (
+                      <SelectItem key={postTemplate} value={postTemplate}>
+                        {postTemplate}
                       </SelectItem>
                     ))}
                   </SelectContent>
