@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from linkedin.linkedin_generator import LinkedInPostGenerator
+from youtube.youtube_generator import YouTubePostGenerator
 import redis
 import hashlib
 import orjson
@@ -41,6 +42,19 @@ class LinkedInGenerateRequest(BaseModel):
     call_to_action: Optional[str] = None
     audience: Optional[str] = None
 
+class YouTubeGenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=5)
+    words: int = Field(80, gt=10, le=500)
+    template: str = Field("default")
+    tone: str = Field("friendly")
+    postTypeOptions: str = Field("Video Description")
+    add_hashtags: bool = True
+    add_emojis: bool = False
+    variations: int = Field(3, ge=1, le=10)
+    language: str = Field("en", description="Language code like 'en', 'fr', etc.")
+    call_to_action: Optional[str] = None
+    audience: Optional[str] = None
+
 # Utility: Cache key generator
 def generate_cache_key(data: dict) -> str:
     json_data = orjson.dumps(data, option=orjson.OPT_SORT_KEYS)
@@ -56,18 +70,17 @@ def get_cached_response(key: str):
         return None
 
 # POST endpoint
+# ======= LINKEDIN ENDPOINT =======
 @app.post("/generate/linkedin")
 async def generate_linkedin_post(request: LinkedInGenerateRequest):
     try:
         req_data = request.dict()
+        
         cache_key = generate_cache_key(req_data)
-
-        # Check cache
         cached_response = get_cached_response(cache_key)
         if cached_response:
             return cached_response
 
-        # Generate
         generator = LinkedInPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
         results = generator.generate_post(**req_data)
 
@@ -78,6 +91,28 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
     except Exception as e:
         logger.exception("Error generating post")
         raise HTTPException(status_code=500, detail="Error generating post")
+
+# ======= YOUTUBE ENDPOINT =======
+@app.post("/generate/youtube")
+async def generate_youtube_post(request: YouTubeGenerateRequest):
+    try:
+        req_data = request.dict()
+
+        cache_key = generate_cache_key(req_data)
+        cached_response = get_cached_response(cache_key)
+        if cached_response:
+            return cached_response
+
+        generator = YouTubePostGenerator(api_key=os.getenv("GROQ_API_KEY"))
+        results = generator.generate_post(**req_data)
+
+        response = {"success": True, "results": results}
+        redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+        return response
+
+    except Exception as e:
+        logger.exception("Error generating YouTube post")
+        raise HTTPException(status_code=500, detail="Error generating YouTube post")
 
 # GET: health check
 @app.get("/health", response_class=JSONResponse)
