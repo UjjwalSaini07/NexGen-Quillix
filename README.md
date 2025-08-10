@@ -185,11 +185,10 @@ This creates a new folder named venv/ in your project backend directory.
     docker-compose up --build
 ```
 4. Wait for Generating the Image
-
+<!--
 #### How Docker Image Builds Looks
-
 #### Project Docker Container
-
+-->
 5. Now Simply use the Project using Docker Container
 6. **If u Want Direct Image Without Cloning So Contact with Me.**
 
@@ -230,6 +229,15 @@ wsl --install
 ```bash
     sudo service redis-server start
 ```
+
+### Image Reference: WSL Setup
+<img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/3ca34b25-00a8-4b4e-9c9f-433c9f3795c6" />
+    
+<!--
+<details>	
+ <summary><b>Image Reference - CLICK TO OPEN</b></summary><br>
+</details>
+-->
 
 ### Linux
 - Add the repository to the APT index, update it, and install Redis
