@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from linkedin.linkedin_generator import LinkedInPostGenerator
+from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
 import redis
 import hashlib
@@ -41,6 +42,22 @@ class LinkedInGenerateRequest(BaseModel):
     language: str = Field("en", description="Language code like 'en', 'fr', etc.")
     call_to_action: Optional[str] = None
     audience: Optional[str] = None
+
+class FacebookGenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=5)
+    words: int = Field(80, gt=10, le=500)
+    tone: str = Field("trendy")
+    template: str = Field("storytelling")
+    add_hashtags: bool = Field(False)
+    add_emojis: bool = Field(False)
+    add_music: bool = Field(False)
+    variations: int = Field(1, ge=1, le=10)
+    language: str = Field("en", description="Language code like 'en', 'fr', etc.")
+    call_to_action: Optional[str] = None
+    audience: Optional[str] = None
+    post_type: Optional[str] = Field(None, description="Type of the post")
+    music_preference: Optional[str] = Field(None, description="Music preference for the post")
+    music_language: Optional[str] = Field(None, description="Music language for the post")
 
 class YouTubeGenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=5)
@@ -91,6 +108,28 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
     except Exception as e:
         logger.exception("Error generating post")
         raise HTTPException(status_code=500, detail="Error generating post")
+
+# ======= FACEBOOK ENDPOINT =======
+@app.post("/generate/facebook")
+async def generate_facebook_post(request: FacebookGenerateRequest):
+    try:
+        req_data = request.dict()
+
+        cache_key = generate_cache_key(req_data)
+        cached_response = get_cached_response(cache_key)
+        if cached_response:
+            return cached_response
+
+        generator = FacebookPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
+        results = generator.generate_post(**req_data)
+
+        response = {"success": True, "results": results}
+        redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+        return response
+
+    except Exception as e:
+        logger.exception("Error generating Facebook post")
+        raise HTTPException(status_code=500, detail="Error generating Facebook post")
 
 # ======= YOUTUBE ENDPOINT =======
 @app.post("/generate/youtube")
