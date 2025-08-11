@@ -13,6 +13,7 @@ import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } fro
 import { generatePost } from "../../utils/facebookgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
+const postTemplates = [ { label: "Storytelling", value: "storytelling" }, { label: "Professional", value: "professional" }, { label: "Question Prompt", value: "question_prompt" }, { label: "Photo Caption", value: "photo_caption" }, { label: "Quote-Based", value: "quote_based" }, { label: "Announcement", value: "announcement" }, { label: "Poll Style", value: "poll_style" }, { label: "Throwback", value: "throwback" }, { label: "Mini Blog", value: "mini_blog" }, { label: "Concise", value: "concise" }, { label: "Technical", value: "technical" } ];
 const postStyles = [ "Trendy", "Casual", "Playful", "Aesthetic", "Funny", "Witty", "Chill", "Relatable", "Inspiring", "Bold", "Minimal", "Emotional", ];
 const postTypeOptions = ["Text Post", "Image Post", "Video Post", "Link Share", "Event Promotion", "Poll", "Story Caption", "Reel Caption", "Live Stream Announcement", "Giveaway Post"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
@@ -21,7 +22,8 @@ const variationOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const ctaOptions = ["None", "Learn More", "Shop Now", "Send Message", "Visit Page", "RSVP", "Like & Follow", "Watch Video", "Share This Post", "Comment Below"];
 const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
 const audienceOptions = [ "None", "Friends", "Influencers", "Local Community", "Shoppers & Deal Seekers", "Event-Goers", "Small Business Owners", "Families", "Hobbyists & Fans", "Health & Wellness Seekers", "Professionals & Networkers", "Tech Enthusiasts", "Students & Learners" ];
-const musicPreferenceOptions = ["Hindi", "English", "Punjabi", "Spanish", "French", "Marathi", "Italian", "Japanese", "Korean", "Chinese"];
+const musicLanguageOptions = ["Hindi", "English", "Punjabi", "Spanish", "French", "Marathi", "Italian", "Japanese", "Korean", "Chinese"];
+const musicPreferenceOptions = [ "Mood Music", "Throwback Track", "Music for Studying", "Workout Music", "Party Song", "Breakup Songs", "Instrumental Picks", "Ambient Sounds", "Electronic Groove", "Soft Piano", "Romantic Tunes", "Urban Beats", "Mystical Tones" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
   const savedCta = localStorage.getItem("cta") || "Basic";
@@ -107,7 +109,8 @@ export default function FacebookPost() {
   const [useHashtags, setUseHashtags] = useState(true);
   const [useEmojis, setUseEmojis] = useState(false);
   const [useMusic, setUseMusic] = useState(true);
-  const [postStyle, setPostStyle] = useState("Casual");
+  const [postTemplate, setPostTemplate] = useState("storytelling");
+  const [postStyle, setPostStyle] = useState("Trendy");
   const [postType, setPostType] = useState("Text Post");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [postGoals, setPostGoals] = useState("Drive traffic");
@@ -115,7 +118,8 @@ export default function FacebookPost() {
   const [cta, setCta] = useState("None");
   const [language, setLanguage] = useState("en");
   const [audience, setAudience] = useState("None");
-  const [musicPreferences, setMusicPreferences] = useState("Hindi");
+  const [musicLanguage, setMusicLanguage] = useState("Hindi");
+  const [musicPreferences, setMusicPreferences] = useState("Instrumental Picks");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
 
@@ -160,6 +164,7 @@ export default function FacebookPost() {
     const data = {
       prompt,
       words: wordCount,
+      template: postTemplate.toLowerCase(),
       tone: postStyle.toLowerCase(),
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
@@ -167,10 +172,10 @@ export default function FacebookPost() {
       variations: parseInt(variations),
       call_to_action: cta === "none" ? null : cta,
       language: language,
-      postType: postType,
-      postgoal: postGoals,
+      post_type: postType,
       audience: audience === "none" ? null : audience,
-      musicPreferences: musicPreferences === "none" ? null : musicPreferences,
+      music_language: musicLanguage === "none" ? null : musicLanguage,
+      music_preference: musicPreferences === "none" ? null : musicPreferences,
     };
 
     try {
@@ -264,6 +269,22 @@ export default function FacebookPost() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Template</Label>
+                <Select value={postTemplate} onValueChange={setPostTemplate}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-fulll">
+                    <SelectValue placeholder="Choose Post Template" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTemplates.map((template) => (
+                      <SelectItem key={template.value} value={template.value}>
+                        {template.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Style</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
@@ -396,21 +417,38 @@ export default function FacebookPost() {
               </div>
 
               {useMusic && (
-                <div className="w-full sm:w-auto">
-                  <Label className="block text-sm font-semibold text-white mb-2">Music Preferences</Label>
-                  <Select value={musicPreferences} onValueChange={setMusicPreferences}>
-                    <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
-                      <SelectValue placeholder="Select Music Preferences"/>
-                    </SelectTrigger>
-                    <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                      {musicPreferenceOptions.map((musicPreference) => (
-                        <SelectItem key={musicPreference} value={musicPreference}>
-                          {musicPreference}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <>
+                  <div className="w-full sm:w-auto">
+                    <Label className="block text-sm font-semibold text-white mb-2">Music Language</Label>
+                    <Select value={musicLanguage} onValueChange={setMusicLanguage}>
+                      <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                        <SelectValue placeholder="Select Music Language"/>
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                        {musicLanguageOptions.map((musiclang) => (
+                          <SelectItem key={musiclang} value={musiclang}>
+                            {musiclang}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-full sm:w-auto">
+                    <Label className="block text-sm font-semibold text-white mb-2">Music Preferences</Label>
+                    <Select value={musicPreferences} onValueChange={setMusicPreferences}>
+                      <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                        <SelectValue placeholder="Select Music Preferences"/>
+                      </SelectTrigger>
+                      <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                        {musicPreferenceOptions.map((musicPreference) => (
+                          <SelectItem key={musicPreference} value={musicPreference}>
+                            {musicPreference}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
             </div>
             
