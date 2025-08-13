@@ -13,7 +13,6 @@ class FacebookPostGenerator:
             max_tokens=1024
         )
 
-        # Templates — fill in your real Facebook templates here
         self.templates = {
             "storytelling": """
 You are a professional social media strategist writing an engaging Facebook post.
@@ -27,33 +26,30 @@ Style: Casual, conversational, and optimized for Facebook engagement.
 Target Audience: {audience}
 Call to Action (CTA): {cta}
 Post Type: {post_type}
-Preferred Music Style: {music_preference} ({music_language})
-Extra: {extra_instructions}
+
 {hashtags}
+
+{music_section}
+
+Extra Instructions: {extra_instructions}
 {emojis}
 
-Write ONE Facebook post. Make the tone resonate with the music preference provided, weaving in subtle references if appropriate.
+Write ONE Facebook post that aligns with the above details. 
+If Preferred Music Style is provided, it MUST be woven naturally into the mood, tone, or descriptions in the post (even subtly).
+Ensure the content is engaging and tailored for the specified audience and post type.
+
 Do not include meta text, labels, or markdown. Return ONLY the final post text.
 """
         }
 
         self.tones = [
-            "trendy",
-            "casual",
-            "playful",
-            "aesthetic",
-            "funny",
-            "witty",
-            "chill",
-            "relatable",
-            "inspiring",
-            "bold",
-            "emotional",
+            "trendy", "casual", "playful", "aesthetic", "funny",
+            "witty", "chill", "relatable", "inspiring", "bold", "minimal", "emotional"
         ]
 
     def _generate_hashtags(self, prompt: str) -> str:
         hashtag_prompt = (
-            f"Generate 18 relevant hashtags for a Facebook post about '{prompt}'. "
+            f"Generate 15 relevant hashtags for a Facebook post about '{prompt}'. "
             "Return ONLY the hashtags, separated by spaces. Do not include punctuation, explanations, or comments."
         )
         result = self.llm.invoke(hashtag_prompt)
@@ -104,13 +100,10 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
 
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty.")
-
         if not (1 <= variations <= 10):
             raise ValueError("Variations must be between 1 and 10.")
-
         if tone not in self.tones:
             raise ValueError(f"Invalid tone. Available: {', '.join(self.tones)}")
-
         if template not in self.templates:
             raise ValueError(f"Invalid template '{template}'. Available: {', '.join(self.templates.keys())}")
 
@@ -122,8 +115,6 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
 
         cta_str = f"End with this call to action: {call_to_action}" if call_to_action else ""
         audience_str = audience or ""
-        music_pref_str = music_preference or "No specific preference"
-        music_lang_str = self._get_language_name(music_language) if music_language else "Any language"
         language_name = self._get_language_name(language)
 
         results = []
@@ -132,13 +123,11 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
             prompt_template = PromptTemplate(
                 input_variables=[
                     "prompt", "tone", "words", "hashtags", "emojis", "extra_instructions",
-                    "audience", "cta", "language", "post_type",
-                    "music_preference", "music_language"
+                    "audience", "cta", "language", "post_type", "music_section"
                 ],
                 template=self.templates[template]
             )
 
-            # Compose inputs for the template
             inputs = {
                 "prompt": prompt,
                 "tone": tone,
@@ -150,18 +139,31 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
                 "cta": cta_str,
                 "language": language_name,
                 "post_type": post_type,
-                "music_preference": music_pref_str,
-                "music_language": music_lang_str,
+                "music_section": ""
             }
 
-            # Chain prompt template to LLM and invoke
             chain = prompt_template | self.llm
             response = chain.invoke(inputs)
-
             generated_post = response.content.strip()
 
             if add_emojis:
                 generated_post = self._add_emojis(generated_post)
+
+            if add_music:
+                song_prompt = (
+                    f"Recommend exactly THREE specific, well-known songs in {music_language or 'any language'} "
+                    f"that match the vibe '{music_preference or 'any style'}' for use as background music "
+                    f"to the following Facebook post:\n\n{generated_post}\n\n"
+                    "Return ONLY the song name and artist, one per line, nothing else."
+                )
+                song_result = self.llm.invoke(song_prompt)
+
+                recommended_songs = [
+                    song.strip() for song in song_result.content.strip().split("\n") if song.strip()
+                ][:3]
+
+                songs_formatted = "\n".join([f"🎵 Background Music: {song}" for song in recommended_songs])
+                generated_post = f"{generated_post}\n\n{songs_formatted}"
 
             analysis = self._analyze_post(generated_post)
 
@@ -175,8 +177,8 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
                 "audience": audience,
                 "language": language_name,
                 "post_type": post_type,
-                "music_preference": music_pref_str,
-                "music_language": music_lang_str
+                "music_preference": music_preference or "",
+                "music_language": music_language or ""
             })
 
         return results

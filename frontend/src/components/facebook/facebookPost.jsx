@@ -23,7 +23,7 @@ const ctaOptions = ["None", "Learn More", "Shop Now", "Send Message", "Visit Pag
 const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: "hi" }, { label: "Spanish", value: "es" }, { label: "French", value: "fr" }, { label: "German", value: "de" }, { label: "Chinese", value: "zh" }, { label: "Japanese", value: "ja" }, { label: "Arabic", value: "ar" }, { label: "Portuguese", value: "pt" }, { label: "Russian", value: "ru" },];
 const audienceOptions = [ "None", "Friends", "Influencers", "Local Community", "Shoppers & Deal Seekers", "Event-Goers", "Small Business Owners", "Families", "Hobbyists & Fans", "Health & Wellness Seekers", "Professionals & Networkers", "Tech Enthusiasts", "Students & Learners" ];
 const musicLanguageOptions = ["Hindi", "English", "Punjabi", "Spanish", "French", "Marathi", "Italian", "Japanese", "Korean", "Chinese"];
-const musicPreferenceOptions = [ "Mood Music", "Throwback Track", "Music for Studying", "Workout Music", "Party Song", "Breakup Songs", "Instrumental Picks", "Ambient Sounds", "Electronic Groove", "Soft Piano", "Romantic Tunes", "Urban Beats", "Mystical Tones" ];
+const musicPreferenceOptions = [ "Mood Boosters", "Throwback Hits", "Study Vibes", "Workout Anthems", "Party Starters", "Breakup Anthems", "Instrumental", "Ambient Escapes", "Electronic Grooves", "Soft Piano Melodies", "Romantic Tunes", "Urban Beats", "Mystical Soundscapes" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
   const savedCta = localStorage.getItem("cta") || "Basic";
@@ -119,7 +119,7 @@ export default function FacebookPost() {
   const [language, setLanguage] = useState("en");
   const [audience, setAudience] = useState("None");
   const [musicLanguage, setMusicLanguage] = useState("Hindi");
-  const [musicPreferences, setMusicPreferences] = useState("Instrumental Picks");
+  const [musicPreferences, setMusicPreferences] = useState("Instrumental");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
 
