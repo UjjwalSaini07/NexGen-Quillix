@@ -14,7 +14,7 @@ import { generatePost } from "../../utils/xgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
 const postStyles = [ "Professional", "Witty", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational", "Minimal" ];
-const postToneOptions = ["Formal", "Informal", "Friendly", "Neutral", "Assertive", "Empathetic", "Humorous", "Optimistic", "Pessimistic", "Inspirational", "Persuasive", "Candid"];
+const postToneOptions = ["Formal", "Informal", "Friendly", "Neutral", "Assertive", "Empathetic", "Humorous", "Optimistic", "Pessimistic", "Encouraging", "Inspirational", "Persuasive", "Direct", "Candid"];
 const postTweetTypeOptions = ["Single Tweet", "Poll", "Thread", "Quote Tweet", "Reply", "Retweet"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const postGoalsOptions = ["Drive traffic", "Increase engagement", "Get Retweets", "Start Conversations", "Share News", "Go Viral", "Build community", "Educate audience", "Showcase creativity"];
