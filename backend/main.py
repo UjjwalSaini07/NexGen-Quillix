@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from linkedin.linkedin_generator import LinkedInPostGenerator
+from x.x_generator import XPostGenerator
 from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
 import redis
@@ -42,6 +43,22 @@ class LinkedInGenerateRequest(BaseModel):
     language: str = Field("en", description="Language code like 'en', 'fr', etc.")
     call_to_action: Optional[str] = None
     audience: Optional[str] = None
+
+class XGenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=5)
+    words: int = Field(200, gt=10, le=300)
+    tone: str = Field("optimistic")
+    template: str = Field("professional")
+    add_hashtags: bool = False
+    add_emojis: bool = False
+    add_mentions: bool = False
+    add_event: bool = False
+    postTweetTypeOptions: Optional[str] = None
+    postgoal: Optional[str] = None
+    variations: int = Field(1, ge=1, le=10)
+    language: str = Field("en", description="Language code like 'en', 'fr', etc.")
+    audience: Optional[str] = None
+    eventDetails: Optional[str] = None
 
 class FacebookGenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=5)
@@ -108,6 +125,28 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
     except Exception as e:
         logger.exception("Error generating post")
         raise HTTPException(status_code=500, detail="Error generating post")
+
+# ======= X ENDPOINT =======
+@app.post("/generate/x")
+async def generate_x_post(request: XGenerateRequest):
+    try:
+        req_data = request.dict()
+
+        cache_key = generate_cache_key(req_data)
+        cached_response = get_cached_response(cache_key)
+        if cached_response:
+            return cached_response
+
+        generator = XPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
+        results = generator.generate_post(**req_data)
+
+        response = {"success": True, "results": results}
+        redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+        return response
+
+    except Exception as e:
+        logger.exception("Error generating X post")
+        raise HTTPException(status_code=500, detail="Error generating X post")
 
 # ======= FACEBOOK ENDPOINT =======
 @app.post("/generate/facebook")
