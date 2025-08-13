@@ -13,7 +13,7 @@ import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } fro
 import { generatePost } from "../../utils/facebookgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postTemplates = [ { label: "Storytelling", value: "storytelling" }, { label: "Professional", value: "professional" }, { label: "Question Prompt", value: "question_prompt" }, { label: "Photo Caption", value: "photo_caption" }, { label: "Quote-Based", value: "quote_based" }, { label: "Announcement", value: "announcement" }, { label: "Poll Style", value: "poll_style" }, { label: "Throwback", value: "throwback" }, { label: "Mini Blog", value: "mini_blog" }, { label: "Concise", value: "concise" }, { label: "Technical", value: "technical" } ];
+const postTemplates = [ { label: "Storytelling", value: "storytelling" }, { label: "Professional", value: "professional" }, { label: "Question Prompt", value: "question_prompt" }, { label: "Quote-Based", value: "quote_based" }, { label: "Announcement", value: "announcement" }, { label: "Poll Style", value: "poll_style" }, { label: "Throwback", value: "throwback" }, { label: "Mini Blog", value: "mini_blog" }, { label: "Concise", value: "concise" }, { label: "Technical", value: "technical" } ];
 const postStyles = [ "Trendy", "Casual", "Playful", "Aesthetic", "Funny", "Witty", "Chill", "Relatable", "Inspiring", "Bold", "Minimal", "Emotional", ];
 const postTypeOptions = ["Text Post", "Image Post", "Video Post", "Link Share", "Event Promotion", "Poll", "Story Caption", "Reel Caption", "Live Stream Announcement", "Giveaway Post"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];

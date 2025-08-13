@@ -15,33 +15,347 @@ class FacebookPostGenerator:
 
         self.templates = {
             "storytelling": """
-You are a professional social media strategist writing an engaging Facebook post.
+You are a professional social media strategist tasked with creating a high-quality, storytelling-focused Facebook {post_type} tailored for a specific audience.
 
-Topic: {prompt}
-Language: {language} (write entirely in {language})
-Tone: {tone}
-Length: Around {words} words
-Style: Casual, conversational, and optimized for Facebook engagement.
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, narrative-driven, and optimized for Facebook engagement
 
-Target Audience: {audience}
-Call to Action (CTA): {cta}
-Post Type: {post_type}
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
 
 {hashtags}
 
-{music_section}
-
+{music_section}  
+{emojis}  
 Extra Instructions: {extra_instructions}
-{emojis}
 
-Write ONE Facebook post that aligns with the above details. 
-If Preferred Music Style is provided, it MUST be woven naturally into the mood, tone, or descriptions in the post (even subtly).
-Ensure the content is engaging and tailored for the specified audience and post type.
+Your task:
+- Write ONE compelling, story-driven Facebook post that aligns with the above details.
+- Engage the audience through narrative techniques like anecdotes, scenarios, or relatable moments.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Ensure the story flows clearly and resonates with the target audience.
 
-Do not include meta text, labels, or markdown. Return ONLY the final post text.
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! professional template
+            "professional": """
+You are a professional social media strategist tasked with creating a high-quality Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Formal, engaging, and optimized for Facebook while maintaining professionalism and authority
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE clear, professional, and audience-focused Facebook {post_type} that aligns with the above details.
+- Ensure the content maintains authority, professionalism, and engagement.
+- Integrate any preferred music style naturally into the mood or tone.
+- Make the message easy to follow and relevant to the target audience.
+- Keep the content structured and suitable for Facebook.
+- Avoid unnecessary jargon unless the audience is technical.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! question_prompt template
+            "question_prompt": """
+You are a professional social media strategist tasked with creating a high-quality, question-focused Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, question-driven Facebook {post_type} that aligns with the above details.
+- Pose a clear, compelling question to encourage audience interaction and responses.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the question easy to understand and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! quote_based template
+            "quote_based": """
+You are a professional social media strategist tasked with creating a high-quality, quote-focused Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, quote-based Facebook {post_type} that aligns with the above details.
+- Feature a compelling quote that resonates with the audience and encourages interaction.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the message easy to understand and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! announcement template
+            "announcement": """
+You are a professional social media strategist tasked with creating a high-quality, announcement-focused Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, announcement-style Facebook {post_type} that aligns with the above details.
+- Present the announcement clearly and make it exciting for the audience.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the message easy to follow and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! poll_style template
+            "poll_style": """
+You are a professional social media strategist tasked with creating a high-quality, poll-style Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, poll-style Facebook {post_type} that aligns with the above details.
+- Pose a clear and compelling poll question with options that encourage audience interaction.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the poll easy to understand and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! throwback template
+            "throwback": """
+You are a professional social media strategist tasked with creating a high-quality, throwback-style Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta} 
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, throwback-style Facebook {post_type} that aligns with the above details.
+- Incorporate nostalgia, past memories, or previous events to resonate with the audience.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the message easy to follow and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! mini_blog template
+            "mini_blog": """
+You are a professional social media strategist tasked with creating a high-quality, mini-blog Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Casual, conversational, and optimized for Facebook engagement, structured like a short blog post
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE engaging, mini-blog-style Facebook {post_type} that aligns with the above details.
+- Provide value, insights, or storytelling like a short blog within a single post.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the message easy to follow and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! concise template
+            "concise": """
+You are a professional social media strategist tasked with creating a high-quality, concise Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Short, clear, and optimized for Facebook engagement
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE concise and impactful Facebook {post_type} that aligns with the above details.
+- Communicate the message clearly in as few words as possible.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content casual, relatable, and optimized for Facebook engagement.
+- Make the message easy to understand and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
+""",
+#! technical template
+            "technical": """
+You are a professional social media strategist tasked with creating a high-quality, technical Facebook {post_type} tailored for a specific audience.
+
+📌 Topic: {prompt}  
+📌 Language: {language} (write entirely in {language})  
+📌 Tone: {tone}  
+📌 Length: Around {words} words  
+📌 Style: Detailed, informative, and optimized for Facebook engagement with a technical focus
+
+Target Audience: {audience}  
+Call to Action (CTA): {cta}  
+
+{hashtags}  
+
+{music_section}  
+{emojis}  
+Extra Instructions: {extra_instructions}
+
+Your task:
+- Write ONE technical Facebook {post_type} that aligns with the above details.
+- Include precise, accurate, and informative content appropriate for a knowledgeable audience.
+- Integrate any preferred music style naturally into the mood or tone.
+- Keep the content clear, engaging, and optimized for Facebook engagement.
+- Make the message easy to follow and relevant to the target audience.
+
+Do NOT:
+- Include any English (if language is not English)
+- Mention that this is a generated or prompted post
+- Use markdown, labels, or instructions within the post
+- Overuse hashtags or emojis
+
+Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
 """
         }
-
+        # Author: "Ujjwal Saini"
         self.tones = [
             "trendy", "casual", "playful", "aesthetic", "funny",
             "witty", "chill", "relatable", "inspiring", "bold", "minimal", "emotional"
@@ -141,6 +455,7 @@ Do not include meta text, labels, or markdown. Return ONLY the final post text.
                 "post_type": post_type,
                 "music_section": ""
             }
+            # Author: "Ujjwal Saini"
 
             chain = prompt_template | self.llm
             response = chain.invoke(inputs)
