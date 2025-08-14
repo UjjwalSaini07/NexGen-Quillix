@@ -13,7 +13,7 @@ import { Loader2, Copy, Save, RefreshCw, FileText, Type, MessageSquareText } fro
 import { generatePost } from "../../utils/xgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
-const postStyles = [ "Professional", "Witty", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought-Provoking", "Controversial", "Motivational", "Minimal" ];
+const postStyles = [ "Professional", "Witty", "Sarcastic", "Bold", "Funny", "Relatable", "Inspiring", "Thought_Provoking", "Controversial", "Motivational", "Minimal" ];
 const postToneOptions = ["Formal", "Informal", "Friendly", "Neutral", "Assertive", "Empathetic", "Humorous", "Optimistic", "Pessimistic", "Encouraging", "Inspirational", "Persuasive", "Direct", "Candid"];
 const postTweetTypeOptions = ["Single Tweet", "Poll", "Thread", "Quote Tweet", "Reply", "Retweet"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
