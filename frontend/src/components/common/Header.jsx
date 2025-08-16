@@ -1,7 +1,7 @@
 "use client";
 
 import { Orbitron } from "next/font/google";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -18,10 +18,16 @@ import "react-toastify/dist/ReactToastify.css";
 const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
 
 const Header = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const [selectedSocial, setSelectedSocial] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { width } = useWindowSize();
+
+  useEffect(() => {
+    const routes = ["/linkedin", "/instagram", "/x", "/facebook", "/youtube"];
+    routes.forEach((route) => router.prefetch(route));
+  }, [router]);
 
   useEffect(() => {
     const savedBot = localStorage.getItem("selectedBot");
@@ -44,11 +50,36 @@ const Header = () => {
   const isHome = pathname === "/";
 
   const socialPlatforms = [
-    { name: "LinkedIn", icon: <FaLinkedinIn className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-400", href: "/linkedin" },
-    { name: "Instagram", icon: <FaInstagram className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-pink-400", href: "/instagram" },
-    { name: "X", icon: <FaXTwitter className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-gray-400", href: "/x" },
-    { name: "Facebook", icon: <FaFacebookF className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-blue-400", href: "/facebook" },
-    { name: "YouTube", icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />, color: "text-pink-400", href: "/youtube" },
+    {
+      name: "LinkedIn",
+      icon: <FaLinkedinIn className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-blue-400",
+      href: "/linkedin",
+    },
+    {
+      name: "Instagram",
+      icon: <FaInstagram className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-pink-400",
+      href: "/instagram",
+    },
+    {
+      name: "X",
+      icon: <FaXTwitter className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-gray-400",
+      href: "/x",
+    },
+    {
+      name: "Facebook",
+      icon: <FaFacebookF className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-blue-400",
+      href: "/facebook",
+    },
+    {
+      name: "YouTube",
+      icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-pink-400",
+      href: "/youtube",
+    },
   ];
 
   return (
@@ -73,20 +104,27 @@ const Header = () => {
               className="relative z-50 w-9 h-9 flex flex-col items-center justify-center gap-1 group"
             >
               <span
-                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${
+                  isMenuOpen ? "rotate-45 translate-y-1.5" : ""
+                }`}
               />
               <span
-                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "opacity-0" : ""}`}
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${
+                  isMenuOpen ? "opacity-0" : ""
+                }`}
               />
               <span
-                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${isMenuOpen ? "-rotate-50 -translate-y-1.5" : ""}`}
+                className={`h-0.5 w-7 bg-white rounded transition-all duration-300 ${
+                  isMenuOpen ? "-rotate-50 -translate-y-1.5" : ""
+                }`}
               />
             </button>
 
-            {/* Mobile Dropdown */}
             <div
               className={`absolute top-full left-0 w-full bg-zinc-900 text-white rounded-xl shadow-2xl p-4 flex flex-col gap-3 mt-2 transition-all duration-300 ${
-                isMenuOpen ? "opacity-100 visible scale-100" : "opacity-0 invisible scale-95"
+                isMenuOpen
+                  ? "opacity-100 visible scale-100"
+                  : "opacity-0 invisible scale-95"
               }`}
             >
               {socialPlatforms.map(({ name, href }) => (

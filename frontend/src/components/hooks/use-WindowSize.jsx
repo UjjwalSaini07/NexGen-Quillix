@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from "react";
 
+const getScreenCategory = (width) => {
+  if (width < 576) return "mobile";
+  if (width < 768) return "small";
+  if (width < 992) return "medium";
+  return "large";
+};
+
 const useWindowSize = () => {
   const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    screenCategory: getScreenCategory(window.innerWidth),
+    width: 0,
+    height: 0,
+    screenCategory: "large",
   });
-
-  function getScreenCategory(width) {
-    if (width < 576) return "mobile";
-    if (width < 768) return "small";
-    if (width < 992) return "medium";
-    return "large";
-  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -24,6 +24,8 @@ const useWindowSize = () => {
         screenCategory: getScreenCategory(window.innerWidth),
       });
     };
+
+    handleResize();
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
