@@ -14,6 +14,7 @@ import { generatePost } from "../../utils/instagramgeneratePost";
 import "react-toastify/dist/ReactToastify.css";
 
 const postStyles = [ "Trendy", "Casual", "Playful", "Aesthetic", "Funny", "Witty", "Chill", "Relatable", "Inspiring", "Bold", "Minimal", "Emotional", ];
+const postToneOption = [ "Positive", "Motivational", "Romantic", "Sarcastic", "Humorous", "Uplifting", "Confident", "Friendly", "Empowering", "Sincere", "Adventurous", "Grateful", "Cheerful", "Reflective", "Edgy", "Passionate", "Optimistic", "Dramatic", "Supportive", "Lighthearted" ];
 const postVisualContentOptions = ["Images", "Videos", "Carousels", "Reels", "Stories", "Text Posts"];
 const postGenerationOptions = ["Text Gen LLM's", "Images Gen LLM's", "Video Gen LLM's", "Audio Gen LLM's"];
 const postGoalsOptions = ["Drive traffic", "Increase engagement", "Boost brand awareness", "Generate leads", "Promote products", "Build community", "Educate audience", "Showcase creativity"];
@@ -110,6 +111,7 @@ export default function InstagramPost() {
   const [useMusic, setUseMusic] = useState(true);
   const [useEvent, setUseEvent] = useState(false);
   const [postStyle, setPostStyle] = useState("Aesthetic");
+  const [postTone, setPostTone] = useState("Humorous");
   const [postVisualContents, setPostVisualContents] = useState("Images");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [postGoals, setPostGoals] = useState("Drive traffic");
@@ -154,12 +156,14 @@ export default function InstagramPost() {
     const data = {
       prompt,
       words: wordCount,
-      tone: postStyle.toLowerCase(),
-      template: "Aesthetic",
+      tone: postTone.toLowerCase(),
+      template: postStyle.toLowerCase(),
       add_hashtags: useHashtags,
       add_emojis: useEmojis,
       add_music: useMusic,
       add_event: useEvent,
+      post_type: postVisualContents.toLowerCase(),
+      postgoal: postGoals,
       variations: parseInt(variations),
       call_to_action: cta === "none" ? null : cta,
       language: language,
@@ -289,6 +293,22 @@ export default function InstagramPost() {
               </div>
 
               <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Tone of the Post</Label>
+                <Select value={postTone} onValueChange={setPostTone}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Tone of the Post" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postToneOption.map((tone) => (
+                      <SelectItem key={tone} value={tone}>
+                        {tone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Visual Content</Label>
                 <Select value={postVisualContents} onValueChange={setPostVisualContents}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
@@ -335,7 +355,9 @@ export default function InstagramPost() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Variation count</Label>
                 <Select value={variations} onValueChange={setVariations}>
@@ -351,9 +373,6 @@ export default function InstagramPost() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full sm:w-auto">
                 <Label className="block text-sm font-semibold text-white mb-2">Call to Action</Label>
                 <Select value={cta} onValueChange={setCta}>
