@@ -79,7 +79,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Category: {result.category || "General"}
+              Category: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "General"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               CTA: {savedCta}
