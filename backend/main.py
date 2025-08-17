@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from linkedin.linkedin_generator import LinkedInPostGenerator
+from instagram.instagram_generator import InstagramPostGenerator
 from x.x_generator import XPostGenerator
 from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
@@ -43,6 +44,24 @@ class LinkedInGenerateRequest(BaseModel):
     language: str = Field("en", description="Language code like 'en', 'fr', etc.")
     call_to_action: Optional[str] = None
     audience: Optional[str] = None
+
+class InstagramGenerateRequest(BaseModel):
+    prompt: str = Field(..., min_length=5)
+    words: int = Field(200, gt=10, le=300)
+    tone: str = Field("humorous")
+    template: str = Field("aesthetic")
+    add_hashtags: bool = False
+    add_emojis: bool = False
+    add_music: bool = Field(False)
+    add_event: bool = False
+    post_type: Optional[str] = None
+    postgoal: Optional[str] = None
+    variations: int = Field(1, ge=1, le=10)
+    call_to_action: Optional[str] = None
+    language: str = Field("en", description="Language code like 'en', 'fr', etc.")
+    audience: Optional[str] = None
+    eventDetails: Optional[str] = None
+    music_preference: Optional[str] = Field(None, description="Music preference for the post")
 
 class XGenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=5)
@@ -116,6 +135,28 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
             return cached_response
 
         generator = LinkedInPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
+        results = generator.generate_post(**req_data)
+
+        response = {"success": True, "results": results}
+        redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+        return response
+
+    except Exception as e:
+        logger.exception("Error generating post")
+        raise HTTPException(status_code=500, detail="Error generating post")
+
+# ======= INSTAGRAM ENDPOINT =======
+@app.post("/generate/instagram")
+async def generate_instagram_post(request: InstagramGenerateRequest):
+    try:
+        req_data = request.dict()
+        
+        cache_key = generate_cache_key(req_data)
+        cached_response = get_cached_response(cache_key)
+        if cached_response:
+            return cached_response
+
+        generator = InstagramPostGenerator(api_key=os.getenv("GROQ_API_KEY"))
         results = generator.generate_post(**req_data)
 
         response = {"success": True, "results": results}
