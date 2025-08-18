@@ -18,7 +18,7 @@ async def fetch_ip_info():
         async with session.get(url) as response:
             return await response.json()
 
-async def detect_and_store_device(request, linked_post_cache_key: str):
+async def detect_and_store(request, linked_post_cache_key: str):
     ip_data = await fetch_ip_info()
 
     device_info = {
