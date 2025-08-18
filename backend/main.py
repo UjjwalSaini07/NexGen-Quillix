@@ -30,7 +30,16 @@ app.add_middleware(
 )
 
 # Redis connection
-redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+
+def set_value(key: str, value: str):
+    redis_client.set(key, value)
+
+def get_value(key: str):
+    return redis_client.get(key)
 
 # Pydantic model
 class LinkedInGenerateRequest(BaseModel):
