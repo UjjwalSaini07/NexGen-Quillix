@@ -25,7 +25,7 @@ async def detect_and_store_device(request, linked_post_cache_key: str):
         "userAgent": request.headers.get("user-agent", "Unknown"),
         "platform": platform.system(),
         "language": request.headers.get("accept-language", "*"),
-        "screenResolution": "Unknown to Record",
+        "screenResolution": "Unknown",
         "timezone": datetime.now().astimezone().tzname(),
         "connection": request.headers.get("connection", "Unknown"),
         "memory": f"{round(psutil.virtual_memory().total / (1024**3))} GB",
@@ -35,8 +35,18 @@ async def detect_and_store_device(request, linked_post_cache_key: str):
 
     location_info = {
         "ip": ip_data.get("ip", "Unknown"),
+        "network": ip_data.get("network", "Unknown"),
+        "version": ip_data.get("version", "Unknown"),
         "city": ip_data.get("city", "Unknown"),
-        "country": ip_data.get("country_name", "Unknown"),
+        "region": ip_data.get("region", "Unknown"),
+        "region_code": ip_data.get("region_code", "Unknown"),
+        "country": ip_data.get("country", "Unknown"),
+        "country_name": ip_data.get("country_name", "Unknown"),
+        "country_capital": ip_data.get("country_capital", "Unknown"),
+        "postal": ip_data.get("postal", "Unknown"),
+        "latitude": ip_data.get("latitude", 0.0),
+        "longitude": ip_data.get("longitude", 0.0),
+        "timezone": ip_data.get("timezone", "Unknown"),
         "isp": ip_data.get("org", "Unknown ISP"),
     }
 
