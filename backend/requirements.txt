@@ -9,3 +9,5 @@ requests
 psutil
 tzlocal
 orjson
+aiohttp
+psutil
