@@ -2,7 +2,7 @@
 
 export async function generatePost(data) {
   try {
-    const response = await fetch("http://localhost:8000/generate/instagram", {
+    const response = await fetch("https://nexgen-quillix.onrender.com/generate/instagram", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

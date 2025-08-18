@@ -2,7 +2,7 @@
 
 export async function generatePost(data) {
   try {
-    const response = await fetch("http://localhost:8000/generate/linkedin", {
+    const response = await fetch("https://nexgen-quillix.onrender.com/generate/linkedin", { //127.0.0.1.8000
       method: "POST",
       headers: {
         "Content-Type": "application/json",

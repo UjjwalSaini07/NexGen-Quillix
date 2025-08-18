@@ -1,14 +1,17 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from deepdiff import DeepDiff
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from utils.device_detector import detect_and_store
 from linkedin.linkedin_generator import LinkedInPostGenerator
 from instagram.instagram_generator import InstagramPostGenerator
 from x.x_generator import XPostGenerator
 from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
 import redis
+from redis.commands.json.path import Path
 import hashlib
 import orjson
 from dotenv import load_dotenv
@@ -23,7 +26,7 @@ app = FastAPI(title="Quillix Post Generator API", version="1.0")
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=["http://localhost:3000", "https://nexgenquillix.vercel.app/"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -134,10 +137,9 @@ def get_cached_response(key: str):
 # POST endpoint
 # ======= LINKEDIN ENDPOINT =======
 @app.post("/generate/linkedin")
-async def generate_linkedin_post(request: LinkedInGenerateRequest):
+async def generate_linkedin_post(request: Request, body: LinkedInGenerateRequest):
     try:
-        req_data = request.dict()
-        
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -148,6 +150,11 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - LinkedIn post generation.")
+
         return response
 
     except Exception as e:
@@ -156,10 +163,9 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
 
 # ======= INSTAGRAM ENDPOINT =======
 @app.post("/generate/instagram")
-async def generate_instagram_post(request: InstagramGenerateRequest):
+async def generate_instagram_post(request: Request, body: InstagramGenerateRequest):
     try:
-        req_data = request.dict()
-        
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -170,6 +176,11 @@ async def generate_instagram_post(request: InstagramGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - Instagram post generation.")
+
         return response
 
     except Exception as e:
@@ -178,10 +189,9 @@ async def generate_instagram_post(request: InstagramGenerateRequest):
 
 # ======= X ENDPOINT =======
 @app.post("/generate/x")
-async def generate_x_post(request: XGenerateRequest):
+async def generate_x_post(request: Request, body: XGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -192,6 +202,11 @@ async def generate_x_post(request: XGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - X post generation.")
+        
         return response
 
     except Exception as e:
@@ -200,10 +215,9 @@ async def generate_x_post(request: XGenerateRequest):
 
 # ======= FACEBOOK ENDPOINT =======
 @app.post("/generate/facebook")
-async def generate_facebook_post(request: FacebookGenerateRequest):
+async def generate_facebook_post(request: Request, body: FacebookGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -214,6 +228,11 @@ async def generate_facebook_post(request: FacebookGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - Facebook post generation.")
+
         return response
 
     except Exception as e:
@@ -222,10 +241,9 @@ async def generate_facebook_post(request: FacebookGenerateRequest):
 
 # ======= YOUTUBE ENDPOINT =======
 @app.post("/generate/youtube")
-async def generate_youtube_post(request: YouTubeGenerateRequest):
+async def generate_youtube_post(request: Request, body: YouTubeGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -236,6 +254,11 @@ async def generate_youtube_post(request: YouTubeGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - YouTube post generation.")
+
         return response
 
     except Exception as e:
@@ -281,41 +304,45 @@ def get_recent_history(limit: int = 5):
         logger.error(f"Failed to fetch history: {e}")
         raise HTTPException(status_code=500, detail="Error fetching history")
 
+@app.get("/detect/device")
+def detect_device():
+    try:
+        result = detect_and_store()
+        return {"success": True, "data": result}
+    except Exception as e:
+        logger.error(f"Device detection failed: {e}")
+        raise HTTPException(status_code=500, detail="Error detecting device")
+
 @app.get("/meta")
 def get_site_metadata():
     cache_key = "site_metadata"
+
+    # Retrieve cached metadata from RedisJSON
     try:
-        cached = redis_client.get(cache_key)
-        if cached:
-            return orjson.loads(cached)
+        cached_data = redis_client.json().get(cache_key, Path.root_path())
+        if not cached_data:
+            cached_data = {}
     except Exception as e:
         logger.warning(f"Redis cache read failed: {e}")
+        cached_data = {}
 
-    # Internal metadata
+    # Current metadata
     metadata = {
         "viewport": "width=device-width, initial-scale=1.0",
         "httpEquiv": "IE=edge",
         "description": (
-            "NexGen-Quillix is an AI-powered content creation platform that crafts tailored, "
-            "high-impact posts for LinkedIn, Instagram, X (Twitter), and more in seconds. "
-            "Leveraging real-time trend analysis and customizable tone adaptation, it empowers "
-            "marketers, entrepreneurs, and creators to boost engagement and streamline content workflows."
+            "NexGen-Quillix is an AI-powered content creation platform that crafts tailored, high-impact posts for LinkedIn, Instagram, X (Twitter), and more in seconds. Leveraging real-time trend analysis and customizable tone adaptation, it empowers marketers, entrepreneurs, and creators to boost engagement and streamline content workflows."
         ),
         "author": "UjjwalS",
         "authorUrl": "https://www.ujjwalsaini.dev/",
         "keywords": (
-            "NexGen-Quillix, AI content creation, social media posts, LinkedIn, Instagram, X, "
-            "Twitter, trend analysis, content automation, Next.js, React.js, TypeScript, Python, "
-            "TailwindCSS, Redis, Docker, GitHub Actions"
+            "NexGen-Quillix, AI content creation, social media posts, LinkedIn, Instagram, X, Twitter, trend analysis, content automation, Next.js, React.js, TypeScript, Python, TailwindCSS, Redis, Docker, GitHub Actions"
         ),
         "og": {
             "title": "NexGen-Quillix: AI-Powered Content Creation",
             "author": "UjjwalS",
-            "description": (
-                "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven "
-                "tool tailored for marketers and creators, enhancing digital presence through smart automation "
-                "and creative flexibility."
-            ),
+            "description":
+                "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
             "image": "/NexGenQuillixLogo.png",
             "url": "http://localhost:3000/",
             "type": "website",
@@ -326,8 +353,7 @@ def get_site_metadata():
             "card": "summary_large_image",
             "title": "NexGen-Quillix: AI-Powered Content Creation",
             "description": (
-                "Generate high-impact, trend-aware social media posts in seconds with NexGen-Quillix, "
-                "combining intelligent AI automation with creative control for marketers and creators."
+                "Generate high-impact, trend-aware social media posts in seconds with NexGen-Quillix, combining intelligent AI automation with creative control for marketers and creators."
             ),
             "image": "/NexGenQuillixLogo.png",
             "site": "@NexGenQuillix",
@@ -344,10 +370,19 @@ def get_site_metadata():
         "appleMobileWebAppCapable": "yes"
     }
 
-    # Cache in Redis for 24 hours
+    # Compare cached vs current metadata
+    diff = DeepDiff(cached_data, metadata, ignore_order=True).get("values_changed", {})
+    updates_clean = {
+        k.replace("root['", "").replace("']", "").replace("']['", "."): v['new_value']
+        for k, v in diff.items()
+    }
+
+    # Update RedisJSON cache
     try:
-        redis_client.setex(cache_key, 86400, orjson.dumps(metadata).decode())
+        redis_client.json().set(cache_key, Path.root_path(), metadata)
+        redis_client.expire(cache_key, 86400)
     except Exception as e:
         logger.warning(f"Redis cache write failed: {e}")
 
-    return metadata
+    # Return only updated fields
+    return updates_clean if updates_clean else {"message": "No updates"}

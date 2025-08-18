@@ -5,3 +5,10 @@ redis
 pydantic
 langchain
 langchain-groq
+requests
+psutil
+tzlocal
+orjson
+aiohttp
+psutil
+deepdiff
