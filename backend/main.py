@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from deepdiff import DeepDiff
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from utils.device_detector import detect_and_store
@@ -10,6 +11,7 @@ from x.x_generator import XPostGenerator
 from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
 import redis
+from redis.commands.json.path import Path
 import hashlib
 import orjson
 from dotenv import load_dotenv
@@ -314,14 +316,17 @@ def detect_device():
 @app.get("/meta")
 def get_site_metadata():
     cache_key = "site_metadata"
+
+    # Retrieve cached metadata from RedisJSON
     try:
-        cached = redis_client.get(cache_key)
-        if cached:
-            return orjson.loads(cached)
+        cached_data = redis_client.json().get(cache_key, Path.root_path())
+        if not cached_data:
+            cached_data = {}
     except Exception as e:
         logger.warning(f"Redis cache read failed: {e}")
+        cached_data = {}
 
-    # Internal metadata
+    # Current metadata
     metadata = {
         "viewport": "width=device-width, initial-scale=1.0",
         "httpEquiv": "IE=edge",
@@ -374,10 +379,19 @@ def get_site_metadata():
         "appleMobileWebAppCapable": "yes"
     }
 
-    # Cache in Redis for 24 hours
+    # Compare cached vs current metadata
+    diff = DeepDiff(cached_data, metadata, ignore_order=True).get("values_changed", {})
+    updates_clean = {
+        k.replace("root['", "").replace("']", "").replace("']['", "."): v['new_value']
+        for k, v in diff.items()
+    }
+
+    # Update RedisJSON cache
     try:
-        redis_client.setex(cache_key, 86400, orjson.dumps(metadata).decode())
+        redis_client.json().set(cache_key, Path.root_path(), metadata)
+        redis_client.expire(cache_key, 86400)
     except Exception as e:
         logger.warning(f"Redis cache write failed: {e}")
 
-    return metadata
+    # Return only updated fields
+    return updates_clean if updates_clean else {"message": "No updates"}
