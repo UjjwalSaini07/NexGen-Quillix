@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from utils.device_detector import detect_and_store
 from linkedin.linkedin_generator import LinkedInPostGenerator
 from instagram.instagram_generator import InstagramPostGenerator
 from x.x_generator import XPostGenerator
@@ -23,7 +24,7 @@ app = FastAPI(title="Quillix Post Generator API", version="1.0")
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=["http://localhost:3000", "https://nexgenquillix.vercel.app/"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -134,10 +135,9 @@ def get_cached_response(key: str):
 # POST endpoint
 # ======= LINKEDIN ENDPOINT =======
 @app.post("/generate/linkedin")
-async def generate_linkedin_post(request: LinkedInGenerateRequest):
+async def generate_linkedin_post(request: Request, body: LinkedInGenerateRequest):
     try:
-        req_data = request.dict()
-        
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -148,6 +148,11 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - LinkedIn post generation.")
+
         return response
 
     except Exception as e:
@@ -156,10 +161,9 @@ async def generate_linkedin_post(request: LinkedInGenerateRequest):
 
 # ======= INSTAGRAM ENDPOINT =======
 @app.post("/generate/instagram")
-async def generate_instagram_post(request: InstagramGenerateRequest):
+async def generate_instagram_post(request: Request, body: InstagramGenerateRequest):
     try:
-        req_data = request.dict()
-        
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -170,6 +174,11 @@ async def generate_instagram_post(request: InstagramGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - Instagram post generation.")
+
         return response
 
     except Exception as e:
@@ -178,10 +187,9 @@ async def generate_instagram_post(request: InstagramGenerateRequest):
 
 # ======= X ENDPOINT =======
 @app.post("/generate/x")
-async def generate_x_post(request: XGenerateRequest):
+async def generate_x_post(request: Request, body: XGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -192,6 +200,11 @@ async def generate_x_post(request: XGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - X post generation.")
+        
         return response
 
     except Exception as e:
@@ -200,10 +213,9 @@ async def generate_x_post(request: XGenerateRequest):
 
 # ======= FACEBOOK ENDPOINT =======
 @app.post("/generate/facebook")
-async def generate_facebook_post(request: FacebookGenerateRequest):
+async def generate_facebook_post(request: Request, body: FacebookGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -214,6 +226,11 @@ async def generate_facebook_post(request: FacebookGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - Facebook post generation.")
+
         return response
 
     except Exception as e:
@@ -222,10 +239,9 @@ async def generate_facebook_post(request: FacebookGenerateRequest):
 
 # ======= YOUTUBE ENDPOINT =======
 @app.post("/generate/youtube")
-async def generate_youtube_post(request: YouTubeGenerateRequest):
+async def generate_youtube_post(request: Request, body: YouTubeGenerateRequest):
     try:
-        req_data = request.dict()
-
+        req_data = body.dict()
         cache_key = generate_cache_key(req_data)
         cached_response = get_cached_response(cache_key)
         if cached_response:
@@ -236,6 +252,11 @@ async def generate_youtube_post(request: YouTubeGenerateRequest):
 
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
+
+        if cache_key:
+            await detect_and_store(request, cache_key)
+            print("[DeviceDetector] Device detection triggered from - YouTube post generation.")
+
         return response
 
     except Exception as e:
@@ -280,6 +301,15 @@ def get_recent_history(limit: int = 5):
     except Exception as e:
         logger.error(f"Failed to fetch history: {e}")
         raise HTTPException(status_code=500, detail="Error fetching history")
+
+@app.get("/detect/device")
+def detect_device():
+    try:
+        result = detect_and_store()
+        return {"success": True, "data": result}
+    except Exception as e:
+        logger.error(f"Device detection failed: {e}")
+        raise HTTPException(status_code=500, detail="Error detecting device")
 
 @app.get("/meta")
 def get_site_metadata():
