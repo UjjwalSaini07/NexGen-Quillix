@@ -31,6 +31,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
   const savedLanguage = localStorage.getItem("language") || "en";
   const savedVisualContent = localStorage.getItem("visualContent") || "Images";
   const savedPostGoal = localStorage.getItem("postGoal") || "Drive traffic";
+  const savedEventDetails = localStorage.getItem("eventDetails") || "Unknown";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -76,10 +77,10 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+              Template: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "General"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Category: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "General"}
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               CTA: {savedCta}
@@ -94,7 +95,10 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Visual Content: {savedVisualContent.toUpperCase()}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Goal of the Post: {savedPostGoal.toUpperCase()}
+              Goal of the Post: {savedPostGoal.charAt(0).toUpperCase() + savedPostGoal.slice(1)}
+            </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Event Details: {savedEventDetails.charAt(0).toUpperCase() + savedEventDetails.slice(1)}
             </span>
           </div>
         </div>
@@ -143,6 +147,10 @@ export default function InstagramPost() {
   useEffect(() => {
     localStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
+
+  useEffect(() => {
+    localStorage.setItem("eventDetails", eventDetails);
+  }, [eventDetails]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
