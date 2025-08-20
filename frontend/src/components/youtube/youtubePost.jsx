@@ -23,10 +23,10 @@ const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: 
 const audienceOptions = [ "None", "General Viewers", "Kids", "Gamers", "Vlog Fans", "Tech Review Watchers", "DIY & How-To Seekers", "Education & Study Community", "Fitness & Wellness Enthusiasts", "Music & Entertainment Fans", "Aspiring YouTubers & Creators" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedcta = localStorage.getItem("cta") || "Watch Now";
-  const savedAudience = localStorage.getItem("audience") || "General Viewers";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedPostType = localStorage.getItem("postType") || "Video Description";
+  const savedcta = sessionStorage.getItem("cta") || "Watch Now";
+  const savedAudience = sessionStorage.getItem("audience") || "General Viewers";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedPostType = sessionStorage.getItem("postType") || "Video Description";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -71,15 +71,14 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
-            {/* Todo: For Reference */}
-            {/* <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white/90 px-3 py-1 rounded-full shadow-sm">
-              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
-            </span> */}
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Template: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "Unknown"}
+            </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Post Type: {result.category || "General"}
+              Post Type: {savedPostType}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Call to Action: {savedcta}
@@ -89,6 +88,9 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Language: {savedLanguage.toUpperCase()}
+            </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Generation: Text Generation LLMs
             </span>
           </div>
         </div>
@@ -114,19 +116,19 @@ export default function YoutubePost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("postType", postType);
+    sessionStorage.setItem("postType", postType);
   }, [postType]);
 
   const handleGenerate = async () => {
@@ -240,6 +242,22 @@ export default function YoutubePost() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Template</Label>
+                <Select value={postTemplates} onValueChange={setPostTemplates}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Template" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTemplateOptions.map((postTemplate) => (
+                      <SelectItem key={postTemplate} value={postTemplate}>
+                        {postTemplate}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Tone</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
@@ -271,21 +289,6 @@ export default function YoutubePost() {
                 </Select>
               </div>
 
-              <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Template</Label>
-                <Select value={postTemplates} onValueChange={setPostTemplates}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
-                    <SelectValue placeholder="Choose Post Template" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    {postTemplateOptions.map((postTemplate) => (
-                      <SelectItem key={postTemplate} value={postTemplate}>
-                        {postTemplate}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full">
@@ -373,9 +376,12 @@ export default function YoutubePost() {
 
         {!loading && results.length === 0 && prompt.trim() ? (
           <div className="text-center text-neutral-500 py-2">
-            <p className="text-lg font-medium">No results found</p>
-            <p className="text-sm text-neutral-400 mt-2">
-              Start by generating a post to see results appear here ✨
+            <p className="text-lg font-medium text-neutral-700">
+              No results found
+            </p>
+            <p className="text-sm text-neutral-400 mt-1">
+              Start by generating a post to see results appear here{" "}
+              <span className="text-yellow-400">✨</span>
             </p>
           </div>
         ) : (
@@ -392,7 +398,18 @@ export default function YoutubePost() {
           </div>
         )}
         <div className="text-center text-sm text-neutral-500 -mt-4">
-          Developed by <a href="https://ujjwalsaini.dev" className="text-cyan-500 hover:underline">UjjwalS</a>
+          <p className="inline-flex items-center gap-1 transition-colors duration-300">
+            <span className="text-neutral-500">Developed by</span>
+            <a
+              href="https://ujjwalsaini.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-cyan-500 hover:text-cyan-400 hover:underline underline-offset-4 transition-all duration-300"
+            >
+              UjjwalS
+            </a>
+            <span className="animate-pulse text-cyan-400">✦</span>
+          </p>
         </div>
       </div>
     </main>

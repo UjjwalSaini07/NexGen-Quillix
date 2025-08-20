@@ -471,6 +471,7 @@ Return ONLY the final emotional Instagram {post_type} content. No instructions, 
         }
         return mapping.get(code, "English")
 
+# Author - UjjwalS - www.ujjwalsaini.dev
     def generate_post(
         self,
         prompt: str,

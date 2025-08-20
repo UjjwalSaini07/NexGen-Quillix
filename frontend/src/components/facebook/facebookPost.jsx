@@ -26,11 +26,11 @@ const musicLanguageOptions = ["Hindi", "English", "Punjabi", "Spanish", "French"
 const musicPreferenceOptions = [ "Mood Boosters", "Throwback Hits", "Study Vibes", "Workout Anthems", "Party Starters", "Breakup Anthems", "Instrumental", "Ambient Escapes", "Electronic Grooves", "Soft Piano Melodies", "Romantic Tunes", "Urban Beats", "Mystical Soundscapes" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
-  const savedAudience = localStorage.getItem("audience") || "General";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedPostType = localStorage.getItem("postType") || "Text Post";
-  const savedPostGoal = localStorage.getItem("postGoal") || "Drive traffic";
+  const savedCta = sessionStorage.getItem("cta") || "Basic";
+  const savedAudience = sessionStorage.getItem("audience") || "General";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedPostType = sessionStorage.getItem("postType") || "Text Post";
+  const savedPostGoal = sessionStorage.getItem("postGoal") || "Drive traffic";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -76,10 +76,10 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+              Template: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "General"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Category: {result.category || "General"}
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Call to Action: {savedCta}
@@ -91,10 +91,13 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Language: {savedLanguage.toUpperCase()}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Post Type: {savedPostType.toUpperCase()}
+              Post Type: {savedPostType.charAt(0).toUpperCase() + savedPostType.slice(1)}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Goal of the Post: {savedPostGoal.toUpperCase()}
+              Goal of the Post: {savedPostGoal.charAt(0).toUpperCase() + savedPostGoal.slice(1)}
+            </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Generation: Text Generation LLMs
             </span>
           </div>
         </div>
@@ -124,23 +127,23 @@ export default function FacebookPost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("postType", postType);
+    sessionStorage.setItem("postType", postType);
   }, [postType]);
 
   useEffect(() => {
-    localStorage.setItem("postGoal", postGoals);
+    sessionStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
 
   const allowedGenerationOption = "Text Gen LLM's";
@@ -471,9 +474,12 @@ export default function FacebookPost() {
 
         {!loading && results.length === 0 && prompt.trim() ? (
           <div className="text-center text-neutral-500 py-2">
-            <p className="text-lg font-medium">No results found</p>
-            <p className="text-sm text-neutral-400 mt-2">
-              Start by generating a post to see results appear here ✨
+            <p className="text-lg font-medium text-neutral-700">
+              No results found
+            </p>
+            <p className="text-sm text-neutral-400 mt-1">
+              Start by generating a post to see results appear here{" "}
+              <span className="text-yellow-400">✨</span>
             </p>
           </div>
         ) : (
@@ -490,7 +496,18 @@ export default function FacebookPost() {
           </div>
         )}
         <div className="text-center text-sm text-neutral-500 -mt-4">
-          Developed by <a href="https://ujjwalsaini.dev" className="text-cyan-500 hover:underline">UjjwalS</a>
+          <p className="inline-flex items-center gap-1 transition-colors duration-300">
+            <span className="text-neutral-500">Developed by</span>
+            <a
+              href="https://ujjwalsaini.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-cyan-500 hover:text-cyan-400 hover:underline underline-offset-4 transition-all duration-300"
+            >
+              UjjwalS
+            </a>
+            <span className="animate-pulse text-cyan-400">✦</span>
+          </p>
         </div>
       </div>
     </main>

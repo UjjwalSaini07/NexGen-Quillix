@@ -13,7 +13,7 @@ const metadata = {
   ogDescription:
     "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
   ogImage: "/NexGenQuillixLogo.png",
-  ogUrl: "http://localhost:3000/",
+  ogUrl: "https://nexgenquillix.vercel.app/",
   ogType: "website",
   ogLocale: "en_US",
   ogSiteName: "NexGen-Quillix",
@@ -24,7 +24,7 @@ const metadata = {
   twitterImage: "/NexGenQuillixLogo.png",
   twitterSite: "@NexGenQuillix",
   twitterCreator: "@UjjwalSaini0007",
-  canonical: "http://localhost:3000/",
+  canonical: "https://nexgenquillix.vercel.app/",
   robots: "index, follow",
   themeColor: "#",
   rating: "General",
@@ -35,6 +35,7 @@ const metadata = {
   appleMobileWebAppCapable: "yes",
 };
 
+// Author - UjjwalS - www.ujjwalsaini.dev
 function LayoutMetaData({ children }) {
   React.useEffect(() => {
     document.title = metadata.ogTitle;

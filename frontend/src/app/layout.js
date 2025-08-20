@@ -28,7 +28,7 @@ export const metadata = {
   themeColor: "#000000",
   referrer: "origin-when-cross-origin",
   category: "technology",
-  metadataBase: new URL("http://localhost:3000/"),
+  metadataBase: new URL("https://nexgenquillix.vercel.app/"),
   alternates: {
     canonical: "/",
   },
@@ -36,7 +36,7 @@ export const metadata = {
     title: "NexGen-Quillix: AI-Powered Content Creation",
     description:
       "Create platform-ready social media content instantly with NexGen-Quillix, an AI-driven tool tailored for marketers and creators, enhancing digital presence through smart automation and creative flexibility.",
-    url: "http://localhost:3000/",
+    url: "https://nexgenquillix.vercel.app/",
     authors: [{ name: "UjjwalS" }],
     authorUrl: "https://www.ujjwalsaini.dev/",
     siteName: "NexGen-Quillix",
