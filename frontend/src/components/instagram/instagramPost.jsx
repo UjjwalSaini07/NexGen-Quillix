@@ -100,6 +100,9 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Event Details: {savedEventDetails.charAt(0).toUpperCase() + savedEventDetails.slice(1)}
             </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Generation: Text Generation LLMs
+            </span>
           </div>
         </div>
       </CardContent>
@@ -119,7 +122,7 @@ export default function InstagramPost() {
   const [postVisualContents, setPostVisualContents] = useState("Images");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [postGoals, setPostGoals] = useState("Drive traffic");
-  const [variations, setVariations] = useState("4");
+  const [variations, setVariations] = useState("3");
   const [cta, setCta] = useState("None");
   const [language, setLanguage] = useState("en");
   const [audience, setAudience] = useState("None");

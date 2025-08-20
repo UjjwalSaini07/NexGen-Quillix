@@ -73,10 +73,10 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
+              Template: {result.category ? result.category.charAt(0).toUpperCase() + result.category.slice(1) : "General"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Category: {result.category || "General"}
+              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Target Audience: {savedAudience}
@@ -85,10 +85,13 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Language: {savedLanguage.toUpperCase()}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Tweet Type: {savedTweetType.toUpperCase()}
+              Tweet Type: {savedTweetType.charAt(0).toUpperCase() + savedTweetType.slice(1)}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Goal of the Post: {savedPostGoal.toUpperCase()}
+              Goal of the Post: {savedPostGoal.charAt(0).toUpperCase() + savedPostGoal.slice(1)}
+            </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Generation: Text Generation LLMs
             </span>
           </div>
         </div>
@@ -109,7 +112,7 @@ export default function XPost() {
   const [postTweetsType, setPostTweetsType] = useState("Single Tweet");
   const [postGenerations, setPostGenerations] = useState("Text Gen LLM's");
   const [postGoals, setPostGoals] = useState("Go Viral");
-  const [variations, setVariations] = useState("5");
+  const [variations, setVariations] = useState("3");
   const [language, setLanguage] = useState("en");
   const [audience, setAudience] = useState("None");
   const [eventDetails, setEventDetails] = useState("Trending Topic");
