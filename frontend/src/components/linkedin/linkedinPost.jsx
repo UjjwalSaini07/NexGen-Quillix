@@ -22,9 +22,9 @@ const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: 
 const audienceOptions = [ "None", "Developers", "Designers", "Marketers", "Tech Enthusiasts", "Product Managers", "Entrepreneurs", "Students", "Hiring Managers"];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
-  const savedAudience = localStorage.getItem("audience") || "General";
-  const savedLanguage = localStorage.getItem("language") || "en";
+  const savedCta = sessionStorage.getItem("cta") || "Basic";
+  const savedAudience = sessionStorage.getItem("audience") || "General";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -107,15 +107,15 @@ export default function LinkedinPost() {
   const [language, setLanguage] = useState("en");
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   const handleGenerate = async () => {

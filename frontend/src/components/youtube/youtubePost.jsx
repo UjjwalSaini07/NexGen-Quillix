@@ -23,10 +23,10 @@ const languages = [ { label: "English", value: "en" }, { label: "Hindi", value: 
 const audienceOptions = [ "None", "General Viewers", "Kids", "Gamers", "Vlog Fans", "Tech Review Watchers", "DIY & How-To Seekers", "Education & Study Community", "Fitness & Wellness Enthusiasts", "Music & Entertainment Fans", "Aspiring YouTubers & Creators" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedcta = localStorage.getItem("cta") || "Watch Now";
-  const savedAudience = localStorage.getItem("audience") || "General Viewers";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedPostType = localStorage.getItem("postType") || "Video Description";
+  const savedcta = sessionStorage.getItem("cta") || "Watch Now";
+  const savedAudience = sessionStorage.getItem("audience") || "General Viewers";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedPostType = sessionStorage.getItem("postType") || "Video Description";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -78,7 +78,7 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
-              Post Type: {result.category || "General"}
+              Post Type: {savedPostType}
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Call to Action: {savedcta}
@@ -116,19 +116,19 @@ export default function YoutubePost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("postType", postType);
+    sessionStorage.setItem("postType", postType);
   }, [postType]);
 
   const handleGenerate = async () => {

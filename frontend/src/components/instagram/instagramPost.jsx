@@ -26,12 +26,12 @@ const musicPreferenceOptions = ["Hindi", "English", "Punjabi", "Spanish", "Frenc
 const eventDetailOptions = ["Birthday", "Wedding", "Anniversary", "Party", "Conference", "Meetup", "Webinar", "Workshop", "Festival", "Vacations"];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
-  const savedAudience = localStorage.getItem("audience") || "General";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedVisualContent = localStorage.getItem("visualContent") || "Images";
-  const savedPostGoal = localStorage.getItem("postGoal") || "Drive traffic";
-  const savedEventDetails = localStorage.getItem("eventDetails") || "Unknown";
+  const savedCta = sessionStorage.getItem("cta") || "Basic";
+  const savedAudience = sessionStorage.getItem("audience") || "General";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedVisualContent = sessionStorage.getItem("visualContent") || "Images";
+  const savedPostGoal = sessionStorage.getItem("postGoal") || "Drive traffic";
+  const savedEventDetails = sessionStorage.getItem("eventDetails") || "Unknown";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -132,27 +132,27 @@ export default function InstagramPost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("visualContent", postVisualContents);
+    sessionStorage.setItem("visualContent", postVisualContents);
   }, [postVisualContents]);
 
   useEffect(() => {
-    localStorage.setItem("postGoal", postGoals);
+    sessionStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
 
   useEffect(() => {
-    localStorage.setItem("eventDetails", eventDetails);
+    sessionStorage.setItem("eventDetails", eventDetails);
   }, [eventDetails]);
 
   const handleGenerate = async () => {

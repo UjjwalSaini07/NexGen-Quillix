@@ -24,10 +24,10 @@ const audienceOptions = [ "None", "General Public", "Tech Enthusiasts", "Startup
 const eventDetailOptions = [ "Breaking News", "Trending Topic", "Product Launch", "Sports Event", "Award Show", "Concert", "Holiday", "Company Milestone", "Viral Meme", "Movie/Series Release" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedAudience = localStorage.getItem("audience") || "General";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedTweetType = localStorage.getItem("tweetType") || "Single Tweet";
-  const savedPostGoal = localStorage.getItem("postGoal") || "Go Viral";
+  const savedAudience = sessionStorage.getItem("audience") || "General";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedTweetType = sessionStorage.getItem("tweetType") || "Single Tweet";
+  const savedPostGoal = sessionStorage.getItem("postGoal") || "Go Viral";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -120,19 +120,19 @@ export default function XPost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("tweetType", postTweetsType);
+    sessionStorage.setItem("tweetType", postTweetsType);
   }, [postTweetsType]);
 
   useEffect(() => {
-    localStorage.setItem("postGoal", postGoals);
+    sessionStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
 
   const handleGenerate = async () => {

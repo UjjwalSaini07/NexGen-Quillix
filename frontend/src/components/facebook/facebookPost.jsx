@@ -26,11 +26,11 @@ const musicLanguageOptions = ["Hindi", "English", "Punjabi", "Spanish", "French"
 const musicPreferenceOptions = [ "Mood Boosters", "Throwback Hits", "Study Vibes", "Workout Anthems", "Party Starters", "Breakup Anthems", "Instrumental", "Ambient Escapes", "Electronic Grooves", "Soft Piano Melodies", "Romantic Tunes", "Urban Beats", "Mystical Soundscapes" ];
 
 const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
-  const savedCta = localStorage.getItem("cta") || "Basic";
-  const savedAudience = localStorage.getItem("audience") || "General";
-  const savedLanguage = localStorage.getItem("language") || "en";
-  const savedPostType = localStorage.getItem("postType") || "Text Post";
-  const savedPostGoal = localStorage.getItem("postGoal") || "Drive traffic";
+  const savedCta = sessionStorage.getItem("cta") || "Basic";
+  const savedAudience = sessionStorage.getItem("audience") || "General";
+  const savedLanguage = sessionStorage.getItem("language") || "en";
+  const savedPostType = sessionStorage.getItem("postType") || "Text Post";
+  const savedPostGoal = sessionStorage.getItem("postGoal") || "Drive traffic";
 
   return (
     <Card className="backdrop-blur-xl bg-white/5 border border-white/10 text-white rounded-2xl shadow-2xl hover:shadow-[0_0_40px_#ffffff22] transition-shadow duration-300 group overflow-hidden">
@@ -127,23 +127,23 @@ export default function FacebookPost() {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("cta", cta);
+    sessionStorage.setItem("cta", cta);
   }, [cta]);
 
   useEffect(() => {
-    localStorage.setItem("audience", audience);
+    sessionStorage.setItem("audience", audience);
   }, [audience]);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   useEffect(() => {
-    localStorage.setItem("postType", postType);
+    sessionStorage.setItem("postType", postType);
   }, [postType]);
 
   useEffect(() => {
-    localStorage.setItem("postGoal", postGoals);
+    sessionStorage.setItem("postGoal", postGoals);
   }, [postGoals]);
 
   const allowedGenerationOption = "Text Gen LLM's";
