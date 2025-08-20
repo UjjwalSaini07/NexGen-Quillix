@@ -151,10 +151,9 @@ async def generate_linkedin_post(request: Request, body: LinkedInGenerateRequest
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
 
-        if cache_key:
-            await detect_and_store(request, cache_key)
-            print("[DeviceDetector] Device detection triggered from - LinkedIn post generation.")
-
+        # if cache_key:
+        #     await detect_and_store(request, cache_key)
+        #     print("[DeviceDetector] Device detection triggered from - LinkedIn post generation.")
         return response
 
     except Exception as e:
@@ -177,10 +176,9 @@ async def generate_instagram_post(request: Request, body: InstagramGenerateReque
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
 
-        if cache_key:
-            await detect_and_store(request, cache_key)
-            print("[DeviceDetector] Device detection triggered from - Instagram post generation.")
-
+        # if cache_key:
+        #     await detect_and_store(request, cache_key)
+        #     print("[DeviceDetector] Device detection triggered from - Instagram post generation.")
         return response
 
     except Exception as e:
@@ -203,10 +201,9 @@ async def generate_x_post(request: Request, body: XGenerateRequest):
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
 
-        if cache_key:
-            await detect_and_store(request, cache_key)
-            print("[DeviceDetector] Device detection triggered from - X post generation.")
-        
+        # if cache_key:
+        #     await detect_and_store(request, cache_key)
+        #     print("[DeviceDetector] Device detection triggered from - X post generation.")
         return response
 
     except Exception as e:
@@ -229,10 +226,9 @@ async def generate_facebook_post(request: Request, body: FacebookGenerateRequest
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
 
-        if cache_key:
-            await detect_and_store(request, cache_key)
-            print("[DeviceDetector] Device detection triggered from - Facebook post generation.")
-
+        # if cache_key:
+        #     await detect_and_store(request, cache_key)
+        #     print("[DeviceDetector] Device detection triggered from - Facebook post generation.")
         return response
 
     except Exception as e:
@@ -255,10 +251,9 @@ async def generate_youtube_post(request: Request, body: YouTubeGenerateRequest):
         response = {"success": True, "results": results}
         redis_client.setex(cache_key, 3600, orjson.dumps(response).decode())
 
-        if cache_key:
-            await detect_and_store(request, cache_key)
-            print("[DeviceDetector] Device detection triggered from - YouTube post generation.")
-
+        # if cache_key:
+        #     await detect_and_store(request, cache_key)
+        #     print("[DeviceDetector] Device detection triggered from - YouTube post generation.")
         return response
 
     except Exception as e:
@@ -293,6 +288,7 @@ async def health_check():
     status_code = 200 if overall_status == "ok" else 503
     return JSONResponse(status_code=status_code, content=health_report)
 
+# Author : UjjwalS - www.ujjwalsaini.dev
 # NEW FEATURE: Get last N generations (simulated history feature)
 @app.get("/history/recent")
 def get_recent_history(limit: int = 5):
