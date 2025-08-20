@@ -71,10 +71,9 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
 
         <div className="mt-6 flex justify-between items-center border-t border-white/10 pt-4 text-xs text-white/60">
           <div className="flex gap-2 items-center flex-wrap">
-            {/* Todo: For Reference */}
-            {/* <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white/90 px-3 py-1 rounded-full shadow-sm">
-              Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
-            </span> */}
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Template: {result.template ? result.template.charAt(0).toUpperCase() + result.template.slice(1) : "Unknown"}
+            </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Tone: {result.tone ? result.tone.charAt(0).toUpperCase() + result.tone.slice(1) : "Unknown"}
             </span>
@@ -89,6 +88,9 @@ const ResultCard = ({ result, index, onCopy, onSave, onRegenerate }) => {
             </span>
             <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
               Language: {savedLanguage.toUpperCase()}
+            </span>
+            <span className="bg-black/25 backdrop-blur-lg border border-white/20 text-white/85 px-3 py-1 rounded-full shadow-md">
+              Post Generation: Text Generation LLMs
             </span>
           </div>
         </div>
@@ -240,6 +242,22 @@ export default function YoutubePost() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-full sm:w-auto">
+                <Label className="text-white text-md mb-2">Post Template</Label>
+                <Select value={postTemplates} onValueChange={setPostTemplates}>
+                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
+                    <SelectValue placeholder="Choose Post Template" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
+                    {postTemplateOptions.map((postTemplate) => (
+                      <SelectItem key={postTemplate} value={postTemplate}>
+                        {postTemplate}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full sm:w-auto">
                 <Label className="text-white text-md mb-2">Post Tone</Label>
                 <Select value={postStyle} onValueChange={setPostStyle}>
                   <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
@@ -271,21 +289,6 @@ export default function YoutubePost() {
                 </Select>
               </div>
 
-              <div className="w-full sm:w-auto">
-                <Label className="text-white text-md mb-2">Post Template</Label>
-                <Select value={postTemplates} onValueChange={setPostTemplates}>
-                  <SelectTrigger className="bg-black/40 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg shadow-md focus:ring-2 transition w-full">
-                    <SelectValue placeholder="Choose Post Template" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-lg shadow-xl">
-                    {postTemplateOptions.map((postTemplate) => (
-                      <SelectItem key={postTemplate} value={postTemplate}>
-                        {postTemplate}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full">
