@@ -1,8 +1,8 @@
-from langchain_core.prompts import PromptTemplate
-from langchain_groq import ChatGroq
-from typing import List, Dict, Optional
 import re
 import os
+from typing import List, Dict, Optional
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
 # import json
 
 class LinkedInPostGenerator:
@@ -297,6 +297,7 @@ Return ONLY the final LinkedIn post content. No instructions, meta-text, or labe
 """
         }
 
+# Author - UjjwalS - www.ujjwalsaini.dev
         self.tones = [
             "formal",
             "conversational",
@@ -352,7 +353,8 @@ Return ONLY the final LinkedIn post content. No instructions, meta-text, or labe
             "ru": "Russian",
         }
         return mapping.get(code, "English")
-
+    
+# Author - UjjwalS - www.ujjwalsaini.dev
     def generate_post(
         self,
         prompt: str,

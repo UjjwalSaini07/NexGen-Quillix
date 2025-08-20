@@ -334,13 +334,12 @@ Do NOT:
 Return ONLY the final X post content. No instructions, meta-text, or labels.
 """
         }
-
+# Author - UjjwalS - www.ujjwalsaini.dev
         self.tones = [
             "formal", "informal", "friendly", "neutral", "assertive", "empathetic", "humorous", 
             "optimistic", "pessimistic", "inspirational", "encouraging", "persuasive", "direct", "candid",
         ]
 
-    # Author: "Ujjwal Saini"
     def generate_hashtags(self, prompt: str) -> str:
         hashtag_prompt = (
             f"Generate 10 relevant and currently trending X hashtags for a post about '{prompt}'. "
@@ -378,7 +377,8 @@ Return ONLY the final X post content. No instructions, meta-text, or labels.
             "zh": "Chinese", "ja": "Japanese", "ar": "Arabic", "pt": "Portuguese", "ru": "Russian",
         }
         return mapping.get(code, "English")
-
+    
+# Author - UjjwalS - www.ujjwalsaini.dev
     def generate_post(
         self,
         prompt: str,

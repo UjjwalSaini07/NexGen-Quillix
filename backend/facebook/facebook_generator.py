@@ -355,7 +355,8 @@ Do NOT:
 Return ONLY the final Facebook {post_type} content. No instructions, meta-text, or labels.
 """
         }
-        # Author: "Ujjwal Saini"
+
+# Author - UjjwalS - www.ujjwalsaini.dev
         self.tones = [
             "trendy", "casual", "playful", "aesthetic", "funny",
             "witty", "chill", "relatable", "inspiring", "bold", "minimal", "emotional"
@@ -393,6 +394,7 @@ Return ONLY the final Facebook {post_type} content. No instructions, meta-text, 
         }
         return mapping.get(code.lower(), "English")
 
+# Author - UjjwalS - www.ujjwalsaini.dev
     def generate_post(
         self,
         prompt: str,
@@ -455,8 +457,8 @@ Return ONLY the final Facebook {post_type} content. No instructions, meta-text, 
                 "post_type": post_type,
                 "music_section": ""
             }
-            # Author: "Ujjwal Saini"
 
+            # Author: "Ujjwal Saini"
             chain = prompt_template | self.llm
             response = chain.invoke(inputs)
             generated_post = response.content.strip()
