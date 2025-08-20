@@ -490,7 +490,18 @@ export default function FacebookPost() {
           </div>
         )}
         <div className="text-center text-sm text-neutral-500 -mt-4">
-          Developed by <a href="https://ujjwalsaini.dev" className="text-cyan-500 hover:underline">UjjwalS</a>
+          <p className="inline-flex items-center gap-1 transition-colors duration-300">
+            <span className="text-neutral-500">Developed by</span>
+            <a
+              href="https://ujjwalsaini.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-cyan-500 hover:text-cyan-400 hover:underline underline-offset-4 transition-all duration-300"
+            >
+              UjjwalS
+            </a>
+            <span className="animate-pulse text-cyan-400">✦</span>
+          </p>
         </div>
       </div>
     </main>
