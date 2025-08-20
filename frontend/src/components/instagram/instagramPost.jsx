@@ -477,9 +477,12 @@ export default function InstagramPost() {
 
         {!loading && results.length === 0 && prompt.trim() ? (
           <div className="text-center text-neutral-500 py-2">
-            <p className="text-lg font-medium">No results found</p>
-            <p className="text-sm text-neutral-400 mt-2">
-              Start by generating a post to see results appear here ✨
+            <p className="text-lg font-medium text-neutral-700">
+              No results found
+            </p>
+            <p className="text-sm text-neutral-400 mt-1">
+              Start by generating a post to see results appear here{" "}
+              <span className="text-yellow-400">✨</span>
             </p>
           </div>
         ) : (
