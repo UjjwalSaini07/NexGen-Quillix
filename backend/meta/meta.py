@@ -22,7 +22,7 @@ metadata = {
             "and creative flexibility."
         ),
         "image": "/NexGenQuillixLogo.png",
-        "url": "http://localhost:3000/",
+        "url": "https://nexgenquillix.vercel.app/",
         "type": "website",
         "locale": "en_US",
         "site_name": "NexGen-Quillix",
@@ -38,7 +38,7 @@ metadata = {
         "site": "@NexGenQuillix",
         "creator": "@UjjwalSaini0007",
     },
-    "canonical": "http://localhost:3000/",
+    "canonical": "https://nexgenquillix.vercel.app/",
     "robots": "index, follow",
     "theme_color": "#",
     "rating": "General",
