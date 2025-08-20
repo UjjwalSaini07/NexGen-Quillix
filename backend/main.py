@@ -1,22 +1,22 @@
+import os
+import hashlib
+import orjson
+import logging
+import redis
+from dotenv import load_dotenv
+from deepdiff import DeepDiff
+from typing import Optional, List
+from pydantic import BaseModel, Field
+from redis.commands.json.path import Path
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from deepdiff import DeepDiff
-from pydantic import BaseModel, Field
-from typing import Optional, List
 from utils.device_detector import detect_and_store
 from linkedin.linkedin_generator import LinkedInPostGenerator
 from instagram.instagram_generator import InstagramPostGenerator
 from x.x_generator import XPostGenerator
 from facebook.facebook_generator import FacebookPostGenerator
 from youtube.youtube_generator import YouTubePostGenerator
-import redis
-from redis.commands.json.path import Path
-import hashlib
-import orjson
-from dotenv import load_dotenv
-import os
-import logging
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +34,6 @@ app.add_middleware(
 
 # Redis connection
 # redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
-
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
@@ -134,6 +133,7 @@ def get_cached_response(key: str):
         logger.warning(f"Redis read failed: {e}")
         return None
 
+# Author - UjjwalS - www.ujjwalsaini.dev
 # POST endpoint
 # ======= LINKEDIN ENDPOINT =======
 @app.post("/generate/linkedin")
@@ -264,10 +264,10 @@ async def generate_youtube_post(request: Request, body: YouTubeGenerateRequest):
 @app.get("/health", response_class=JSONResponse)
 async def health_check():
     health_report = {
-        "status": "ok",
+        "status": "Ok",
         "redis": False,
         "env_ready": False,
-        "version": "0.1.0",
+        "version": "1.0.0",
     }
 
     # Redis connectivity
