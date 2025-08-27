@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Ancizar_Serif, Orbitron, Playfair_Display_SC } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -11,6 +11,21 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const ancizar = Ancizar_Serif({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const playfairSC = Playfair_Display_SC({
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata = {
