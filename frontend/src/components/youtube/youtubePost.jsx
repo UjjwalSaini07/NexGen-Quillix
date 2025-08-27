@@ -399,7 +399,9 @@ export default function YoutubePost() {
         )}
         <div className="text-center text-sm text-neutral-500 -mt-4">
           <p className="inline-flex items-center gap-1 transition-colors duration-300">
-            <span className="text-neutral-500">Developed by</span>
+            <span className="text-neutral-500">Developed with {" "}</span>
+            <span className="animate-pulse text-red-700">❤️</span>
+            <span className="text-neutral-500">by {" "}</span>
             <a
               href="https://ujjwalsaini.dev"
               target="_blank"
