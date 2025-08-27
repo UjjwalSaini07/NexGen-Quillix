@@ -39,7 +39,7 @@ export default function Footer() {
 
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:w-1/2 md:justify-end">
             <FooterColumn
-              title="Products"
+              title="Our Products"
               links={[
                 { label: "Linkedin Post Gen", href: "/linkedin" },
                 { label: "Instagram Post Gen", href: "/instagram" },
@@ -49,7 +49,7 @@ export default function Footer() {
               ]}
             />
             <FooterColumn
-              title="Company"
+              title="Legal Section"
               links={[
                 { label: "Terms & Conditions", href: "/terms&conditions" },
                 { label: "Privacy Policy", href: "/privacypolicy" },
