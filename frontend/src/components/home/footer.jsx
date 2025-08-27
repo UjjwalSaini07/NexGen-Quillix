@@ -53,7 +53,7 @@ export default function Footer() {
               links={[
                 { label: "Terms & Conditions", href: "/terms&conditions" },
                 { label: "Privacy Policy", href: "/privacypolicy" },
-                { label: "License Issued", href: "https://github.com/UjjwalSaini07/NexGen-Quillix/blob/main/LICENSE" },
+                { label: "License Issued", href: "/license" },
               ]}
             />
             {width > 650 && (
