@@ -12,7 +12,7 @@ const textVariant = (delay) => ({
   },
 });
 
-export default function About() {
+export default function AboutSection() {
   return (
     <section
       id="about"
@@ -106,39 +106,38 @@ export default function About() {
       </div>
 
       <div className="mt-20 text-center">
-<motion.div variants={textVariant(2)} initial="hidden" animate="show">
-  <h3
-    style={{ fontFamily: "Times New Roman, serif" }}
-    className="text-4xl font-bold text-white"
-  >
-    Let AI Handle the Heavy Lifting
-  </h3>
-</motion.div>
+        <motion.div variants={textVariant(2)} initial="hidden" animate="show">
+          <h3
+            style={{ fontFamily: "Times New Roman, serif" }}
+            className="text-4xl font-bold text-white"
+          >
+            Let AI Handle the Heavy Lifting
+          </h3>
+        </motion.div>
 
-<motion.div variants={textVariant(2.3)} initial="hidden" animate="show">
-  <p
-    style={{ fontFamily: "Merriweather, serif" }}
-    className="mt-5 text-lg text-neutral-200 max-w-3xl mx-auto leading-relaxed"
-  >
-    Focus on growth, strategy, and creativity while{" "}
-    <span className="text-cyan-400 font-semibold">Quillix AI</span> automates
-    the rest. From generating high-quality, trend-aware content to ensuring it
-    aligns perfectly with your brand’s unique voice, Quillix takes care of the
-    heavy lifting behind the scenes.{" "}
-    <br />
-    <br />
-    But we don’t stop at content creation—our platform also integrates with{" "}
-    <span className="text-cyan-400 font-semibold">MCP Server</span>, enabling
-    end-to-end automation across your social platforms. With a single click,
-    your posts can be created, optimized, and delivered directly to your
-    audience, all powered by the intelligence of Quillix AI.{" "}
-    <br />
-    <br />
-    The result? A seamless, AI-driven workflow that empowers you to connect,
-    engage, and scale your digital presence—without the manual grind.
-  </p>
-</motion.div>
-
+        <motion.div variants={textVariant(2.3)} initial="hidden" animate="show">
+          <p
+            style={{ fontFamily: "Merriweather, serif" }}
+            className="mt-5 text-lg text-neutral-200 max-w-3xl mx-auto leading-relaxed"
+          >
+            Focus on growth, strategy, and creativity while{" "}
+            <span className="text-cyan-400 font-semibold">Quillix AI</span> automates
+            the rest. From generating high-quality, trend-aware content to ensuring it
+            aligns perfectly with your brand’s unique voice, Quillix takes care of the
+            heavy lifting behind the scenes.{" "}
+            <br />
+            <br />
+            But we don’t stop at content creation—our platform also integrates with{" "}
+            <span className="text-cyan-400 font-semibold">MCP Server</span>, enabling
+            end-to-end automation across your social platforms. With a single click,
+            your posts can be created, optimized, and delivered directly to your
+            audience, all powered by the intelligence of Quillix AI.{" "}
+            <br />
+            <br />
+            The result? A seamless, AI-driven workflow that empowers you to connect,
+            engage, and scale your digital presence—without the manual grind.
+          </p>
+        </motion.div>
 
         <motion.div variants={textVariant(2.6)} initial="hidden" animate="show">
           <div className="mt-8">
