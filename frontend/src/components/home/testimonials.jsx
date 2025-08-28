@@ -51,7 +51,7 @@ export default function TestimonialsMarquee() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-neutral-950 py-20">
+    <section className="relative w-full overflow-hidden py-20">
       <div className="text-center mb-12">
         <h2 style={{ fontFamily: "Times New Roman, sans-serif" }} className="text-4xl md:text-5xl font-extrabold text-white">
           Loved by{" "}
