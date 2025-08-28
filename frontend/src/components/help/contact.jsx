@@ -18,6 +18,12 @@ export default function ContactPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const toastId = toast.info("Please wait, loading contact form...", {
+      autoClose: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+    });
+
     const script = document.createElement("script");
     script.src = "https://static-bundles.visme.co/forms/vismeforms-embed.js";
     script.async = true;
