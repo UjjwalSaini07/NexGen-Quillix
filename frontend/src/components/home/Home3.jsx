@@ -2,35 +2,41 @@ import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { AnimatedUniqueness } from "../ui/animatedUniqueness";
-
 const data = [
   {
     name: "AI-Powered Trend Prediction",
     type: "Stay Ahead of the Curve",
     quote:
       "Our AI analyzes billions of data points to predict upcoming content trends before they peak. This ensures your brand always rides the wave at the perfect time, not after it has passed.",
-    src: "https://static.inlinx.com/1f3a33cd19/e69b0/linxapp/blog/5_what_is_the_chatroom_feature_cover.png",
+    src: "/assets/AI-Powered.png",
   },
   {
     name: "Seamless Multi-Platform Publishing",
     type: "One Click, Everywhere",
     quote:
-      "Publish once, and NexGen-Quillix distributes optimized versions of your content across all major platforms—Facebook, LinkedIn, Instagram, and beyond—without the hassle of manual tweaking.",
-    src: "https://www.sorryonmute.com/wp-content/uploads/2022/08/Feature-Image-2.png",
+      "Create once, publish everywhere. NexGen-Quillix auto-optimizes your content for every major platform—Facebook, LinkedIn, Instagram, and more—eliminating the need for manual adjustments.",
+    src: "/assets/AiMultiPlatform.png",
   },
   {
     name: "Adaptive Brand Voice",
     type: "Your Identity, Perfected",
     quote:
       "Our engine learns your unique tone and style, ensuring every post, caption, or article reflects your brand’s voice—consistent, authentic, and tailored for your audience.",
-    src: "https://thumbs.dreamstime.com/b/conference-video-call-people-talking-to-each-other-monitor-screen-working-home-remote-project-management-conference-video-186775025.jpg",
+    src: "/assets/BrandVoice.png",
   },
   {
     name: "Real-Time Analytics & Optimization",
     type: "Smarter Decisions Instantly",
     quote:
-      "No more guessing. Quillix provides live feedback on performance and auto-adjusts campaigns to maximize reach and conversions—empowering you to focus on creativity, not spreadsheets.",
-    src: "https://mumbaimirror.indiatimes.com/photo/76099716.cms",
+      "Stop guessing. Quillix delivers live performance insights and automatically fine-tunes campaigns to maximize reach, engagement, and conversions—freeing you to focus on creativity.",
+    src: "/assets/RealTimeAnalytics.png",
+  },
+  {
+    name: "AI-Driven Audience Connection",
+    type: "Engage Who Matters Most",
+    quote:
+      "Go beyond demographics. Our AI pinpoints the audiences most likely to engage, converting passive scrollers into loyal followers and customers.",
+    src: "/assets/AIConnect.png",
   },
 ];
 
@@ -46,7 +52,7 @@ export default function Home3() {
   }, []);
 
   return (
-    <div className="flex justify-center items-center overflow-hidden py-20 px-6 -mb-25">
+    <div className="flex justify-center items-center overflow-hidden py-20 px-6 -mb-40 sm:-mb-28">
       <div className="w-full max-w-6xl text-center">
         <h1
           data-aos="zoom-in-down"
