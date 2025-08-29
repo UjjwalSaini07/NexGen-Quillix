@@ -47,7 +47,7 @@ export default function Home3() {
       delay: 10,
       duration: 2000,
       easing: "ease",
-      once: false,
+      once: true,
     });
   }, []);
 
