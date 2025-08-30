@@ -8,7 +8,9 @@ import TermsConditions from "../../components/legals/TermsAndCondition";
 
 export default function TermsConditionsPage() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix's Terms and Conditions page! 📝");
+    toast.info("Welcome to NexGen-Quillix's Terms and Conditions page! 📝", {
+      toastId: "terms-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

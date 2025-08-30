@@ -8,7 +8,9 @@ import HelpCenter from "../../components/help/helpcenter";
 
 export default function HelpCenterPage() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix's Help Center page! 🤝");
+    toast.info("Welcome to NexGen-Quillix's Help Center page! 🤝", {
+      toastId: "help-center-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

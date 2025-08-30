@@ -8,7 +8,9 @@ import License from "../../components/legals/License";
 
 export default function LicensePage() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix's License Page! 📝");
+    toast.info("Welcome to NexGen-Quillix's License Page! 📝", {
+      toastId: "license-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

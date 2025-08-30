@@ -8,7 +8,9 @@ import PrivacyPolicy from "../../components/legals/privacypolicy";
 
 export default function PrivacyPolicyPage() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix's Privacy Policy page! 📝");
+    toast.info("Welcome to NexGen-Quillix's Privacy Policy page! 📝", {
+      toastId: "privacy-policy-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

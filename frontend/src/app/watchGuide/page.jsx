@@ -8,7 +8,9 @@ import WorkInProgress from "../../components/common/comingSoon";
 
 export default function WatchGuide() {
   useEffect(() => {
-    toast.info("👷 Work in Progress: We're building something awesome for you here at NexGen-Quillix. Check back soon!");
+    toast.info("👷 Work in Progress: We're building something awesome for you here at NexGen-Quillix. Check back soon!", {
+      toastId: "work-in-progress-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

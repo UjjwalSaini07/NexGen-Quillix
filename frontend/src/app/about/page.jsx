@@ -8,7 +8,9 @@ import AboutPage from "../../components/help/about";
 
 export default function AboutPageWrapper() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix’s Inspiring About Page! ❤️");
+    toast.info("Welcome to NexGen-Quillix’s Inspiring About Page! ❤️", {
+      toastId: "about-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",

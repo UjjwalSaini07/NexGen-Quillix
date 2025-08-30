@@ -8,7 +8,9 @@ import Contact from "../../components/help/contact";
 
 export default function ContactPage() {
   useEffect(() => {
-    toast.info("Welcome to NexGen-Quillix's Contact page! 📞, Please wait, contact form loading...");
+    toast.info("Welcome to NexGen-Quillix's Contact page! 📞, Please wait, contact form loading...", {
+      toastId: "contact-welcome-toast",
+    });
     window.scrollTo({
       top: 0,
       behavior: "smooth",
