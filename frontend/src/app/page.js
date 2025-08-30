@@ -7,6 +7,7 @@ import FooterPage from "@/components/home/footer";
 import Hero from "@/components/home/Hero";
 import Home2_1 from "@/components/home/Home2_Sec1";
 import Home2 from "@/components/home/Home2";
+import Home4 from "@/components/home/Home4";
 import Home3 from "@/components/home/Home3";
 import Testimonials from "@/components/home/testimonials";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
         <Hero />
         <Home2_1 />
         <Home2 />
+        <Home4 />
         <Home3 />
         <Testimonials />
       </main>
