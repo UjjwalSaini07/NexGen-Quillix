@@ -2,7 +2,7 @@
 
 import { Orbitron } from "next/font/google";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import {
@@ -12,6 +12,7 @@ import {
   FaFacebookF,
   FaYoutube,
 } from "react-icons/fa6";
+import { FaHireAHelper } from "react-icons/fa";
 import useWindowSize from "../hooks/use-WindowSize";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -22,6 +23,9 @@ const Header = () => {
   const pathname = usePathname();
   const [selectedSocial, setSelectedSocial] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHelpMenuOpen, setIsHelpMenuOpen] = useState(false);
+  const helpMenuRef = useRef(null);
+
   const { width } = useWindowSize();
 
   useEffect(() => {
@@ -35,11 +39,31 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (pathname === "/") {
+    if (
+      pathname === "/" ||
+      pathname === "/about" ||
+      pathname === "/contact" ||
+      pathname === "/helpcenter" ||
+      pathname === "/privacypolicy" ||
+      pathname === "/terms&conditions" ||
+      pathname === "/license" ||
+      pathname === "/mcpAutomation" ||
+      pathname === "/watchGuide"
+    ) {
       setSelectedSocial(null);
       localStorage.removeItem("selectedBot");
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const onDown = (e) => {
+      if (helpMenuRef.current && !helpMenuRef.current.contains(e.target)) {
+        setIsHelpMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
 
   const handleSocialClick = (name) => {
     setSelectedSocial(name);
@@ -47,7 +71,16 @@ const Header = () => {
     toast.success(`${name} Bot Activated!`);
   };
 
-  const isHome = pathname === "/";
+  const isHome =
+    pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/contact" ||
+    pathname === "/helpcenter" ||
+    pathname === "/privacypolicy" ||
+    pathname === "/terms&conditions" ||
+    pathname === "/license" ||
+    pathname === "/mcpAutomation" ||
+    pathname === "/watchGuide";
 
   const socialPlatforms = [
     {
@@ -79,6 +112,10 @@ const Header = () => {
       icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />,
       color: "text-pink-400",
       href: "/youtube",
+    },
+    {
+      name: "Help",
+      icon: <FaHireAHelper className="w-5 h-5 sm:w-6 sm:h-6" />,
     },
   ];
 
@@ -127,38 +164,161 @@ const Header = () => {
                   : "opacity-0 invisible scale-95"
               }`}
             >
-              {socialPlatforms.map(({ name, href }) => (
-                <Link
-                  key={name}
-                  href={href}
-                  onClick={() => {
-                    handleSocialClick(name);
-                    setIsMenuOpen(false);
-                  }}
-                  className={`text-sm font-medium transition-colors hover:text-blue-400 ${
-                    selectedSocial === name ? "text-blue-400" : "text-white"
-                  }`}
-                >
-                  {name}
-                </Link>
-              ))}
+              {socialPlatforms.map(({ name, href }) =>
+                name !== "Help" ? (
+                  <Link
+                    key={name}
+                    href={href}
+                    onClick={() => {
+                      handleSocialClick(name);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`text-sm font-medium transition-colors hover:text-blue-400 ${
+                      selectedSocial === name || pathname === href
+                        ? "text-cyan-500"
+                        : "text-white"
+                    }`}
+                  >
+                    {name}
+                  </Link>
+                ) : (
+                  <div key="Help" className="flex flex-col gap-2">
+                    <Link
+                      href="/about"
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/about" ? "text-cyan-500" : "text-white"
+                      }`}
+                    >
+                      About
+                    </Link>
+                    <Link
+                      href="/contact"
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/contact"
+                          ? "text-cyan-500"
+                          : "text-white"
+                      }`}
+                    >
+                      Contact
+                    </Link>
+                    <Link
+                      href="/helpcenter"
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/helpcenter"
+                          ? "text-cyan-500"
+                          : "text-white"
+                      }`}
+                    >
+                      Help Center
+                    </Link>
+                  </div>
+                )
+              )}
             </div>
           </>
         ) : (
           <nav className="lg:relative flex flex-wrap lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:items-center justify-center gap-4 sm:gap-6 mb-2 sm:mb-0">
-            {socialPlatforms.map(({ name, icon, color, href }) => (
-              <Link
-                key={name}
-                href={href}
-                aria-label={name}
-                onClick={() => handleSocialClick(name)}
-                className={`transition-colors duration-200 text-white hover:${color} ${
-                  selectedSocial === name ? color : ""
-                } focus:outline-none focus:ring-2 rounded`}
-              >
-                {icon}
-              </Link>
-            ))}
+            {socialPlatforms.map(({ name, icon, color, href }) =>
+              name !== "Help" ? (
+                <Link
+                  key={name}
+                  href={href}
+                  aria-label={name}
+                  onClick={() => handleSocialClick(name)}
+                  className={`transition-colors duration-200 focus:outline-none focus:ring-2 rounded ${
+                    selectedSocial === name || pathname === href
+                      ? "text-cyan-500"
+                      : "text-white"
+                  }`}
+                >
+                  {icon}
+                </Link>
+              ) : (
+                <div key="Help" ref={helpMenuRef} className="relative">
+                  <button
+                    className="flex items-center text-gray-400 hover:text-white transition focus:outline-none"
+                    onClick={() => setIsHelpMenuOpen((v) => !v)}
+                  >
+                    <FaHireAHelper className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="22"
+                      fill="currentColor"
+                      className="ml-2"
+                      viewBox="0 0 14 14"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"
+                      />
+                    </svg>
+                  </button>
+
+                  {isHelpMenuOpen && (
+                    <div className="absolute top-10 left-0 bg-black/60 backdrop-blur-lg shadow-xl rounded-2xl z-50 p-4 w-40 border border-gray-700">
+                      <ul className="list-none space-y-2">
+                        <li>
+                          <Link
+                            href="/about"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/about" ? "text-cyan-500" : ""
+                            }`}
+                          >
+                            About
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/contact"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/contact" ? "text-cyan-500" : ""
+                            }`}
+                          >
+                            Contact
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/helpcenter"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/helpcenter" ? "text-cyan-500" : ""
+                            }`}
+                          >
+                            Help Center
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/privacypolicy"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/privacypolicy" ? "text-cyan-500" : ""
+                            }`}
+                          >
+                            Privacy Policy
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/terms&conditions"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/terms&conditions"
+                                ? "text-cyan-500"
+                                : ""
+                            }`}
+                          >
+                            Terms Condition
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
           </nav>
         )}
 
@@ -168,14 +328,14 @@ const Header = () => {
               toast.success(
                 selectedSocial
                   ? `${selectedSocial} Bot Active`
-                  : "Bot is Not Activated!"
+                  : "No Bot is Selected yet...!"
               )
             }
             className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm sm:text-base font-semibold rounded-full shadow-md hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black transition-all duration-300"
             aria-label="Toggle Bot Mode"
           >
             {isHome && !selectedSocial
-              ? "No Bot Selected"
+              ? "No Bot Selected yet..."
               : selectedSocial
               ? `${selectedSocial} Bot`
               : "Select Any Bot"}

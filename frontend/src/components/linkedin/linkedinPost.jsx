@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { toast } from "react-toastify";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -354,7 +355,7 @@ export default function LinkedinPost() {
             <Button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
-              className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 disabled:opacity-50"
+              className="w-full mt-4 bg-gradient-to-r from-sky-400 via-cyan-500 to-teal-600 hover:opacity-90 disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -391,9 +392,41 @@ export default function LinkedinPost() {
             ))}
           </div>
         )}
+
+        <div className="flex flex-col items-center justify-center gap-5">
+          <h2
+            className="text-[1.4rem] md:text-3xl font-bold tracking-wide relative pb-2"
+            style={{ fontFamily: "Times New Roman, serif" }}
+          >
+            <span className="hidden md:inline">MCP Social Account Automation</span>
+            <span className="md:hidden">Social Account Automation</span>
+            <span className="absolute left-1/2 -bottom-1 w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-cyan-700 transform -translate-x-1/2 rounded-full"></span>
+          </h2>
+          
+          <p style={{ fontFamily: "Ancizar Serif, sans-serif" }} className="text-gray-500 text-center text-sm sm:text-base md:text-lg max-w-lg sm:max-w-xl md:max-w-2xl leading-relaxed">
+            Streamline your MCP social account management — schedule posts, drive engagement, 
+            and automate workflows, giving you more time to focus on growth.
+          </p>
+
+          <Link
+            href="/mcpAutomation"
+            className="mt-4 px-8 py-3 rounded-full text-white font-semibold shadow-md
+                      bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-700
+                      hover:shadow-cyan-400/50 hover:scale-101 active:scale-90
+                      transition-all duration-300 ease-out"
+          >
+            {/* Mobile (below 768px) */}
+            <span style={{ fontFamily: "Ancizar Serif, sans-serif" }} className="md:hidden text-sm sm:text-base md:text-lg max-w-lg sm:max-w-xl md:max-w-2xl">Automate Your Social Accounts</span>
+            {/* Desktop (768px and up) */}
+            <span style={{ fontFamily: "Ancizar Serif, sans-serif" }} className="hidden md:inline">🚀 Automate Your Social Accounts with Power of MCP</span>
+          </Link>
+        </div>
+        
         <div className="text-center text-sm text-neutral-500 -mt-4">
           <p className="inline-flex items-center gap-1 transition-colors duration-300">
-            <span className="text-neutral-500">Developed by</span>
+            <span className="text-neutral-500">Developed with {" "}</span>
+            <span className="animate-pulse text-red-700">❤️</span>
+            <span className="text-neutral-500">by{" "}</span>
             <a
               href="https://ujjwalsaini.dev"
               target="_blank"
