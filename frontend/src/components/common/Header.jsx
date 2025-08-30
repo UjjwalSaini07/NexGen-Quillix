@@ -39,7 +39,17 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (pathname === "/" || pathname === "/about" || pathname === "/contact" || pathname === "/helpcenter" || pathname === "/privacypolicy" || pathname === "/terms&conditions" || pathname === "/license" || pathname === "/mcpAutomation" || pathname === "/watchGuide") {
+    if (
+      pathname === "/" ||
+      pathname === "/about" ||
+      pathname === "/contact" ||
+      pathname === "/helpcenter" ||
+      pathname === "/privacypolicy" ||
+      pathname === "/terms&conditions" ||
+      pathname === "/license" ||
+      pathname === "/mcpAutomation" ||
+      pathname === "/watchGuide"
+    ) {
       setSelectedSocial(null);
       localStorage.removeItem("selectedBot");
     }
@@ -61,7 +71,16 @@ const Header = () => {
     toast.success(`${name} Bot Activated!`);
   };
 
-  const isHome = pathname === "/" || pathname === "/about" || pathname === "/contact" || pathname === "/helpcenter" || pathname === "/privacypolicy" || pathname === "/terms&conditions" || pathname === "/license" || pathname === "/mcpAutomation" || pathname === "/watchGuide";
+  const isHome =
+    pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/contact" ||
+    pathname === "/helpcenter" ||
+    pathname === "/privacypolicy" ||
+    pathname === "/terms&conditions" ||
+    pathname === "/license" ||
+    pathname === "/mcpAutomation" ||
+    pathname === "/watchGuide";
 
   const socialPlatforms = [
     {
@@ -155,7 +174,9 @@ const Header = () => {
                       setIsMenuOpen(false);
                     }}
                     className={`text-sm font-medium transition-colors hover:text-blue-400 ${
-                      selectedSocial === name ? "text-blue-400" : "text-white"
+                      selectedSocial === name || pathname === href
+                        ? "text-cyan-500"
+                        : "text-white"
                     }`}
                   >
                     {name}
@@ -165,21 +186,31 @@ const Header = () => {
                     <Link
                       href="/about"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-sm font-medium hover:text-cyan-400 text-white"
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/about" ? "text-cyan-500" : "text-white"
+                      }`}
                     >
                       About
                     </Link>
                     <Link
                       href="/contact"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-sm font-medium hover:text-cyan-400 text-white"
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/contact"
+                          ? "text-cyan-500"
+                          : "text-white"
+                      }`}
                     >
                       Contact
                     </Link>
                     <Link
                       href="/helpcenter"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-sm font-medium hover:text-cyan-400 text-white"
+                      className={`text-sm font-medium hover:text-cyan-400 ${
+                        pathname === "/helpcenter"
+                          ? "text-cyan-500"
+                          : "text-white"
+                      }`}
                     >
                       Help Center
                     </Link>
@@ -197,9 +228,11 @@ const Header = () => {
                   href={href}
                   aria-label={name}
                   onClick={() => handleSocialClick(name)}
-                  className={`transition-colors duration-200 text-white hover:${color} ${
-                    selectedSocial === name ? color : ""
-                  } focus:outline-none focus:ring-2 rounded`}
+                  className={`transition-colors duration-200 focus:outline-none focus:ring-2 rounded ${
+                    selectedSocial === name || pathname === href
+                      ? "text-cyan-500"
+                      : "text-white"
+                  }`}
                 >
                   {icon}
                 </Link>
@@ -231,7 +264,9 @@ const Header = () => {
                         <li>
                           <Link
                             href="/about"
-                            className="block text-white text-base hover:text-cyan-400 transition"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/about" ? "text-cyan-500" : ""
+                            }`}
                           >
                             About
                           </Link>
@@ -239,7 +274,9 @@ const Header = () => {
                         <li>
                           <Link
                             href="/contact"
-                            className="block text-white text-base hover:text-cyan-400 transition"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/contact" ? "text-cyan-500" : ""
+                            }`}
                           >
                             Contact
                           </Link>
@@ -247,7 +284,9 @@ const Header = () => {
                         <li>
                           <Link
                             href="/helpcenter"
-                            className="block text-white text-base hover:text-cyan-400 transition"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/helpcenter" ? "text-cyan-500" : ""
+                            }`}
                           >
                             Help Center
                           </Link>
@@ -255,7 +294,9 @@ const Header = () => {
                         <li>
                           <Link
                             href="/privacypolicy"
-                            className="block text-white text-base hover:text-cyan-400 transition"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/privacypolicy" ? "text-cyan-500" : ""
+                            }`}
                           >
                             Privacy Policy
                           </Link>
@@ -263,7 +304,11 @@ const Header = () => {
                         <li>
                           <Link
                             href="/terms&conditions"
-                            className="block text-white text-base hover:text-cyan-400 transition"
+                            className={`block text-white text-base hover:text-cyan-400 transition ${
+                              pathname === "/terms&conditions"
+                                ? "text-cyan-500"
+                                : ""
+                            }`}
                           >
                             Terms Condition
                           </Link>
