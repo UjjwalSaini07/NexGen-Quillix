@@ -1,99 +1,58 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { Share2, Activity, Cloud, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import CountUp from "react-countup";
+import { ArrowRight, Share2, Activity, Cloud, Sparkles } from "lucide-react";
 import AnimatedCard from "../ui/AnimatedCard";
 import AnimatedBeamCard from "../ui/AnimatedBeamCard";
 
 const stats = [
-  { label: "AI-Powered Content Tokens", value: 2500000 },
-  { label: "Content Generation Speed", value: 1.2 },
-  { label: "Brands Accelerating Growth", value: 900 },
-  { label: "Optimized Social Platforms", value: 7 },
-  { label: "MCP Social Account Connections", value: 5 },
+  { label: "AI-Powered Content Tokens", value: 2500000, suffix: "+" },
+  { label: "Content Generation Speed", value: 1.2, suffix: "sec" },
+  { label: "Brands Accelerating Growth", value: 900, suffix: "+" },
+  { label: "Optimized Social Platforms", value: 7, suffix: "+" },
+  { label: "MCP Social Automation", value: 5, suffix: "" },
 ];
 
 const textMotion = ({ 
-  delay = 0, 
-  duration = 1.25, 
-  startY = -50, 
-  startOpacity = 0, 
-  endY = 0, 
-  endOpacity = 1, 
-  easingType = "spring" 
+  delay = 0, duration = 1.25, startY = -50, startOpacity = 0, endY = 0, endOpacity = 1, easingType = "spring" 
 } = {}) => ({
   hidden: { y: startY, opacity: startOpacity },
   show: {
-    y: endY,
-    opacity: endOpacity,
-    transition: {
-      type: easingType,
-      duration: duration,
-      delay: delay,
-    },
+    y: endY, opacity: endOpacity,
+    transition: { type: easingType, duration, delay },
   },
 });
 
-const textMotionFromLeft = ({ 
-  delay = 0, 
-  duration = 1.25, 
-  startX = -50, 
-  startOpacity = 0, 
-  endX = 0, 
-  endOpacity = 1, 
-  easingType = "spring" 
-} = {}) => ({
+const textMotionFromLeft = ({ delay = 0, duration = 1.25, startX = -50, startOpacity = 0, endX = 0, endOpacity = 1, easingType = "spring" } = {}) => ({
   hidden: { x: startX, opacity: startOpacity },
-  show: {
-    x: endX,
-    opacity: endOpacity,
-    transition: {
-      type: easingType,
-      duration: duration,
-      delay: delay,
-    },
-  },
+  show: { x: endX, opacity: endOpacity, transition: { type: easingType, duration, delay } },
 });
 
-const textMotionFromRight = ({ 
-  delay = 0, 
-  duration = 1.25, 
-  startX = 50, 
-  startOpacity = 0, 
-  endX = 0, 
-  endOpacity = 1, 
-  easingType = "spring" 
-} = {}) => ({
+const textMotionFromRight = ({ delay = 0, duration = 1.25, startX = 50, startOpacity = 0, endX = 0, endOpacity = 1, easingType = "spring" } = {}) => ({
   hidden: { x: startX, opacity: startOpacity },
-  show: {
-    x: endX,
-    opacity: endOpacity,
-    transition: {
-      type: easingType,
-      duration: duration,
-      delay: delay,
-    },
-  },
+  show: { x: endX, opacity: endOpacity, transition: { type: easingType, duration, delay } },
 });
 
 export default function HeroSection() {
-  const [counters, setCounters] = useState(stats.map(() => 0));
+  const [startCount, setStartCount] = useState(false);
+  const statsRef = useRef(null);
 
   useEffect(() => {
-    const intervals = stats.map((stat, i) =>
-      setInterval(() => {
-        setCounters((prev) => {
-          const next = [...prev];
-          if (next[i] < stat.value) {
-            next[i] = Math.min(next[i] + Math.ceil(stat.value / 40), stat.value);
-          }
-          return next;
-        });
-      }, 30)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setStartCount(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
     );
-    return () => intervals.forEach(clearInterval);
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -157,7 +116,7 @@ export default function HeroSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-6xl mx-auto mt-7 items-stretch">
-          <motion.div variants={ textMotionFromLeft({ delay: 1.2, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
+          <motion.div variants={textMotionFromLeft({ delay: 1.2, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
             <AnimatedCard
               icon={<Sparkles size={28} className="text-white" />}
               title="Instant Impact"
@@ -167,29 +126,28 @@ export default function HeroSection() {
           </motion.div>
 
           <div className="flex flex-col justify-between gap-6">
-            <motion.div variants={ textMotion({ delay: 2.8, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
+            <motion.div variants={textMotion({ delay: 2.8, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
               <AnimatedBeamCard
                 icon={<Activity className="text-white" size={28} />}
                 title="Performance Optimized"
                 description="AI-powered speed delivers fast, precise content without compromise."
-                beamColorFrom="#ff4d6d"
-                beamColorTo="#c70039"
+                beamColorFrom="#06b6d4"
               />
             </motion.div>
-            <motion.div variants={ textMotion({ delay: 3.2, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
+            <motion.div variants={textMotion({ delay: 3.2, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
               <AnimatedBeamCard
                 icon={<Share2 className="text-white" size={28} />}
                 title="Effortless Automation"
                 description="Simplify content creation with unified AI-driven scheduling and publishing."
-                beamColorFrom="#ff4d6d"
-                beamColorTo="#c70039"
+                beamColorFrom="#06b6d4"
+                beamColorTo="#06b6d4"
               />
             </motion.div>
           </div>
 
-          <motion.div variants={ textMotionFromRight({ delay: 1.8, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
+          <motion.div variants={textMotionFromRight({ delay: 1.8, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
             <AnimatedCard
-              icon={<Cloud  size={36} className="text-white" />}
+              icon={<Cloud size={36} className="text-white" />}
               title="MCP Social Automation"
               description="Unlock full-scale automation with NexGen Quillix—streamlining content creation, scheduling, and multi-platform publishing through MCP for effortless, goal-driven growth."
               className="p-6 -mt-20"
@@ -197,14 +155,34 @@ export default function HeroSection() {
           </motion.div>
         </div>
 
-        <div className="mt-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-center">
+        <div
+          ref={statsRef}
+          className="mt-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 text-center"
+        >
           {stats.map((stat, i) => (
             <div key={i}>
-              <p style={{ fontFamily: "Ancizar Serif, sans-serif" }} className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                {counters[i]}
                 {typeof stat.value === "number" && stat.value < 10 ? "" : "+"}
+                style={{ fontFamily: "Ancizar Serif, sans-serif" }}
+                className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
+              >
+                {startCount ? (
+                  <CountUp
+                    end={stat.value}
+                    duration={3.5}
+                    separator=","
+                    decimals={stat.value % 1 !== 0 ? 1 : 0}
+                  />
+                ) : (
+                  "0"
+                )}
+                {stat.suffix}
               </p>
-              <p style={{ fontFamily: "Ancizar Serif, sans-serif" }} className="text-md text-neutral-400 mt-2">{stat.label}</p>
+              <p
+                style={{ fontFamily: "Ancizar Serif, sans-serif" }}
+                className="text-md text-neutral-400 mt-2"
+              >
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
