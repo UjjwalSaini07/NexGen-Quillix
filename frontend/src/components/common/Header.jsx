@@ -283,14 +283,14 @@ const Header = () => {
               toast.success(
                 selectedSocial
                   ? `${selectedSocial} Bot Active`
-                  : "No Bot is Selected!"
+                  : "No Bot is Selected yet...!"
               )
             }
             className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm sm:text-base font-semibold rounded-full shadow-md hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black transition-all duration-300"
             aria-label="Toggle Bot Mode"
           >
             {isHome && !selectedSocial
-              ? "No Bot Selected"
+              ? "No Bot Selected yet..."
               : selectedSocial
               ? `${selectedSocial} Bot`
               : "Select Any Bot"}
