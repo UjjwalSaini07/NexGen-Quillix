@@ -161,7 +161,7 @@ export default function HeroSection() {
         >
           {stats.map((stat, i) => (
             <div key={i}>
-                {typeof stat.value === "number" && stat.value < 10 ? "" : "+"}
+              <p
                 style={{ fontFamily: "Ancizar Serif, sans-serif" }}
                 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent"
               >
