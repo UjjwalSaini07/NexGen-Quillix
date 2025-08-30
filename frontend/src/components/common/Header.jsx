@@ -39,7 +39,7 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    if (pathname === "/") {
+    if (pathname === "/" || pathname === "/about" || pathname === "/contact" || pathname === "/helpcenter" || pathname === "/privacypolicy" || pathname === "/terms&conditions" || pathname === "/license" || pathname === "/mcpAutomation" || pathname === "/watchGuide") {
       setSelectedSocial(null);
       localStorage.removeItem("selectedBot");
     }
@@ -61,7 +61,7 @@ const Header = () => {
     toast.success(`${name} Bot Activated!`);
   };
 
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/about" || pathname === "/contact" || pathname === "/helpcenter" || pathname === "/privacypolicy" || pathname === "/terms&conditions" || pathname === "/license" || pathname === "/mcpAutomation" || pathname === "/watchGuide";
 
   const socialPlatforms = [
     {
