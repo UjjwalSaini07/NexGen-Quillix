@@ -4,16 +4,9 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CountUp from "react-countup";
 import { ArrowRight, Share2, Activity, Cloud, Sparkles } from "lucide-react";
+import useWindowSize from "../hooks/use-WindowSize";
 import AnimatedCard from "../ui/AnimatedCard";
 import AnimatedBeamCard from "../ui/AnimatedBeamCard";
-
-const stats = [
-  { label: "AI-Powered Content Tokens", value: 2500000, suffix: "+" },
-  { label: "Content Generation Speed", value: 1.2, suffix: "sec" },
-  { label: "Brands Accelerating Growth", value: 900, suffix: "+" },
-  { label: "Optimized Social Platforms", value: 7, suffix: "+" },
-  { label: "MCP Social Automation", value: 5, suffix: "" },
-];
 
 const textMotion = ({ 
   delay = 0, duration = 1.25, startY = -50, startOpacity = 0, endY = 0, endOpacity = 1, easingType = "spring" 
@@ -37,7 +30,18 @@ const textMotionFromRight = ({ delay = 0, duration = 1.25, startX = 50, startOpa
 
 export default function HeroSection() {
   const [startCount, setStartCount] = useState(false);
+  const { width } = useWindowSize();
   const statsRef = useRef(null);
+
+    const stats = [
+        { label: "AI-Powered Content Tokens", value: 2500000, suffix: "+" },
+        { label: "Content Generation Speed", value: 1.2, suffix: "sec" },
+        { label: "Brands Accelerating Growth", value: 900, suffix: "+" },
+        ...(width > 650
+        ? [{ label: "Optimized Social Platforms", value: 7, suffix: "+" }]
+        : []),
+        { label: "MCP Social Automation", value: 5, suffix: "" },
+    ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -102,20 +106,20 @@ export default function HeroSection() {
           className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
         >
           <a
-            href="#"
+            href="/helpcenter"
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium flex items-center justify-center gap-2 hover:opacity-90 transition"
           >
             Get Started 🚀 <ArrowRight className="w-4 h-4" />
           </a>
           <a
-            href="#"
+            href="/watchGuide"
             className="px-6 py-3 rounded-xl border border-white/20 text-white font-medium hover:bg-white/10 transition"
           >
             Watch Demo 🎥
           </a>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-6xl mx-auto mt-7 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-6xl mx-auto mt-27 sm:mt-7 items-stretch">
           <motion.div variants={textMotionFromLeft({ delay: 1.2, duration: 1, startY: -100, easingType: "easeOut" })} initial="hidden" animate="show">
             <AnimatedCard
               icon={<Sparkles size={28} className="text-white" />}
@@ -150,7 +154,7 @@ export default function HeroSection() {
               icon={<Cloud size={36} className="text-white" />}
               title="MCP Social Automation"
               description="Unlock full-scale automation with NexGen Quillix—streamlining content creation, scheduling, and multi-platform publishing through MCP for effortless, goal-driven growth."
-              className="p-6 -mt-20"
+              className="p-6 sm:-mt-20"
             />
           </motion.div>
         </div>
