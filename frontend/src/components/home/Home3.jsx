@@ -1,89 +1,144 @@
-import React, { useEffect } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { AnimatedUniqueness } from "../ui/animatedUniqueness";
-const data = [
+"use client";
+
+import { motion } from "framer-motion";
+import { Users, Rocket, PenTool, Briefcase } from "lucide-react";
+
+const features = [
   {
-    name: "AI-Powered Trend Prediction",
-    type: "Stay Ahead of the Curve",
-    quote:
-      "Our AI analyzes billions of data points to predict upcoming content trends before they peak. This ensures your brand always rides the wave at the perfect time, not after it has passed.",
-    src: "/assets/AI-Powered.png",
+    icon: <Users className="w-6 h-6 text-white" />,
+    title: "Marketers",
+    subtitle: "Smarter Campaigns, Less Effort",
+    desc: "Amplify your brand presence with AI-powered campaigns that deliver consistent messaging, optimized performance, and measurable impact—across LinkedIn, Instagram, X, and beyond.",
+    points: [
+      "Platform-specific content optimization",
+      "Always-on, on-brand messaging",
+      "Automated end-to-end campaign flows",
+      "Real-time performance insights & analytics",
+    ],
+    cta: "Empower Marketing",
   },
   {
-    name: "Seamless Multi-Platform Publishing",
-    type: "One Click, Everywhere",
-    quote:
-      "Create once, publish everywhere. NexGen-Quillix auto-optimizes your content for every major platform—Facebook, LinkedIn, Instagram, and more—eliminating the need for manual adjustments.",
-    src: "/assets/AiMultiPlatform.png",
+    icon: <Rocket className="w-6 h-6 text-white" />,
+    title: "Entrepreneurs",
+    subtitle: "Build Authority & Influence Fast",
+    desc: "Establish yourself as a thought leader with intelligent content that reflects your expertise, sparks meaningful conversations, and grows your professional influence.",
+    points: [
+      "Tailored personal branding strategies",
+      "Industry-relevant insights delivered at scale",
+      "High-engagement content for visibility",
+      "Network-expanding, credibility-building posts",
+    ],
+    cta: "Launch Growth",
   },
   {
-    name: "Adaptive Brand Voice",
-    type: "Your Identity, Perfected",
-    quote:
-      "Our engine learns your unique tone and style, ensuring every post, caption, or article reflects your brand’s voice—consistent, authentic, and tailored for your audience.",
-    src: "/assets/BrandVoice.png",
+    icon: <PenTool className="w-6 h-6 text-white" />,
+    title: "Content Creators",
+    subtitle: "Engage, Inspire & Expand Reach",
+    desc: "Tap into trend-aware, viral-ready content ideas designed to resonate deeply with your community, fuel conversations, and accelerate audience growth.",
+    points: [
+      "AI-driven, never-ending content inspiration",
+      "Boosted audience engagement strategies",
+      "Effortless cross-platform publishing",
+      "Growth-focused performance analytics",
+    ],
+    cta: "Start Creating",
   },
   {
-    name: "Real-Time Analytics & Optimization",
-    type: "Smarter Decisions Instantly",
-    quote:
-      "Stop guessing. Quillix delivers live performance insights and automatically fine-tunes campaigns to maximize reach, engagement, and conversions—freeing you to focus on creativity.",
-    src: "/assets/RealTimeAnalytics.png",
-  },
-  {
-    name: "AI-Driven Audience Connection",
-    type: "Engage Who Matters Most",
-    quote:
-      "Go beyond demographics. Our AI pinpoints the audiences most likely to engage, converting passive scrollers into loyal followers and customers.",
-    src: "/assets/AIConnect.png",
+    icon: <Briefcase className="w-6 h-6 text-white" />,
+    title: "Agencies",
+    subtitle: "Deliver More, Scale Seamlessly",
+    desc: "Manage multiple clients effortlessly with adaptive AI that mirrors each unique brand voice, enabling high-quality output at scale without added complexity.",
+    points: [
+      "Multi-client, multi-brand workflows",
+      "White-label solutions for agencies",
+      "Bulk content generation in seconds",
+      "Smart, automated client reporting",
+    ],
+    cta: "Scale Clients",
   },
 ];
 
-export default function Home3() {
-  useEffect(() => {
-    AOS.init({
-      offset: 100,
-      delay: 10,
-      duration: 2000,
-      easing: "ease",
-      once: true,
-    });
-  }, []);
-
+export default function FeaturesSection() {
   return (
-    <div className="flex justify-center items-center overflow-hidden py-20 px-6 -mb-40 sm:-mb-28">
-      <div className="w-full max-w-6xl text-center">
-        <h1
-          data-aos="zoom-in-down"
+    <section className="relative w-full py-20 px-6 md:px-12 lg:px-20 -mb-20">
+      <div className="text-center mb-16">
+        <h2
+          className="text-4xl md:text-5xl font-extrabold text-white"
           style={{ fontFamily: "Times New Roman, serif" }}
-          className="text-4xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg"
         >
-          Discover the{" "}
+          Built for{" "}
           <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            Uniqueness of NexGen-Quillix
+            Every Modern Visionary
           </span>
-        </h1>
-
+        </h2>
         <p
-          data-aos="fade-up"
+          className="text-neutral-300 mt-4 max-w-2xl mx-auto text-lg leading-relaxed"
           style={{ fontFamily: "Ancizar Serif, sans-serif" }}
-          className="text-neutral-400 max-w-3xl mx-auto text-lg leading-relaxed"
         >
-          Our MVP isn’t just another tool—it’s a complete reimagining of how
-          creators, marketers, and businesses engage with their audiences.
-          From predictive insights to adaptive brand voice, NexGen-Quillix is
-          built to give you an unmatched competitive edge.
+          Visionaries don’t just create content—they build movements. Whether
+          you’re a <span className="text-white font-semibold">marketer</span>,{" "}
+          <span className="text-white font-semibold">entrepreneur</span>,{" "}
+          <span className="text-white font-semibold">creator</span>, or{" "}
+          <span className="text-white font-semibold">agency</span>,{" "}
+          <span className="text-cyan-400 font-semibold">Quillix AI</span> is
+          your partner. It adapts to your voice, amplifies your impact, and
+          helps you scale smarter—without losing authenticity.
         </p>
-
-        <div
-          data-aos="flip-left"
-          data-aos-easing="ease-out-cubic"
-          data-aos-duration="3000"
-        >
-          <AnimatedUniqueness testimonials={data} autoplay={true} />
-        </div>
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+        {features.map((f, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: i * 0.2 }}
+            viewport={{ once: true }}
+            className="rounded-2xl p-8 bg-black/40 border border-white/10 backdrop-blur-xl shadow-lg hover:shadow-cyan-500/30 hover:border-cyan-400/30 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center">
+                {f.icon}
+              </div>
+              <div>
+                <h3
+                  className="text-2xl font-semibold text-white"
+                  style={{ fontFamily: "Times New Roman, serif" }}
+                >
+                  {f.title}
+                </h3>
+                <p className="text-cyan-400 text-sm">{f.subtitle}</p>
+              </div>
+            </div>
+
+            <p
+              className="text-neutral-300 text-md leading-relaxed mb-6"
+              style={{ fontFamily: "Ancizar Serif, sans-serif" }}
+            >
+              {f.desc}
+            </p>
+
+            <ul className="text-neutral-300 text-md space-y-2 mb-6">
+              {f.points.map((p, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-start gap-2 leading-relaxed"
+                  style={{ fontFamily: "Ancizar Serif, sans-serif" }}
+                >
+                  <span className="text-cyan-400">•</span> {p}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              className="w-full px-5 py-2 rounded-lg bg-black/60 border border-white/10 text-white font-medium text-sm hover:border-cyan-500 hover:text-cyan-400 transition"
+              style={{ fontFamily: "Times New Roman, serif" }}
+            >
+              {f.cta}
+            </button>
+          </motion.div>
+        ))}
+      </div>
+    </section>
   );
 }
