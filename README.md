@@ -22,9 +22,11 @@ Whether you're a marketer, entrepreneur, or content creator, NexGen-Quillix simp
 
 ## Demo 🖥️
 > [!IMPORTANT]  
-> Use the Docker image or run locally via localhost to get started now.
+> Use the Docker image or run the project locally via `localhost` to get started.
+Before proceeding, please contact me at [Mail](mailto:ujjwalsaini0007+quillix@gmail.com)
+so I can share the credentials instead Docker extract your whole memory.
 
-You can visit the live site here : --Temporarily Not Deployed--
+You can visit the live site here : https://nexgenquillix.vercel.app/
 
 ## Technologies Used 👨🏻‍💻
 - **Next.js** – A powerful high-performance frontend for building fast and scalable web applications.
@@ -272,6 +274,12 @@ wsl --install
 - [@Ujjwal Saini](https://github.com/UjjwalSaini07)
 
 ## Screenshots 📷
+<img width="1918" height="927" alt="image" src="https://github.com/user-attachments/assets/ea1f25aa-a191-489a-b1e8-cab13a1f2062" />
+<img width="1918" height="928" alt="image" src="https://github.com/user-attachments/assets/5084640c-cf19-49ee-8776-06b7701b916f" />
+<img width="1918" height="925" alt="image" src="https://github.com/user-attachments/assets/64912aa4-50ff-4ad9-be25-b67fbbbb6283" />
+<img width="1918" height="927" alt="image" src="https://github.com/user-attachments/assets/3c96030e-d634-4952-970d-9d0c9f6564f6" />
+<img width="1918" height="926" alt="image" src="https://github.com/user-attachments/assets/2d59bcdf-6c0f-4a0e-8f58-1615ab5d7d38" />
+<img width="1918" height="926" alt="image" src="https://github.com/user-attachments/assets/77df5d23-deb9-420d-a658-2cb2067d95ce" />
 
 ## Contact 📞
 Feel free to reach out if you have any questions or suggestions!
