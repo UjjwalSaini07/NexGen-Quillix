@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+motor
+pymongo
+python-jose
+passlib[bcrypt]
+celery
+redis
+langchain
+langchain-groq
+groq
+requests
+numpy
+python-dotenv
