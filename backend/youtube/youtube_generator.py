@@ -7,7 +7,7 @@ from langchain_groq import ChatGroq
 class YouTubePostGenerator:
     def __init__(self, api_key: Optional[str] = None):
         self.llm = ChatGroq(
-            model="openai/gpt-oss-20b",
+            model="llama-3.1-8b-instant",
             api_key=api_key or os.getenv("GROQ_API_KEY"),
             max_tokens=1024,
             temperature=0.7,
