@@ -7,7 +7,7 @@ from langchain_groq import ChatGroq
 class FacebookPostGenerator:
     def __init__(self, api_key: Optional[str] = None):
         self.llm = ChatGroq(
-            model="gemma2-9b-it",
+            model="openai/gpt-oss-20b",
             api_key=api_key or os.getenv("GROQ_API_KEY"),
             temperature=0.7,
             max_tokens=1024

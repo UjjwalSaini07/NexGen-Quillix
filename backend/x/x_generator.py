@@ -7,7 +7,7 @@ from typing import List, Dict, Optional
 class XPostGenerator:
     def __init__(self, api_key: str = None):
         self.llm = ChatGroq(
-            model="gemma2-9b-it",
+            model="openai/gpt-oss-20b",
             api_key=api_key or os.getenv("GROQ_API_KEY"),
             max_tokens=1024,
             temperature=0.7,
