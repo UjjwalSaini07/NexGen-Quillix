@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+
+  api:
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - mongo
+
+  worker:
+    build: .
+    command: celery -A app.tasks.worker.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - mongo
+
+  redis:
+    image: redis:latest
+
+  mongo:
+    image: mongo:latest
