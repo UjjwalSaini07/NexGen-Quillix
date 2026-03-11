@@ -1,14 +1,43 @@
+# FastAPI and ASGI
 fastapi
-uvicorn
+uvicorn[standard]
+python-multipart
+
+# Database
 motor
 pymongo
-python-jose
-passlib[bcrypt]
-celery
+
+# Redis
 redis
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+pyjwt
+
+# Configuration
+python-dotenv
+pydantic
+pydantic-settings
+
+# HTTP Client
+requests
+httpx
+
+# AI Services
 langchain
 langchain-groq
-groq
-requests
-numpy
-python-dotenv
+
+# Utilities
+python-dateutil
+bcrypt
+email-validator
+
+# Logging
+loguru
+
+# Async
+aioredis
+
+# Validation
+email-validator
