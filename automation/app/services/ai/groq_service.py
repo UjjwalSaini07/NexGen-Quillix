@@ -6,7 +6,7 @@ class GroqService:
     def __init__(self):
         self.llm = ChatGroq(
             groq_api_key=os.getenv("GROQ_API_KEY"),
-            model_name="mixtral-8x7b-32768"
+            model_name="llama-3.1-8b-instant"
         )
 
     def generate_post(self, niche, tone):
