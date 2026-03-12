@@ -5,6 +5,7 @@ import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnal
 import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
 import CreateRuleModal from './CreateRuleModal';
+import PostCreator from './PostCreator';
 
 // Platform icons with colors
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -249,6 +250,7 @@ export default function AutomationDashboard() {
   // Auth modal
   const [showAuthModal, setShowAuthModal] = useState(!isAuthenticated);
   const [showCreateRuleModal, setShowCreateRuleModal] = useState(false);
+  const [showPostCreator, setShowPostCreator] = useState(false);
   const [creatingRule, setCreatingRule] = useState(false);
 
   // Check API health on mount
@@ -258,6 +260,8 @@ export default function AutomationDashboard() {
       .catch(() => setApiStatus('disconnected'));
   }, [checkHealth]);
 
+  const [postStatusFilter, setPostStatusFilter] = useState('all');
+
   // Fetch data when tab changes or API connects
   useEffect(() => {
     if (apiStatus === 'connected') {
@@ -265,17 +269,34 @@ export default function AutomationDashboard() {
     }
   }, [apiStatus, fetchUser]);
 
+  // Fetch posts with status filter
+  const loadPosts = useCallback(async (status = 'all') => {
+    setPostsLoading(true);
+    try {
+      let options = {};
+      if (status && status !== 'all') {
+        options.status_filter = status;
+      }
+      const result = await fetchPosts(options);
+      setPosts(result || []);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+    } finally {
+      setPostsLoading(false);
+    }
+  }, [fetchPosts]);
+
   useEffect(() => {
     if (apiStatus === 'connected') {
       if (activeTab === 'accounts') fetchAccounts();
-      if (activeTab === 'posts') fetchPosts();
+      if (activeTab === 'posts') loadPosts(postStatusFilter);
       if (activeTab === 'automation') fetchRules();
       if (activeTab === 'analytics') {
         fetchAnalytics(dateRange);
         fetchPlatformStats(null, dateRange);
       }
     }
-  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchPosts, fetchRules, fetchAnalytics, fetchPlatformStats]);
+  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchRules, fetchAnalytics, fetchPlatformStats, loadPosts, postStatusFilter]);
 
   // Tab definitions
   const tabs = [
@@ -660,11 +681,29 @@ export default function AutomationDashboard() {
                 <p className="text-gray-400">Manage your content across platforms</p>
               </div>
               <button
-                onClick={() => setActiveTab('ai')}
+                onClick={() => setShowPostCreator(true)}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2"
               >
-                <span>✨</span> AI Generate
+                <span>✨</span> Create Post
               </button>
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {['all', 'draft', 'scheduled', 'published'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusFilterChange(status)}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
+                    postStatusFilter === status
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'all' && ` (${posts.length})`}
+                </button>
+              ))}
             </div>
 
             {postsLoading ? (
@@ -683,12 +722,12 @@ export default function AutomationDashboard() {
                   📝
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Posts Yet</h3>
-                <p className="text-gray-400 mb-6">Create your first post using AI generation</p>
+                <p className="text-gray-400 mb-6">Create your first post to see it here</p>
                 <button
-                  onClick={() => setActiveTab('ai')}
+                  onClick={() => setShowPostCreator(true)}
                   className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
                 >
-                  Create with AI →
+                  Create Post →
                 </button>
               </div>
             )}
@@ -845,6 +884,23 @@ export default function AutomationDashboard() {
           accounts={accounts}
           isLoading={creatingRule}
         />
+      )}
+
+      {showPostCreator && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPostCreator(false)} />
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 rounded-2xl border border-white/10">
+            <button
+              onClick={() => setShowPostCreator(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <PostCreator />
+          </div>
+        </div>
       )}
     </div>
   );

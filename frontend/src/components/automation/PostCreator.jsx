@@ -22,7 +22,7 @@ export default function PostCreator() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const { publishPost, schedulePost, generatePost } = useAutomation();
+  const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
 
   const togglePlatform = (platformId) => {
     setSelectedPlatforms((prev) =>
@@ -47,19 +47,29 @@ export default function PostCreator() {
         throw new Error('Please select at least one platform');
       }
 
-      let response;
+      // Prepare post data for the API
+      const postData = {
+        content: content,
+        platforms: selectedPlatforms,
+        media_urls: mediaUrl ? [mediaUrl] : [],
+        media_type: mediaUrl ? 'image' : null,
+        is_draft: !isSchedule && !scheduleTime, // If not scheduling, create as draft
+      };
+
+      // Add scheduled time if scheduling is enabled
       if (isSchedule && scheduleTime) {
-        response = await schedulePost(content, selectedPlatforms, scheduleTime, mediaUrl || null);
-      } else {
-        response = await publishPost(content, selectedPlatforms, mediaUrl || null);
+        postData.scheduled_time = new Date(scheduleTime).toISOString();
+        postData.is_draft = false;
       }
 
+      const response = await createPost(postData);
       setResult(response);
       setContent('');
       setMediaUrl('');
       setScheduleTime('');
+      setSelectedPlatforms([]);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to create post');
     } finally {
       setLoading(false);
     }
@@ -69,10 +79,14 @@ export default function PostCreator() {
     setLoading(true);
     setError(null);
     try {
-      const response = await generatePost('tech', 'professional');
-      setContent(response.content);
+      const response = await generatePost({ niche: 'tech', tone: 'professional' });
+      if (response && response.content) {
+        setContent(response.content);
+      } else {
+        setError('Failed to generate content');
+      }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to generate content');
     } finally {
       setLoading(false);
     }
