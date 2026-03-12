@@ -45,10 +45,22 @@ async function fetchAPI(endpoint, options = {}) {
       },
     });
 
-    const data = await response.json();
+    // Try to parse JSON, but handle cases where response might be empty or invalid
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { detail: text || 'Invalid JSON response' };
+      }
+    } else {
+      data = { detail: response.statusText || 'Non-JSON response' };
+    }
 
     if (!response.ok) {
-      throw new Error(data.detail || data.message || 'API request failed');
+      throw new Error(data.detail || data.message || `API request failed with status ${response.status}`);
     }
 
     return data;
