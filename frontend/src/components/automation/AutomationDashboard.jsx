@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnalytics, useAIGeneration } from '@/components/hooks/useAutomation';
+import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
 
 // Platform icons
@@ -80,6 +80,7 @@ const Navbar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'accounts', label: 'Accounts', icon: '🔗' },
     { id: 'posts', label: 'Posts', icon: '📝' },
+    { id: 'ai', label: 'AI Generator', icon: '✨' },
     { id: 'automation', label: 'Automation', icon: '🤖' },
     { id: 'analytics', label: 'Analytics', icon: '📈' },
   ];
@@ -327,6 +328,219 @@ const StatsCard = ({ title, value, icon, gradient }) => (
   </div>
 );
 
+// AI Generator Tab Component
+const AIGeneratorTab = ({ accounts }) => {
+  const [niche, setNiche] = useState('');
+  const [tone, setTone] = useState('professional');
+  const [platform, setPlatform] = useState('');
+  const [length, setLength] = useState('medium');
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { generatePost, generating, error } = useAIGeneration();
+  const { createSocialPost } = usePosts();
+
+  const tones = [
+    { value: 'professional', label: 'Professional' },
+    { value: 'friendly', label: 'Friendly' },
+    { value: 'humorous', label: 'Humorous' },
+    { value: 'inspirational', label: 'Inspirational' },
+    { value: 'educational', label: 'Educational' },
+  ];
+
+  const lengths = [
+    { value: 'short', label: 'Short' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'long', label: 'Long' },
+  ];
+
+  const handleGenerate = async () => {
+    if (!niche) return;
+    setLoading(true);
+    try {
+      const result = await generatePost({
+        niche,
+        tone,
+        platform: platform || undefined,
+        length,
+        include_emoji: true,
+        include_cta: true,
+        include_hashtags: true,
+      });
+      if (result?.content) {
+        setGeneratedContent(result.content);
+      }
+    } catch (err) {
+      console.error('Generation error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!generatedContent || !accounts.length) return;
+    
+    const selectedPlatforms = platform ? [platform] : accounts.map(a => a.platform);
+    
+    try {
+      await createSocialPost({
+        content: generatedContent,
+        platforms: selectedPlatforms,
+        media_urls: [],
+        is_draft: false,
+      });
+      alert('Post published successfully!');
+      setGeneratedContent('');
+    } catch (err) {
+      console.error('Publish error:', err);
+      alert('Failed to publish post');
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Generator Form */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Generate Post Content</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Niche / Topic</label>
+            <input
+              type="text"
+              value={niche}
+              onChange={(e) => setNiche(e.target.value)}
+              placeholder="e.g., Tech startups, Digital Marketing..."
+              className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Tone</label>
+            <div className="flex flex-wrap gap-2">
+              {tones.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => setTone(t.value)}
+                  className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                    tone === t.value
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Length</label>
+            <div className="flex flex-wrap gap-2">
+              {lengths.map((l) => (
+                <button
+                  key={l.value}
+                  onClick={() => setLength(l.value)}
+                  className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                    length === l.value
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                      : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                  }`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Target Platform (optional)</label>
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+              className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500"
+            >
+              <option value="">All Connected Platforms</option>
+              {accounts.map((acc) => (
+                <option key={acc.platform} value={acc.platform} className="text-black">
+                  {acc.platform.charAt(0).toUpperCase() + acc.platform.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !niche}
+            className={`w-full py-3 rounded-xl font-medium transition-all ${
+              loading || !niche
+                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:shadow-purple-500/25'
+            }`}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Generating...
+              </span>
+            ) : (
+              '✨ Generate Content'
+            )}
+          </button>
+
+          {error && (
+            <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Generated Content Preview */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Generated Content</h3>
+        
+        {generatedContent ? (
+          <>
+            <div className="bg-black/30 rounded-xl p-4 mb-4 min-h-[200px]">
+              <p className="text-white whitespace-pre-wrap">{generatedContent}</p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setGeneratedContent('')}
+                className="flex-1 py-3 rounded-xl font-medium bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
+              >
+                Clear
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={!accounts.length}
+                className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+                  !accounts.length
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/25'
+                }`}
+              >
+                Publish Now
+              </button>
+            </div>
+            {!accounts.length && (
+              <p className="text-yellow-400 text-sm text-center mt-2">
+                Connect at least one platform to publish
+              </p>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[200px] text-gray-500">
+            <span className="text-4xl mb-2">✨</span>
+            <p>Generated content will appear here</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Main Dashboard Component
 export default function AutomationDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -361,6 +575,7 @@ export default function AutomationDashboard() {
     loading: postsLoading,
     fetchPosts,
     delete: deletePost,
+    createSocialPost,
   } = usePosts();
 
   // New hooks for analytics and AI
@@ -378,6 +593,13 @@ export default function AutomationDashboard() {
     generateReply,
   } = useAIGeneration();
 
+  // User profile hook
+  const {
+    user: profile,
+    loading: profileLoading,
+    fetchUser,
+  } = useAuth();
+
   useEffect(() => {
     checkHealth()
       .then(() => setApiStatus('connected'))
@@ -386,12 +608,13 @@ export default function AutomationDashboard() {
 
   useEffect(() => {
     if (apiStatus === 'connected') {
+      fetchUser();
       if (activeTab === 'accounts') fetchAccounts();
       if (activeTab === 'posts') fetchPosts();
       if (activeTab === 'automation') fetchAutomationRules();
       if (activeTab === 'analytics') fetchAnalytics();
     }
-  }, [activeTab, apiStatus, fetchAccounts, fetchPosts, fetchAutomationRules, fetchAnalytics]);
+  }, [activeTab, apiStatus, fetchAccounts, fetchPosts, fetchAutomationRules, fetchAnalytics, fetchUser]);
 
   const platforms = ['instagram', 'facebook', 'linkedin', 'x', 'youtube', 'whatsapp'];
 
@@ -472,11 +695,24 @@ export default function AutomationDashboard() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
               NexGen Automation
             </h1>
-            <p className="text-gray-400 mt-1">Manage your social media automation</p>
+            {profileLoading ? (
+              <p className="text-gray-400 mt-1">Loading...</p>
+            ) : profile ? (
+              <p className="text-gray-400 mt-1">Welcome back, {profile.full_name || profile.username || profile.email}</p>
+            ) : (
+              <p className="text-gray-400 mt-1">Manage your social media automation</p>
+            )}
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            <span className="text-green-400 text-sm">Connected</span>
+          <div className="flex items-center gap-4">
+            {profile?.connected_accounts_count !== undefined && (
+              <div className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full">
+                <span className="text-purple-400 text-sm">{profile.connected_accounts_count} Connected</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span className="text-green-400 text-sm">Connected</span>
+            </div>
           </div>
         </div>
 
@@ -543,6 +779,11 @@ export default function AutomationDashboard() {
           </div>
         )}
 
+        {/* AI Generator Tab */}
+        {activeTab === 'ai' && (
+          <AIGeneratorTab accounts={accounts} />
+        )}
+
         {/* Automation Tab */}
         {activeTab === 'automation' && (
           <div>
@@ -580,14 +821,103 @@ export default function AutomationDashboard() {
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
-          <CollapsibleCard title="Analytics Overview" icon="📈" defaultOpen={true}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatsCard title="Total Impressions" value="0" icon="👁️" gradient="from-purple-600 to-pink-600" />
-              <StatsCard title="Engagement Rate" value="0%" icon="💬" gradient="from-blue-600 to-cyan-600" />
-              <StatsCard title="Total Reach" value="0" icon="🌍" gradient="from-green-600 to-emerald-600" />
-            </div>
-            <p className="text-center text-gray-500 mt-6">Analytics will appear here once you have posts and engagement data.</p>
-          </CollapsibleCard>
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : analytics ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <StatsCard 
+                    title="Total Posts" 
+                    value={analytics.total_posts || 0} 
+                    icon="📝" 
+                    gradient="from-purple-600 to-pink-600" 
+                  />
+                  <StatsCard 
+                    title="Published" 
+                    value={analytics.published_posts || 0} 
+                    icon="✅" 
+                    gradient="from-green-600 to-emerald-600" 
+                  />
+                  <StatsCard 
+                    title="Scheduled" 
+                    value={analytics.scheduled_posts || 0} 
+                    icon="📅" 
+                    gradient="from-blue-600 to-cyan-600" 
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <StatsCard 
+                    title="Total Likes" 
+                    value={analytics.total_likes?.toLocaleString() || '0'} 
+                    icon="❤️" 
+                    gradient="from-pink-600 to-rose-600" 
+                  />
+                  <StatsCard 
+                    title="Total Comments" 
+                    value={analytics.total_comments?.toLocaleString() || '0'} 
+                    icon="💬" 
+                    gradient="from-blue-600 to-indigo-600" 
+                  />
+                  <StatsCard 
+                    title="Total Shares" 
+                    value={analytics.total_shares?.toLocaleString() || '0'} 
+                    icon="🔄" 
+                    gradient="from-purple-600 to-violet-600" 
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <StatsCard 
+                    title="Total Impressions" 
+                    value={analytics.total_impressions?.toLocaleString() || '0'} 
+                    icon="👁️" 
+                    gradient="from-cyan-600 to-blue-600" 
+                  />
+                  <StatsCard 
+                    title="Avg Engagement Rate" 
+                    value={`${analytics.avg_engagement_rate || 0}%`} 
+                    icon="📈" 
+                    gradient="from-green-600 to-teal-600" 
+                  />
+                </div>
+                
+                {/* Platform Breakdown */}
+                {analytics.platform_breakdown && Object.keys(analytics.platform_breakdown).length > 0 && (
+                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Platform Breakdown</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                      {Object.entries(analytics.platform_breakdown).map(([platform, stats]) => (
+                        <div key={platform} className="bg-black/30 rounded-xl p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <PlatformIcon platform={platform} size="w-5 h-5" />
+                            <span className="text-white capitalize text-sm">{platform}</span>
+                          </div>
+                          <div className="space-y-1 text-xs text-gray-400">
+                            <p>Likes: {stats.likes || 0}</p>
+                            <p>Comments: {stats.comments || 0}</p>
+                            <p>Shares: {stats.shares || 0}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <CollapsibleCard title="Analytics Overview" icon="📈" defaultOpen={true}>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">📊</span>
+                  </div>
+                  <p className="text-gray-400">No analytics data yet. Connect accounts and publish posts to see your performance metrics.</p>
+                </div>
+              </CollapsibleCard>
+            )}
+          </div>
         )}
 
         {/* Error Display */}
