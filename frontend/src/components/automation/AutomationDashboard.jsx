@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
+import AuthModal from './AuthModal';
 
 // Platform icons
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -598,13 +599,23 @@ export default function AutomationDashboard() {
     user: profile,
     loading: profileLoading,
     fetchUser,
+    isAuthenticated,
+    logout,
   } = useAuth();
+
+  // Auth modal state
+  const [showAuthModal, setShowAuthModal] = useState(!isAuthenticated);
 
   useEffect(() => {
     checkHealth()
       .then(() => setApiStatus('connected'))
       .catch(() => setApiStatus('disconnected'));
   }, [checkHealth]);
+
+  // Handle successful authentication
+  const handleAuthSuccess = useCallback(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   useEffect(() => {
     if (apiStatus === 'connected') {
@@ -713,6 +724,24 @@ export default function AutomationDashboard() {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
               <span className="text-green-400 text-sm">Connected</span>
             </div>
+            {profile ? (
+              <button
+                onClick={async () => {
+                  await logout();
+                  setShowAuthModal(true);
+                }}
+                className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
 
@@ -939,6 +968,13 @@ export default function AutomationDashboard() {
           onConnect={handleConnectWithCredentials}
         />
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

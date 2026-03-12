@@ -791,9 +791,28 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Check if user is authenticated
+  // Check if user is authenticated and restore session
   useEffect(() => {
-    setIsAuthenticated(api.isAuthenticated());
+    const checkAuth = async () => {
+      const hasToken = api.isAuthenticated();
+      setIsAuthenticated(hasToken);
+      
+      // If token exists, try to fetch user profile
+      if (hasToken) {
+        try {
+          const profile = await api.getCurrentUser();
+          setUser(profile);
+        } catch (err) {
+          // Token might be invalid/expired, clear auth
+          console.warn('Failed to fetch user profile, clearing auth:', err.message);
+          api.clearAuth();
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   // Login
