@@ -149,6 +149,9 @@ export function useAutomation() {
   
   const connectAccount = useCallback((platform, credentials) => 
     handleApiCall(api.connectSocialAccount, platform, credentials), [handleApiCall]);
+
+  const validateCredentials = useCallback((platform, credentials) =>
+    handleApiCall(api.validatePlatformCredentials, platform, credentials), [handleApiCall]);
   
   const getAccounts = useCallback((platform, includeInactive) => 
     handleApiCall(api.getConnectedAccounts, platform, includeInactive), [handleApiCall]);
@@ -256,6 +259,7 @@ export function useAutomation() {
     getPlatforms,
     getOAuthUrl,
     connectAccount,
+    validateCredentials,
     getAccounts,
     getAccount,
     disconnectAccount,

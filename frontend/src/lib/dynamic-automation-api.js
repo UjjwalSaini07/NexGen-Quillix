@@ -94,6 +94,7 @@ export const ENDPOINTS = {
     PLATFORMS: '/social/platforms',
     OAUTH_URL: (platform) => `/social/platforms/${platform}/oauth-url`,
     CONNECT: (platform) => `/social/platforms/${platform}/connect`,
+    VALIDATE: (platform) => `/social/platforms/${platform}/validate`,
     ACCOUNTS: '/social/accounts',
     ACCOUNT: (platform) => `/social/accounts/${platform}`,
     DISCONNECT: (platform) => `/social/accounts/${platform}`,
@@ -291,6 +292,19 @@ export async function connectSocialAccount(platform, credentials) {
       platform_user_id: credentials.platform_user_id || null,
       platform_username: credentials.platform_username || null,
       expires_in: credentials.expires_in || null,
+    }),
+  });
+}
+
+// Validate platform credentials before connecting
+export async function validatePlatformCredentials(platform, credentials) {
+  return fetchAPI(ENDPOINTS.SOCIAL.VALIDATE(platform), {
+    method: 'POST',
+    body: JSON.stringify({
+      platform,
+      access_token: credentials.access_token,
+      platform_user_id: credentials.platform_user_id || null,
+      platform_username: credentials.platform_username || null,
     }),
   });
 }
@@ -633,6 +647,7 @@ export default {
   getSupportedPlatforms,
   getOAuthUrl,
   connectSocialAccount,
+  validatePlatformCredentials,
   getConnectedAccounts,
   getAccount,
   disconnectAccount,

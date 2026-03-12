@@ -277,6 +277,167 @@ async def connect_platform(
     }
 
 
+@router.post("/platforms/{platform}/validate")
+async def validate_platform_credentials(
+    platform: str,
+    request: PlatformConnectRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Validate social media platform credentials before connecting.
+    Makes a test API call to verify the token is valid.
+    """
+    import httpx
+    
+    if platform not in SUPPORTED_PLATFORMS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported platform. Available: {SUPPORTED_PLATFORMS}"
+        )
+    
+    access_token = request.access_token
+    
+    validation_result = {
+        "valid": False,
+        "platform": platform,
+        "user_id": None,
+        "username": None,
+        "error": None
+    }
+    
+    try:
+        if platform == "facebook":
+            # Validate Facebook token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://graph.facebook.com/v19.0/me",
+                    params={"access_token": access_token},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("id")
+                    
+                    # Get page info if page_id provided
+                    if request.platform_user_id:
+                        page_response = await client.get(
+                            f"https://graph.facebook.com/v19.0/{request.platform_user_id}",
+                            params={"access_token": access_token, "fields": "name,id"},
+                            timeout=10
+                        )
+                        if page_response.status_code == 200:
+                            page_data = page_response.json()
+                            validation_result["username"] = page_data.get("name")
+                else:
+                    error_data = response.json()
+                    validation_result["error"] = error_data.get("error", {}).get("message", "Invalid token")
+        
+        elif platform == "instagram":
+            # Validate Instagram token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://graph.instagram.com/me",
+                    params={
+                        "access_token": access_token,
+                        "fields": "id,username,account_type,media_count"
+                    },
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("id")
+                    validation_result["username"] = data.get("username")
+                else:
+                    error_data = response.json()
+                    validation_result["error"] = error_data.get("error", {}).get("message", "Invalid token")
+        
+        elif platform == "linkedin":
+            # Validate LinkedIn token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.linkedin.com/v2/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("sub")
+                    validation_result["username"] = data.get("name")
+                else:
+                    validation_result["error"] = "Invalid or expired LinkedIn token"
+        
+        elif platform == "x":
+            # Validate X/Twitter Bearer token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.twitter.com/2/users/me",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("data", {}).get("id")
+                    validation_result["username"] = data.get("data", {}).get("username")
+                else:
+                    validation_result["error"] = "Invalid or expired X/Twitter token"
+        
+        elif platform == "youtube":
+            # Validate YouTube token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://www.googleapis.com/youtube/v3/channels",
+                    params={"part": "snippet", "mine": "true"},
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("items"):
+                        validation_result["valid"] = True
+                        validation_result["user_id"] = data["items"][0].get("id")
+                        validation_result["username"] = data["items"][0]["snippet"].get("title")
+                else:
+                    validation_result["error"] = "Invalid or expired YouTube token"
+        
+        elif platform == "whatsapp":
+            # Validate WhatsApp token - check phone number ID
+            async with httpx.AsyncClient() as client:
+                if not request.platform_user_id:
+                    validation_result["error"] = "Phone Number ID is required for WhatsApp"
+                else:
+                    response = await client.get(
+                        f"https://graph.facebook.com/v19.0/{request.platform_user_id}",
+                        params={"access_token": access_token},
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        validation_result["valid"] = True
+                        validation_result["user_id"] = request.platform_user_id
+                        validation_result["username"] = data.get("display_phone_number")
+                    else:
+                        error_data = response.json()
+                        validation_result["error"] = error_data.get("error", {}).get("message", "Invalid WhatsApp credentials")
+    
+    except httpx.TimeoutException:
+        validation_result["error"] = "Connection timeout. Please try again."
+    except Exception as e:
+        logger.error(f"Validation error for {platform}: {str(e)}")
+        validation_result["error"] = f"Validation failed: {str(e)}"
+    
+    if not validation_result["valid"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=validation_result
+        )
+    
+    return validation_result
+
+
 @router.get("/accounts")
 async def get_connected_accounts(
     current_user: dict = Depends(get_current_user),

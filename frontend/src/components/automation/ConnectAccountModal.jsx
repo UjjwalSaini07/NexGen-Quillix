@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import * as api from '@/lib/dynamic-automation-api';
 
 const PLATFORM_CONFIG = {
   facebook: {
@@ -70,8 +71,34 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
     setError(null);
 
     try {
-      await onConnect(platform, formData);
-      onClose();
+      // First validate credentials with the backend
+      setError('Validating credentials...');
+      
+      try {
+        const validation = await api.validatePlatformCredentials(platform, formData);
+        
+        if (!validation.valid) {
+          setError(validation.error || 'Invalid credentials');
+          setLoading(false);
+          return;
+        }
+        
+        // Add validated username to formData
+        const validatedData = {
+          ...formData,
+          platform_username: validation.username,
+        };
+        
+        // Now connect with validated credentials
+        await onConnect(platform, validatedData);
+        onClose();
+      } catch (validationErr) {
+        // Handle validation error
+        const errMsg = validationErr.message || 'Failed to validate credentials';
+        setError(errMsg);
+        setLoading(false);
+        return;
+      }
     } catch (err) {
       setError(err.message || 'Failed to connect account');
     } finally {
