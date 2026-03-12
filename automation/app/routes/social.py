@@ -690,7 +690,7 @@ async def delete_post(
     """Delete a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({

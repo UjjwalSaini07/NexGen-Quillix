@@ -61,7 +61,7 @@ async def create_post(
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new post"""
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     # Validate platforms
     supported_platforms = ["facebook", "instagram", "linkedin", "x", "youtube", "whatsapp"]
@@ -137,7 +137,7 @@ async def get_posts(
     limit: int = Query(20, ge=1, le=100)
 ):
     """Get all posts for the current user"""
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     query = {"user_id": user_id}
     
@@ -171,7 +171,7 @@ async def get_post(
     """Get a specific post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -202,7 +202,7 @@ async def update_post(
     """Update a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -247,7 +247,7 @@ async def delete_post(
     """Delete a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -285,7 +285,7 @@ async def publish_post(
     """Publish a post immediately"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -392,7 +392,7 @@ async def schedule_post(
     """Schedule a post for future publishing"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     if scheduled_time <= datetime.utcnow():
         raise HTTPException(
