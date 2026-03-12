@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
+import CreateRuleModal from './CreateRuleModal';
 
 // Platform icons
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -566,9 +567,9 @@ export default function AutomationDashboard() {
     rules,
     loading: rulesLoading,
     fetchRules: fetchAutomationRules,
-    create,
-    remove,
-    toggle,
+    createRule,
+    remove: removeRule,
+    toggleRule,
   } = useAutomationRules();
 
   const {
@@ -605,6 +606,10 @@ export default function AutomationDashboard() {
 
   // Auth modal state
   const [showAuthModal, setShowAuthModal] = useState(!isAuthenticated);
+  
+  // Create rule modal state
+  const [showCreateRuleModal, setShowCreateRuleModal] = useState(false);
+  const [creatingRule, setCreatingRule] = useState(false);
 
   useEffect(() => {
     checkHealth()
@@ -647,12 +652,24 @@ export default function AutomationDashboard() {
   };
 
   const handleToggleRule = async (ruleId) => {
-    await toggle(ruleId);
+    await toggleRule(ruleId);
   };
 
   const handleDeleteRule = async (ruleId) => {
     if (confirm('Are you sure you want to delete this rule?')) {
-      await remove(ruleId);
+      await removeRule(ruleId);
+    }
+  };
+
+  const handleCreateRule = async (ruleData) => {
+    setCreatingRule(true);
+    try {
+      await createRule(ruleData);
+      setShowCreateRuleModal(false);
+    } catch (err) {
+      console.error('Failed to create rule:', err);
+    } finally {
+      setCreatingRule(false);
     }
   };
 
@@ -819,11 +836,27 @@ export default function AutomationDashboard() {
             <CollapsibleCard title="Create New Rule" icon="➕" defaultOpen={true}>
               <div className="flex gap-3">
                 <button
-                  onClick={() => create('instagram', 'new_comment', 'auto_reply', 'Thanks!', true)}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all"
+                  onClick={() => setShowCreateRuleModal(true)}
+                  disabled={accounts.length === 0}
+                  className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                    accounts.length === 0
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:shadow-purple-500/25'
+                  }`}
                 >
-                  + New Auto-Reply Rule
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create New Automation Rule
                 </button>
+                {accounts.length === 0 && (
+                  <p className="text-yellow-400 text-sm flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Connect an account first to create automation rules
+                  </p>
+                )}
               </div>
             </CollapsibleCard>
             
@@ -975,6 +1008,16 @@ export default function AutomationDashboard() {
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Create Rule Modal */}
+      {showCreateRuleModal && (
+        <CreateRuleModal
+          onClose={() => setShowCreateRuleModal(false)}
+          onSubmit={handleCreateRule}
+          accounts={accounts}
+          isLoading={creatingRule}
+        />
+      )}
     </div>
   );
 }
