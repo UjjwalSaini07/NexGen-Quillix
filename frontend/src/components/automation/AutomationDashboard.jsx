@@ -236,6 +236,7 @@ const TabNav = ({ tabs, activeTab, onChange }) => (
 export default function AutomationDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [apiStatus, setApiStatus] = useState('checking');
+  const [connectionStage, setConnectionStage] = useState(0);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [dateRange, setDateRange] = useState(30);
@@ -260,6 +261,16 @@ export default function AutomationDashboard() {
       .then(() => setApiStatus('connected'))
       .catch(() => setApiStatus('disconnected'));
   }, [checkHealth]);
+
+  // Cycle through connection stages for animation
+  useEffect(() => {
+    if (apiStatus === 'checking') {
+      const interval = setInterval(() => {
+        setConnectionStage(prev => (prev + 1) % 6);
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [apiStatus]);
 
   const [postStatusFilter, setPostStatusFilter] = useState('all');
 
@@ -417,8 +428,19 @@ export default function AutomationDashboard() {
     }
   };
 
-  // Loading state - Cyberpunk Style
+  // Loading state - Enhanced Cyberpunk Style with MCP Connection
   if (apiStatus === 'checking') {
+    const connectionStages = [
+      { text: 'INITIALIZING SYSTEM CORE...', sub: 'Loading neural pathways' },
+      { text: 'ESTABLISHING MCP LINK...', sub: 'Connecting to automation server' },
+      { text: 'VERIFYING PROTOCOLS...', sub: 'Authenticating connection' },
+      { text: 'SYNCING DATA STREAMS...', sub: 'Retrieving account information' },
+      { text: 'ACTIVATING NEURAL GRID...', sub: 'Preparing automation modules' },
+      { text: 'ALMOST READY...', sub: 'Finalizing connection' },
+    ];
+    
+    const currentStage = connectionStages[connectionStage];
+    
     return (
       <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden relative">
         {/* Cyberpunk Background Grid */}
@@ -428,50 +450,94 @@ export default function AutomationDashboard() {
         </div>
         
         {/* Animated Glow Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-600/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-600/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-600/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '0.5s' }}></div>
         
         <div className="relative z-10 flex flex-col items-center gap-8">
-          {/* Cyberpunk Loader - Multiple Concentric Rings */}
-          <div className="relative w-32 h-32">
-            {/* Outer Ring */}
-            <div className="absolute inset-0 border-2 border-purple-500/30 rounded-full animate-[spin_3s_linear_infinite]"></div>
+          {/* Main Loader - Enhanced Version */}
+          <div className="relative w-40 h-40">
+            {/* Outer Ring with dots */}
+            <div className="absolute inset-0 border-2 border-purple-500/40 rounded-full animate-[spin_4s_linear_infinite]">
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-purple-400 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.8)]"></div>
+            </div>
             {/* Middle Ring */}
-            <div className="absolute inset-2 border-2 border-blue-500/50 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
+            <div className="absolute inset-3 border-2 border-blue-500/50 rounded-full animate-[spin_3s_linear_infinite_reverse]">
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_10px_rgba(96,165,250,0.8)]"></div>
+            </div>
             {/* Inner Ring */}
-            <div className="absolute inset-4 border-2 border-purple-400/70 rounded-full animate-[spin_1.5s_linear_infinite]"></div>
+            <div className="absolute inset-6 border-2 border-cyan-500/60 rounded-full animate-[spin_2s_linear_infinite]">
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+            </div>
             {/* Core */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(139,92,246,0.8)]"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 rounded-full animate-pulse shadow-[0_0_40px_rgba(139,92,246,0.6),0_0_60px_rgba(59,130,246,0.4)]"></div>
             </div>
-            {/* Glowing Orb */}
-            <div className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></div>
+            {/* Center Dot */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+            </div>
           </div>
           
-          {/* Loading Text with Typing Effect */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex gap-1">
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-              <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-            </div>
-            <p className="text-lg font-mono text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 animate-pulse">
-              ESTABLISHING NEURAL LINK
+          {/* MCP Badge */}
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-900/30 border border-purple-500/30 rounded-full">
+            <span className="text-xs font-mono text-purple-400">MCP SERVER</span>
+            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+          </div>
+          
+          {/* Dynamic Connection Status */}
+          <div className="flex flex-col items-center gap-2 min-h-[80px]">
+            <p className="text-xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 animate-pulse">
+              {connectionStages[connectionStage].text}
             </p>
-            <p className="text-xs text-gray-500 font-mono">Initializing MCP Protocol...</p>
+            <p className="text-sm text-gray-500 font-mono">{connectionStages[connectionStage].sub}</p>
+          </div>
+           
+          {/* Progress Stages */}
+          <div className="flex items-center gap-2">
+            {[0, 1, 2, 3, 4, 5].map((stage) => (
+              <div 
+                key={stage}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  stage <= connectionStage 
+                    ? 'bg-gradient-to-r from-purple-500 to-cyan-500 shadow-[0_0_10px_rgba(139,92,246,0.8)]' 
+                    : 'bg-gray-700'
+                }`}
+              />
+            ))}
           </div>
           
-          {/* Progress Bar */}
-          <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-full animate-[loading_2s_ease-in-out_infinite]" style={{ width: '100%', animation: 'loading 2s ease-in-out infinite' }}></div>
+          {/* Terminal-style Log */}
+          <div className="w-80 p-4 bg-black/60 border border-purple-500/20 rounded-xl font-mono text-xs">
+            <div className="flex items-center gap-2 mb-2 text-purple-400">
+              <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+              <span>SYSTEM LOG</span>
+            </div>
+            <div className="text-gray-400 space-y-1">
+              <p><span className="text-green-500">✓</span> Core modules initialized</p>
+              <p><span className={connectionStage >= 1 ? 'text-green-500' : 'text-gray-600'}>✓</span> MCP protocol handshake</p>
+              <p><span className={connectionStage >= 2 ? 'text-green-500' : 'text-gray-600'}>✓</span> Security verification</p>
+              <p><span className={connectionStage >= 3 ? 'text-green-500' : 'text-gray-600'}>✓</span> Data stream sync</p>
+              <p><span className={connectionStage >= 4 ? 'text-green-500' : 'text-gray-600'}>✓</span> Neural grid activation</p>
+            </div>
           </div>
           
-          {/* System Status */}
-          <div className="flex items-center gap-2 text-xs font-mono text-gray-600">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span>SECURE CONNECTION</span>
+          {/* System Status - Enhanced */}
+          <div className="flex items-center gap-4 text-xs font-mono text-gray-500">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="text-green-400">ONLINE</span>
+            </span>
             <span className="text-gray-700">|</span>
-            <span className="text-cyan-500">ENCRYPTED</span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse"></span>
+              <span className="text-cyan-400">ENCRYPTED</span>
+            </span>
+            <span className="text-gray-700">|</span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+              <span className="text-purple-400">MCP v2.0</span>
+            </span>
           </div>
         </div>
         
