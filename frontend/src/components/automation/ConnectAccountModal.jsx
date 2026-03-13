@@ -120,7 +120,9 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
       
       try {
         console.log('Validating credentials for platform:', platform);
+        console.log('Form data being sent:', JSON.stringify(formData));
         const validation = await api.validatePlatformCredentials(platform, formData);
+        console.log('Validation response:', validation);
         
         if (!validation.valid) {
           const errorMsg = validation.error || 'Invalid credentials';
