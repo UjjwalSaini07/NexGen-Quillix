@@ -7,7 +7,7 @@ import "./globals.css";
 
 import { useEffect, useRef } from "react";
 import { db } from "@/components/firebase/firebaseConfig";
-import { collection, addDoc, serverTimestamp, doc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { collectDeviceInfo } from "../utils/DeviceInfo";
 
 const geistSans = Geist({
@@ -103,23 +103,30 @@ export default function RootLayout({ children }) {
 
       collectDeviceInfo().then(async (info) => {
         try {
+          // Save to NexGenQuillix collection - organized by date for analytics
           const today = new Date().toISOString().split("T")[0];
-          const hour = new Date().getHours();
-          const segment = hour < 12 ? "segment1" : "segment2"; 
-
-          // Path: QuillixUser/{today}/{segment}/{docId}
-          const dateDocRef = doc(db, "QuillixUser", today);
-          const segmentColRef = collection(dateDocRef, segment);
-
-          await addDoc(segmentColRef, {
+          
+          // Main analytics collection: NexGenQuillix/analytics/{date}
+          const analyticsRef = collection(db, "NexGenQuillix", "analytics", today);
+          
+          await addDoc(analyticsRef, {
             ...info,
-            createdAt: serverTimestamp(),
+            type: "device_info",
+            savedAt: serverTimestamp(),
           });
 
+          // Also save user session info in users subcollection
+          const userRef = doc(db, "NexGenQuillix", "users", info.deviceId || "anonymous");
+          await setDoc(userRef, {
+            lastVisit: serverTimestamp(),
+            deviceInfo: info,
+            firstVisit: info.firstVisit || serverTimestamp(),
+          }, { merge: true });
+
           sessionStorage.setItem(sessionKey, "true");
-          console.log("Device info saved under QuillixUser ✅");
+          console.log("Analytics data saved to NexGenQuillix database ✅");
         } catch (err) {
-          console.error("Failed to save device info:", err);
+          console.error("Failed to save analytics:", err);
         }
       });
     }
