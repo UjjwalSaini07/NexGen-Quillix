@@ -46,11 +46,16 @@ OAUTH_URLS = {
 class PlatformConnectRequest(BaseModel):
     """Request to connect a social platform"""
     platform: str
-    access_token: str
+    access_token: Optional[str] = None  # Can be Bearer token or Access token
     refresh_token: Optional[str] = None
     platform_user_id: Optional[str] = None
     platform_username: Optional[str] = None
     expires_in: Optional[int] = None  # Token expiration in seconds
+    # Extra credentials for X (Twitter)
+    api_key: Optional[str] = None
+    api_secret: Optional[str] = None
+    access_token_secret: Optional[str] = None
+    bearer_token: Optional[str] = None
 
 
 class PlatformOAuthInit(BaseModel):
@@ -237,6 +242,15 @@ async def connect_platform(
         "last_used": datetime.utcnow()
     }
     
+    # Store extra credentials for X (Twitter)
+    if platform == "x":
+        account_data["extra_credentials"] = {
+            "bearer_token": request.bearer_token or request.access_token,  # Use as Bearer if provided
+            "api_key": request.api_key,
+            "api_secret": request.api_secret,
+            "access_token_secret": request.access_token_secret
+        }
+    
     if existing:
         # Update existing account
         await db.social_accounts.update_one(
@@ -295,7 +309,42 @@ async def validate_platform_credentials(
             detail=f"Unsupported platform. Available: {SUPPORTED_PLATFORMS}"
         )
     
-    access_token = request.access_token
+    # For X platform, accept bearer_token as access_token
+    access_token = request.access_token or request.bearer_token or ""
+    
+    # Special handling for X - validate with Bearer Token
+    if platform == "x":
+        bearer_token = request.bearer_token or access_token
+        if not bearer_token:
+            validation_result["error"] = "Bearer Token is required for X/Twitter"
+            return validation_result
+        
+        # Try to validate with X API
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.twitter.com/2/users/me",
+                    headers={"Authorization": f"Bearer {bearer_token}"},
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("data", {}).get("id")
+                    validation_result["username"] = data.get("data", {}).get("username")
+                    return validation_result
+                else:
+                    error_data = response.json()
+                    validation_result["error"] = error_data.get("detail", error_data.get("title", "Invalid X/Twitter token"))
+                    return validation_result
+        except Exception as e:
+            validation_result["error"] = f"X validation failed: {str(e)}"
+            return validation_result
+    
+    if not access_token:
+        validation_result["error"] = "Access token is required"
+        return validation_result
     
     validation_result = {
         "valid": False,
@@ -370,20 +419,28 @@ async def validate_platform_credentials(
                     validation_result["error"] = "Invalid or expired LinkedIn token"
         
         elif platform == "x":
-            # Validate X/Twitter Bearer token
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    "https://api.twitter.com/2/users/me",
-                    headers={"Authorization": f"Bearer {access_token}"},
-                    timeout=10
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    validation_result["valid"] = True
-                    validation_result["user_id"] = data.get("data", {}).get("id")
-                    validation_result["username"] = data.get("data", {}).get("username")
-                else:
-                    validation_result["error"] = "Invalid or expired X/Twitter token"
+            # Validate X/Twitter credentials - support both bearer_token and access_token
+            bearer_token = request.bearer_token or request.access_token or ""
+            
+            if not bearer_token:
+                validation_result["error"] = "Bearer Token is required for X/Twitter"
+            else:
+                async with httpx.AsyncClient() as client:
+                    # First try with Bearer Token (App-only auth)
+                    response = await client.get(
+                        "https://api.twitter.com/2/users/me",
+                        headers={"Authorization": f"Bearer {bearer_token}"},
+                        timeout=10
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        validation_result["valid"] = True
+                        validation_result["user_id"] = data.get("data", {}).get("id")
+                        validation_result["username"] = data.get("data", {}).get("username")
+                    else:
+                        error_data = response.json()
+                        validation_result["error"] = error_data.get("detail", error_data.get("title", "Invalid or expired X/Twitter token"))
         
         elif platform == "youtube":
             # Validate YouTube token

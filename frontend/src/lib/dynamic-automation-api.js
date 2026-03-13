@@ -295,29 +295,51 @@ export async function getOAuthUrl(platform) {
 
 // Connect a social platform account
 export async function connectSocialAccount(platform, credentials) {
+  // Build the base request - always include access_token (use bearer_token for X)
+  const requestBody = {
+    platform,
+    access_token: credentials.access_token || credentials.bearer_token || '',
+    refresh_token: credentials.refresh_token || null,
+    platform_user_id: credentials.platform_user_id || null,
+    platform_username: credentials.platform_username || null,
+    expires_in: credentials.expires_in || null,
+  };
+  
+  // Add extra credentials for X (Twitter)
+  if (platform === 'x') {
+    requestBody.bearer_token = credentials.bearer_token || credentials.access_token || '';
+    requestBody.api_key = credentials.api_key || null;
+    requestBody.api_secret = credentials.api_secret || null;
+    requestBody.access_token_secret = credentials.access_token_secret || null;
+  }
+  
   return fetchAPI(ENDPOINTS.SOCIAL.CONNECT(platform), {
     method: 'POST',
-    body: JSON.stringify({
-      platform,
-      access_token: credentials.access_token,
-      refresh_token: credentials.refresh_token || null,
-      platform_user_id: credentials.platform_user_id || null,
-      platform_username: credentials.platform_username || null,
-      expires_in: credentials.expires_in || null,
-    }),
+    body: JSON.stringify(requestBody),
   });
 }
 
 // Validate platform credentials before connecting
 export async function validatePlatformCredentials(platform, credentials) {
+  // Build the base request - always include access_token (use bearer_token for X)
+  const requestBody = {
+    platform,
+    access_token: credentials.access_token || credentials.bearer_token || '',
+    platform_user_id: credentials.platform_user_id || null,
+    platform_username: credentials.platform_username || null,
+  };
+  
+  // Add extra credentials for X (Twitter)
+  if (platform === 'x') {
+    requestBody.bearer_token = credentials.bearer_token || credentials.access_token || '';
+    requestBody.api_key = credentials.api_key || null;
+    requestBody.api_secret = credentials.api_secret || null;
+    requestBody.access_token_secret = credentials.access_token_secret || null;
+  }
+  
   return fetchAPI(ENDPOINTS.SOCIAL.VALIDATE(platform), {
     method: 'POST',
-    body: JSON.stringify({
-      platform,
-      access_token: credentials.access_token,
-      platform_user_id: credentials.platform_user_id || null,
-      platform_username: credentials.platform_username || null,
-    }),
+    body: JSON.stringify(requestBody),
   });
 }
 

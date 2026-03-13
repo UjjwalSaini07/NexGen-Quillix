@@ -60,9 +60,13 @@ const PLATFORM_CONFIG = {
       </svg>
     ),
     fields: [
-      { id: 'access_token', label: 'Bearer Token', type: 'password', placeholder: 'Enter your X Bearer Token' },
+      { id: 'bearer_token', label: 'Bearer Token (Required)', type: 'password', placeholder: 'Enter your X Bearer Token' },
+      { id: 'api_key', label: 'API Key', type: 'text', placeholder: 'Enter your API Key (Optional)' },
+      { id: 'api_secret', label: 'API Secret', type: 'password', placeholder: 'Enter your API Secret (Optional)' },
+      { id: 'access_token', label: 'Access Token', type: 'password', placeholder: 'Enter your Access Token (Optional)' },
+      { id: 'access_token_secret', label: 'Access Token Secret', type: 'password', placeholder: 'Enter your Access Token Secret (Optional)' },
     ],
-    instructions: 'Create a project in X Developer Portal and get your Bearer Token.',
+    instructions: 'Create a project in X Developer Portal. For posting: Get Bearer Token (App Auth) AND Access Token (User Auth).',
   },
   youtube: {
     name: 'YouTube',
@@ -172,12 +176,12 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="relative w-full max-w-md bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+      <div className="relative w-full max-w-md max-h-[90vh] bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {/* Decorative gradient border */}
         <div className="absolute inset-0 rounded-3xl p-[1px] bg-gradient-to-r from-green-500/30 via-blue-500/30 to-purple-500/30 -z-10" />
         
         {/* Header */}
-        <div className="relative p-6 pb-4 bg-gradient-to-b from-white/5 to-transparent">
+        <div className="relative p-6 pb-4 bg-gradient-to-b from-white/5 to-transparent flex-shrink-0">
           <div className="flex items-center gap-4">
             {/* Platform Icon */}
             <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white shadow-lg`}>
@@ -190,8 +194,9 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
             </div>
             
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all pointer-events-auto z-10"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -200,8 +205,8 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
           </div>
         </div>
 
-        {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-5">
+        {/* Content - Scrollable for X/Twitter with many fields */}
+        <form onSubmit={handleSubmit} className="p-6 pt-2 pr-6 space-y-4 overflow-y-auto max-h-[60vh]">
           {/* Show Instructions Toggle */}
           <button
             type="button"
@@ -231,18 +236,18 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
 
           {/* Form Fields */}
           {config.fields.map((field) => (
-            <div key={field.id} className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 ml-1">
+            <div key={field.id} className="space-y-2">
+              <label className="text-xs font-medium text-gray-300 ml-1">
                 {field.label}
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   {field.type === 'password' ? (
-                    <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   ) : (
-                    <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                     </svg>
                   )}
@@ -253,20 +258,20 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
                   onChange={(e) => handleChange(field.id, e.target.value)}
                   placeholder={field.placeholder}
                   required
-                  className="w-full pl-12 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                 />
                 {field.type === 'password' && (
                   <button
                     type="button"
                     onClick={() => toggleShowToken(field.id)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
                   >
                     {showToken[field.id] ? (
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                       </svg>
                     ) : (
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
