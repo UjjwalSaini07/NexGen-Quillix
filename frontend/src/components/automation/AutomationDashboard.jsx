@@ -417,30 +417,121 @@ export default function AutomationDashboard() {
     }
   };
 
-  // Loading state
+  // Loading state - Cyberpunk Style
   if (apiStatus === 'checking') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-400">Connecting to server...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden relative">
+        {/* Cyberpunk Background Grid */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(120,0,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(120,0,255,0.03)_1px,transparent_1px)]" style={{ backgroundSize: '50px 50px' }}></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+        </div>
+        
+        {/* Animated Glow Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="relative z-10 flex flex-col items-center gap-8">
+          {/* Cyberpunk Loader - Multiple Concentric Rings */}
+          <div className="relative w-32 h-32">
+            {/* Outer Ring */}
+            <div className="absolute inset-0 border-2 border-purple-500/30 rounded-full animate-[spin_3s_linear_infinite]"></div>
+            {/* Middle Ring */}
+            <div className="absolute inset-2 border-2 border-blue-500/50 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
+            {/* Inner Ring */}
+            <div className="absolute inset-4 border-2 border-purple-400/70 rounded-full animate-[spin_1.5s_linear_infinite]"></div>
+            {/* Core */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(139,92,246,0.8)]"></div>
+            </div>
+            {/* Glowing Orb */}
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-cyan-400 rounded-full animate-ping"></div>
+          </div>
+          
+          {/* Loading Text with Typing Effect */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            </div>
+            <p className="text-lg font-mono text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 animate-pulse">
+              ESTABLISHING NEURAL LINK
+            </p>
+            <p className="text-xs text-gray-500 font-mono">Initializing MCP Protocol...</p>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-full animate-[loading_2s_ease-in-out_infinite]" style={{ width: '100%', animation: 'loading 2s ease-in-out infinite' }}></div>
+          </div>
+          
+          {/* System Status */}
+          <div className="flex items-center gap-2 text-xs font-mono text-gray-600">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span>SECURE CONNECTION</span>
+            <span className="text-gray-700">|</span>
+            <span className="text-cyan-500">ENCRYPTED</span>
+          </div>
+        </div>
+        
+        {/* Scanline Effect */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent animate-[scan_3s_linear_infinite]" style={{ transform: 'translateY(-100%)', animation: 'scan 3s linear infinite' }}></div>
         </div>
       </div>
     );
   }
 
-  // Disconnected state
+  // Disconnected state - Cyberpunk Style
   if (apiStatus === 'disconnected') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl max-w-md">
-          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-4xl">⚠️</span>
+      <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,0,0,0.03)_1px,transparent_1px)]" style={{ backgroundSize: '50px 50px' }}></div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-[100px]"></div>
+        </div>
+        
+        <div className="relative z-10 text-center p-10 bg-gradient-to-br from-gray-900 via-red-950/20 to-gray-900 border border-red-500/30 backdrop-blur-xl rounded-3xl max-w-lg shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+          {/* Animated Warning Icon */}
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 border-2 border-red-500/50 rounded-full animate-ping"></div>
+            <div className="absolute inset-2 border-2 border-red-500/30 rounded-full animate-pulse"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.6)]">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-3">Server Offline</h2>
-          <p className="text-gray-400 mb-6">The automation server is not running. Start it to continue.</p>
-          <div className="bg-black/50 text-gray-300 px-6 py-4 rounded-xl font-mono text-sm">
-            cd automation && uvicorn app.main:app --port 8000
+          
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-red-400 mb-3">
+            SYSTEM OFFLINE
+          </h2>
+          <p className="text-gray-400 mb-6">The automation server is not responding. Initialize the connection to continue.</p>
+          
+          {/* Command Box */}
+          <div className="bg-black/60 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl font-mono text-sm mb-4">
+            <span className="text-gray-500">$</span> cd automation && uvicorn app.main:app --port 8000
+          </div>
+          
+          {/* Retry Button */}
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-medium hover:from-red-700 hover:to-orange-700 transition-all shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+          >
+            RETRY CONNECTION
+          </button>
+          
+          {/* Status Indicators */}
+          <div className="flex items-center justify-center gap-4 mt-6 text-xs font-mono text-gray-600">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+              <span className="text-red-500">CONNECTION LOST</span>
+            </span>
           </div>
         </div>
       </div>
