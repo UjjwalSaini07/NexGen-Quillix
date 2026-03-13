@@ -129,7 +129,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
-        <ToastContainer position="bottom-right" autoClose={5000} />
+        <ToastContainer 
+          position="bottom-right" 
+          autoClose={4000}
+          pauseOnHover
+          draggable
+          theme="dark"
+          style={{ zIndex: 9999 }}
+        />
       </body>
     </html>
   );

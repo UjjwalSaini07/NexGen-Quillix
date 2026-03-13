@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAutomation } from '@/components/hooks/useAutomation';
+import { toast } from 'react-toastify';
 
 const PLATFORMS = [
   { id: 'instagram', label: 'Instagram', color: 'pink' },
@@ -40,10 +41,12 @@ export default function PostCreator() {
 
     try {
       if (!content.trim()) {
+        toast.error('Please enter some content for your post');
         throw new Error('Please enter some content');
       }
 
       if (selectedPlatforms.length === 0) {
+        toast.error('Please select at least one platform to post to');
         throw new Error('Please select at least one platform');
       }
 
@@ -62,14 +65,29 @@ export default function PostCreator() {
         postData.is_draft = false;
       }
 
+      console.log('Creating post with data:', postData);
       const response = await createPost(postData);
+      console.log('Post created successfully:', response);
+      
+      toast.success('Post created successfully!');
       setResult(response);
       setContent('');
       setMediaUrl('');
       setScheduleTime('');
       setSelectedPlatforms([]);
     } catch (err) {
-      setError(err.message || 'Failed to create post');
+      console.error('Error creating post:', err);
+      const errorMessage = err.message || 'Failed to create post';
+      
+      // Check for specific error messages and show user-friendly toasts
+      if (errorMessage.includes('account not connected')) {
+        toast.error('Please connect your social media accounts first before creating posts');
+      } else if (errorMessage.includes('Unsupported platform')) {
+        toast.error('Please select a supported platform');
+      } else {
+        toast.error(errorMessage);
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

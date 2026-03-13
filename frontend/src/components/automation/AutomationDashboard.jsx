@@ -6,6 +6,7 @@ import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
+import { toast } from 'react-toastify';
 
 // Platform icons with colors
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -309,59 +310,111 @@ export default function AutomationDashboard() {
 
   // Handlers
   const handleConnect = (platform) => {
+    console.log('Opening connect modal for platform:', platform);
     setSelectedPlatform(platform);
     setShowConnectModal(true);
   };
 
   const handleConnectWithCredentials = async (platform, credentials) => {
-    await connect(platform, credentials);
-    setShowConnectModal(false);
-    setSelectedPlatform(null);
-    fetchAccounts();
+    console.log('Connecting platform with credentials:', platform);
+    try {
+      await connect(platform, credentials);
+      console.log('Platform connected successfully:', platform);
+      toast.success(`${platform} account connected successfully!`);
+      setShowConnectModal(false);
+      setSelectedPlatform(null);
+      fetchAccounts();
+    } catch (err) {
+      console.error('Failed to connect platform:', err);
+      toast.error(err.message || `Failed to connect ${platform} account`);
+    }
   };
 
   const handleDisconnect = async (platform) => {
+    console.log('Attempting to disconnect platform:', platform);
     if (confirm(`Disconnect ${platform}?`)) {
-      await disconnect(platform);
-      fetchAccounts();
+      try {
+        await disconnect(platform);
+        console.log('Platform disconnected successfully:', platform);
+        toast.success(`${platform} account disconnected`);
+        fetchAccounts();
+      } catch (err) {
+        console.error('Failed to disconnect platform:', err);
+        toast.error(err.message || `Failed to disconnect ${platform}`);
+      }
     }
   };
 
   const handleCreateRule = async (ruleData) => {
+    console.log('Creating automation rule:', ruleData.name);
     setCreatingRule(true);
     try {
       await createRule(ruleData);
+      console.log('Automation rule created successfully:', ruleData.name);
+      toast.success('Automation rule created successfully!');
       setShowCreateRuleModal(false);
       fetchRules();
     } catch (err) {
       console.error('Failed to create rule:', err);
+      toast.error(err.message || 'Failed to create automation rule');
     } finally {
       setCreatingRule(false);
     }
   };
 
   const handleToggleRule = async (ruleId) => {
-    await toggleRule(ruleId);
-    fetchRules();
+    console.log('Toggling rule:', ruleId);
+    try {
+      await toggleRule(ruleId);
+      toast.success('Rule updated successfully');
+      fetchRules();
+    } catch (err) {
+      console.error('Failed to toggle rule:', err);
+      toast.error(err.message || 'Failed to update rule');
+    }
   };
 
   const handleDeleteRule = async (ruleId) => {
+    console.log('Deleting rule:', ruleId);
     if (confirm('Delete this rule?')) {
-      await removeRule(ruleId);
-      fetchRules();
+      try {
+        await removeRule(ruleId);
+        console.log('Rule deleted successfully');
+        toast.success('Rule deleted successfully');
+        fetchRules();
+      } catch (err) {
+        console.error('Failed to delete rule:', err);
+        toast.error(err.message || 'Failed to delete rule');
+      }
     }
   };
 
   const handleDeletePost = async (postId) => {
+    console.log('Deleting post:', postId);
     if (confirm('Delete this post?')) {
-      await deletePost(postId);
-      fetchPosts();
+      try {
+        await deletePost(postId);
+        console.log('Post deleted successfully');
+        toast.success('Post deleted successfully');
+        fetchPosts();
+      } catch (err) {
+        console.error('Failed to delete post:', err);
+        toast.error(err.message || 'Failed to delete post');
+      }
     }
   };
 
   const handlePublishPost = async (postId) => {
-    await publishPost(postId);
-    fetchPosts();
+    console.log('Publishing post:', postId);
+    try {
+      await publishPost(postId);
+      console.log('Post published successfully');
+      toast.success('Post published successfully!');
+      fetchPosts();
+    } catch (err) {
+      console.error('Failed to publish post:', err);
+      toast.error(err.message || 'Failed to publish post');
+    }
   };
 
   // Loading state
@@ -432,7 +485,12 @@ export default function AutomationDashboard() {
                     <p className="text-xs text-gray-500">{profile.email}</p>
                   </div>
                   <button
-                    onClick={async () => { await logout(); setShowAuthModal(true); }}
+                    onClick={async () => { 
+                      console.log('User logging out');
+                      await logout(); 
+                      toast.info('You have been logged out');
+                      setShowAuthModal(true); 
+                    }}
                     className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

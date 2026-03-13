@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/components/hooks/useAutomation';
+import { toast } from 'react-toastify';
 
 /**
  * AuthModal - Enhanced Login/Register modal with polished UI
@@ -27,39 +28,48 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
     try {
       if (mode === 'login') {
+        console.log('Attempting login with email:', email);
         const result = await login({ email, password });
         if (result?.access_token) {
+          console.log('Login successful, calling onAuthSuccess');
+          toast.success('Login successful! Welcome back.');
           onAuthSuccess?.();
           onClose();
         }
       } else {
         // Register mode
         if (password !== confirmPassword) {
+          toast.error('Passwords do not match');
           setError('Passwords do not match');
           setLoading(false);
           return;
         }
         // Validate password strength according to backend requirements
         if (password.length < 8) {
+          toast.error('Password must be at least 8 characters');
           setError('Password must be at least 8 characters');
           setLoading(false);
           return;
         }
         if (!/[A-Z]/.test(password)) {
+          toast.error('Password must contain at least one uppercase letter');
           setError('Password must contain at least one uppercase letter');
           setLoading(false);
           return;
         }
         if (!/[a-z]/.test(password)) {
+          toast.error('Password must contain at least one lowercase letter');
           setError('Password must contain at least one lowercase letter');
           setLoading(false);
           return;
         }
         if (!/[0-9]/.test(password)) {
+          toast.error('Password must contain at least one digit');
           setError('Password must contain at least one digit');
           setLoading(false);
           return;
         }
+        console.log('Attempting registration with email:', email);
         const result = await register({ 
           email, 
           password, 
@@ -68,12 +78,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         });
         // After successful registration, switch to login mode
         if (result) {
+          console.log('Registration successful');
+          toast.success('Account created successfully! Please log in.');
           setMode('login');
           setError('');
           // Pre-fill email for convenience
         }
       }
     } catch (err) {
+      console.error('Authentication error:', err);
+      toast.error(err.message || 'Authentication failed. Please try again.');
       setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);

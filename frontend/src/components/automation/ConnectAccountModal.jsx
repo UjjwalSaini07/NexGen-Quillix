@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import * as api from '@/lib/dynamic-automation-api';
+import { toast } from 'react-toastify';
 
 // Platform icons and colors
 const PLATFORM_CONFIG = {
@@ -111,12 +112,17 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
     try {
       // First validate credentials with the backend
       setError('Validating credentials...');
+      toast.info('Validating credentials...');
       
       try {
+        console.log('Validating credentials for platform:', platform);
         const validation = await api.validatePlatformCredentials(platform, formData);
         
         if (!validation.valid) {
-          setError(validation.error || 'Invalid credentials');
+          const errorMsg = validation.error || 'Invalid credentials';
+          console.error('Validation failed:', errorMsg);
+          toast.error(errorMsg);
+          setError(errorMsg);
           setLoading(false);
           return;
         }
@@ -128,17 +134,25 @@ export default function ConnectAccountModal({ platform, onClose, onConnect }) {
         };
         
         // Now connect with validated credentials
+        console.log('Connecting platform:', platform);
         await onConnect(platform, validatedData);
+        toast.success(`${platform} account connected successfully!`);
+        console.log('Platform connected successfully');
         onClose();
       } catch (validationErr) {
         // Handle validation error
         const errMsg = validationErr.message || 'Failed to validate credentials';
+        console.error('Validation error:', errMsg);
+        toast.error(errMsg);
         setError(errMsg);
         setLoading(false);
         return;
       }
     } catch (err) {
-      setError(err.message || 'Failed to connect account');
+      console.error('Connection error:', err);
+      const errorMsg = err.message || 'Failed to connect account';
+      toast.error(errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

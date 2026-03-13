@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 // Platform configuration
 const PLATFORMS = [
@@ -91,33 +92,56 @@ export default function CreateRuleModal({ onClose, onSubmit, accounts, isLoading
 
   const handleNext = () => {
     if (validateStep(step)) {
+      console.log(`Moving to step ${step + 1}`);
       setStep(prev => Math.min(prev + 1, 4));
+    } else {
+      // Show validation errors as toast
+      if (step === 1) {
+        if (!formData.name.trim()) {
+          toast.error('Please enter a rule name');
+        }
+        if (!formData.platform) {
+          toast.error('Please select a platform');
+        }
+      }
+      if (step === 2) {
+        if (!formData.trigger) {
+          toast.error('Please select a trigger');
+        }
+        if (!formData.action) {
+          toast.error('Please select an action');
+        }
+      }
     }
   };
 
   const handleBack = () => {
+    console.log(`Moving back to step ${step - 1}`);
     setStep(prev => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async () => {
     // Final validation
     if (!formData.name.trim() || !formData.platform || !formData.trigger || !formData.action) {
+      toast.error('Please complete all required fields');
       return;
     }
 
-    const ruleData = {
+    console.log('Creating automation rule with data:', {
       name: formData.name,
       platform: formData.platform,
       trigger: formData.trigger,
       action: formData.action,
-      message_template: formData.message_template,
-      schedule: formData.schedule === 'custom' ? formData.custom_schedule : formData.schedule,
-      conditions: formData.conditions,
-      is_active: formData.is_active,
-      priority: formData.priority,
-    };
+    });
 
-    await onSubmit(ruleData);
+    try {
+      await onSubmit(ruleData);
+      console.log('Automation rule created successfully');
+      toast.success('Automation rule created successfully!');
+    } catch (err) {
+      console.error('Failed to create automation rule:', err);
+      toast.error(err.message || 'Failed to create automation rule');
+    }
   };
 
   const getTriggerForAction = (actionId) => {
