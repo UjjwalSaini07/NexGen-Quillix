@@ -116,12 +116,15 @@ export default function RootLayout({ children }) {
           });
 
           // Also save user session info in users subcollection
-          const userRef = doc(db, "NexGenQuillix", "users", info.deviceId || "anonymous");
-          await setDoc(userRef, {
-            lastVisit: serverTimestamp(),
-            deviceInfo: info,
-            firstVisit: info.firstVisit || serverTimestamp(),
-          }, { merge: true });
+          // Only save if we have a valid user ID (not anonymous/undefined)
+          if (info.deviceId && info.deviceId !== 'anonymous') {
+            const userRef = doc(db, "NexGenQuillix", "users", info.deviceId);
+            await setDoc(userRef, {
+              lastVisit: serverTimestamp(),
+              deviceInfo: info,
+              firstVisit: info.firstVisit || serverTimestamp(),
+            }, { merge: true });
+          }
 
           sessionStorage.setItem(sessionKey, "true");
           console.log("Analytics data saved to NexGenQuillix database ✅");
