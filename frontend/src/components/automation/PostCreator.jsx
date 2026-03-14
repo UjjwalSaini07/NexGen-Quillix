@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAutomation } from '@/components/hooks/useAutomation';
+import { toast } from 'react-toastify';
 
 const PLATFORMS = [
   { id: 'instagram', label: 'Instagram', color: 'pink' },
@@ -22,7 +23,7 @@ export default function PostCreator() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const { publishPost, schedulePost, generatePost } = useAutomation();
+  const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
 
   const togglePlatform = (platformId) => {
     setSelectedPlatforms((prev) =>
@@ -40,26 +41,92 @@ export default function PostCreator() {
 
     try {
       if (!content.trim()) {
+        toast.error('Please enter some content for your post');
         throw new Error('Please enter some content');
       }
 
       if (selectedPlatforms.length === 0) {
+        toast.error('Please select at least one platform to post to');
         throw new Error('Please select at least one platform');
       }
 
-      let response;
+      // Prepare post data for the API
+      // If scheduling is enabled, publish at scheduled time. Otherwise publish immediately.
+      const postData = {
+        content: content,
+        platforms: selectedPlatforms,
+        media_urls: mediaUrl ? [mediaUrl] : [],
+        media_type: mediaUrl ? 'image' : null,
+        is_draft: false, // Always publish (either immediately or scheduled)
+      };
+
+      // Add scheduled time if scheduling is enabled
       if (isSchedule && scheduleTime) {
-        response = await schedulePost(content, selectedPlatforms, scheduleTime, mediaUrl || null);
-      } else {
-        response = await publishPost(content, selectedPlatforms, mediaUrl || null);
+        postData.scheduled_time = new Date(scheduleTime).toISOString();
       }
 
+      console.log('Creating post with data:', postData);
+      console.log('isSchedule:', isSchedule);
+      const response = await createPost(postData);
+      console.log('Post created successfully:', response);
+      console.log('Response post_id:', response?.post_id);
+      
+      // If not scheduling, publish immediately
+      if (!isSchedule && response && response.post_id) {
+        console.log('Auto-publishing post:', response.post_id);
+        try {
+          const publishResult = await publishPost(response.post_id);
+          console.log('Post published result:', publishResult);
+          console.log('Full publish results:', JSON.stringify(publishResult.results, null, 2));
+          
+          // Check if publish was successful
+          if (publishResult && publishResult.results) {
+            const xResult = publishResult.results.find(r => r.platform === 'x');
+            console.log('X platform result:', xResult);
+            
+            if (xResult) {
+              if (xResult.status === 'success') {
+                toast.success('✅ Post published successfully to X!');
+              } else if (xResult.status === 'error') {
+                toast.error(`❌ Failed to publish to X: ${xResult.message}`);
+              }
+            } else {
+              if (publishResult.overall_status === 'published') {
+                toast.success('✅ Post published successfully!');
+              } else {
+                toast.warning('⚠️ Post created but some platforms failed to publish');
+              }
+            }
+          } else {
+            toast.success('Post published successfully!');
+          }
+        } catch (publishError) {
+          console.error('Error publishing post:', publishError);
+          console.error('Error details:', publishError.message);
+          toast.error(`Failed to publish: ${publishError.message}`);
+        }
+      } else {
+        console.log('Skipping auto-publish. isSchedule:', isSchedule, 'response:', response);
+        toast.success('Post created successfully!');
+      }
       setResult(response);
       setContent('');
       setMediaUrl('');
       setScheduleTime('');
+      setSelectedPlatforms([]);
     } catch (err) {
-      setError(err.message);
+      console.error('Error creating post:', err);
+      const errorMessage = err.message || 'Failed to create post';
+      
+      // Check for specific error messages and show user-friendly toasts
+      if (errorMessage.includes('account not connected')) {
+        toast.error('Please connect your social media accounts first before creating posts');
+      } else if (errorMessage.includes('Unsupported platform')) {
+        toast.error('Please select a supported platform');
+      } else {
+        toast.error(errorMessage);
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -69,10 +136,14 @@ export default function PostCreator() {
     setLoading(true);
     setError(null);
     try {
-      const response = await generatePost('tech', 'professional');
-      setContent(response.content);
+      const response = await generatePost({ niche: 'tech', tone: 'professional' });
+      if (response && response.content) {
+        setContent(response.content);
+      } else {
+        setError('Failed to generate content');
+      }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to generate content');
     } finally {
       setLoading(false);
     }

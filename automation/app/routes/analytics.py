@@ -217,7 +217,7 @@ async def get_post_performance(
     """Get performance metrics for a specific post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -429,7 +429,7 @@ async def track_post_metrics(
     """Track metrics for a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     analytics_doc = {
         "user_id": user_id,

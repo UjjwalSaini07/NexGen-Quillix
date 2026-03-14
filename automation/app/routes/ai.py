@@ -63,7 +63,10 @@ class ContentOptimizationRequest(BaseModel):
 # ==================== AI Endpoints ====================
 
 @router.post("/generate-post")
-async def generate_post(request: GeneratePostRequest):
+async def generate_post(
+    request: GeneratePostRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate a social media post using AI"""
     try:
         result = ai_service.generate_post(
@@ -92,7 +95,10 @@ async def generate_post(request: GeneratePostRequest):
 
 
 @router.post("/generate-reply")
-async def generate_reply(request: GenerateReplyRequest):
+async def generate_reply(
+    request: GenerateReplyRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate a reply to a comment"""
     try:
         result = ai_service.generate_reply(
@@ -116,7 +122,10 @@ async def generate_reply(request: GenerateReplyRequest):
 
 
 @router.post("/generate-hashtags")
-async def generate_hashtags(request: GenerateHashtagsRequest):
+async def generate_hashtags(
+    request: GenerateHashtagsRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate relevant hashtags"""
     try:
         result = ai_service.generate_hashtags(
@@ -139,7 +148,10 @@ async def generate_hashtags(request: GenerateHashtagsRequest):
 
 
 @router.post("/optimize-content")
-async def optimize_content(request: ContentOptimizationRequest):
+async def optimize_content(
+    request: ContentOptimizationRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Optimize content for a specific platform"""
     try:
         result = ai_service.optimize_content(
@@ -165,7 +177,10 @@ async def optimize_content(request: ContentOptimizationRequest):
 
 
 @router.post("/generate-captions")
-async def generate_captions(request: GenerateCaptionsRequest):
+async def generate_captions(
+    request: GenerateCaptionsRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate captions for images"""
     try:
         result = ai_service.generate_caption(
@@ -188,7 +203,10 @@ async def generate_captions(request: GenerateCaptionsRequest):
 
 
 @router.post("/analyze-sentiment")
-async def analyze_sentiment(text: str):
+async def analyze_sentiment(
+    text: str,
+    current_user: dict = Depends(get_current_user)
+):
     """Analyze sentiment of text"""
     try:
         result = ai_service.analyze_sentiment(text)
@@ -210,7 +228,8 @@ async def analyze_sentiment(text: str):
 @router.post("/translate")
 async def translate_content(
     content: str,
-    target_language: str
+    target_language: str,
+    current_user: dict = Depends(get_current_user)
 ):
     """Translate content to another language"""
     try:

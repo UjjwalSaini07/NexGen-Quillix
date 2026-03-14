@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     X_CLIENT_SECRET: Optional[str] = Field(None, env="X_CLIENT_SECRET")
     X_REDIRECT_URI: Optional[str] = Field(None, env="X_REDIRECT_URI")
     
+    # Twitter API Credentials
+    TWITTER_API_KEY: Optional[str] = Field(None, env="TWITTER_API_KEY")
+    TWITTER_API_SECRET: Optional[str] = Field(None, env="TWITTER_API_SECRET")
+    TWITTER_ACCESS_TOKEN: Optional[str] = Field(None, env="TWITTER_ACCESS_TOKEN")
+    TWITTER_ACCESS_SECRET: Optional[str] = Field(None, env="TWITTER_ACCESS_SECRET")
+    TWITTER_BEARER_TOKEN: Optional[str] = Field(None, env="TWITTER_BEARER_TOKEN")
+    
     # Instagram (uses Meta)
     INSTAGRAM_CLIENT_ID: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_ID")
     INSTAGRAM_CLIENT_SECRET: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_SECRET")

@@ -5,6 +5,11 @@ Complete X/Twitter API v2 integration with error handling
 from typing import Dict, Any, Optional, List
 import requests
 import logging
+import base64
+import time
+import hashlib
+import hmac
+import urllib.parse
 from app.services.platform.base import BasePlatformService, PlatformError, TokenExpiredError, RateLimitError
 
 logger = logging.getLogger(__name__)
@@ -17,9 +22,80 @@ class XService(BasePlatformService):
     API_VERSION = "2"
     BASE_URL = f"https://api.twitter.com/{API_VERSION}"
     
-    def __init__(self, access_token: str, user_id: Optional[str] = None):
+    def __init__(self, access_token: str, user_id: Optional[str] = None, 
+                 bearer_token: Optional[str] = None,
+                 api_key: Optional[str] = None, 
+                 api_secret: Optional[str] = None,
+                 access_token_secret: Optional[str] = None):
         super().__init__(access_token, user_id=user_id)
         self.user_id = user_id or self.extra_params.get("user_id")
+        # Store extra credentials
+        self.access_token = access_token or self.extra_params.get("access_token")
+        self.bearer_token = bearer_token or self.extra_params.get("bearer_token")
+        self.api_key = api_key or self.extra_params.get("api_key")
+        self.api_secret = api_secret or self.extra_params.get("api_secret")
+        self.access_token_secret = access_token_secret or self.extra_params.get("access_token_secret")
+    
+    def _generate_oauth_signature(self, method: str, url: str, params: Dict) -> str:
+        """Generate OAuth 1.0a signature"""
+        # Sort parameters
+        sorted_params = sorted(params.items())
+        param_string = '&'.join(f'{urllib.parse.quote(str(k), safe="")}={urllib.parse.quote(str(v), safe="")}' for k, v in sorted_params)
+        
+        # Create signature base string
+        signature_base = f"{method}&{urllib.parse.quote(url, safe="")}&{urllib.parse.quote(param_string, safe="")}"
+        
+        # Create signing key
+        signing_key = f"{urllib.parse.quote(self.api_secret, safe="")}&{urllib.parse.quote(self.access_token_secret or '', safe="")}"
+        
+        # Generate HMAC-SHA1 signature
+        signature = hmac.new(signing_key.encode('utf-8'), signature_base.encode('utf-8'), hashlib.sha1).digest()
+        return base64.b64encode(signature).decode('utf-8')
+    
+    def _get_oauth_headers(self, method: str, url: str, post_data: Optional[Dict] = None) -> Dict[str, str]:
+        """Generate OAuth 1.0a headers"""
+        oauth_params = {
+            'oauth_consumer_key': self.api_key,
+            'oauth_token': self.access_token,
+            'oauth_signature_method': 'HMAC-SHA1',
+            'oauth_timestamp': str(int(time.time())),
+            'oauth_nonce': hashlib.md5(str(time.time()).encode()).hexdigest(),
+            'oauth_version': '1.0'
+        }
+        
+        # Include post data in signature if present
+        all_params = dict(oauth_params)
+        if post_data:
+            all_params.update(post_data)
+        
+        # Generate signature
+        oauth_params['oauth_signature'] = self._generate_oauth_signature(method, url, all_params)
+        
+        # Build authorization header
+        auth_header = 'OAuth ' + ', '.join(f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(str(v), safe="")}"' 
+                                          for k, v in sorted(oauth_params.items()))
+        
+        return {'Authorization': auth_header, 'Content-Type': 'application/json'}
+    
+    def _get_post_headers(self) -> Dict[str, str]:
+        """Get headers for posting - use OAuth 1.0a if available"""
+        # If we have OAuth 1.0a credentials, use them
+        if self.api_key and self.api_secret and self.access_token_secret and self.access_token:
+            return self._get_oauth_headers('POST', f"{self.BASE_URL}/tweets", {})
+        
+        # Fall back to Bearer token if available
+        token_to_use = self.bearer_token or self.access_token
+        if token_to_use:
+            return {
+                "Authorization": f"Bearer {token_to_use}",
+                "Content-Type": "application/json"
+            }
+        
+        # Last resort - use access token as bearer
+        return {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"
+        }
     
     def _make_request(
         self, 
@@ -30,9 +106,7 @@ class XService(BasePlatformService):
     ) -> Dict[str, Any]:
         """Make API request to X API v2"""
         url = f"{self.BASE_URL}/{endpoint}"
-        headers = self._get_headers({
-            "Authorization": f"Bearer {self.access_token}"
-        })
+        headers = self._get_post_headers()
         
         try:
             if method.upper() == "GET":
@@ -77,6 +151,11 @@ class XService(BasePlatformService):
         Returns:
             Dict with post_id and platform_url
         """
+        logger.info(f"=== X SERVICE PUBLISH CALLED ===")
+        logger.info(f"Publishing to X with access_token: {'***' if self.access_token else 'None'}")
+        logger.info(f"X credentials - bearer_token: {'***' if self.bearer_token else 'None'}, api_key: {'***' if self.api_key else 'None'}, access_token_secret: {'***' if self.access_token_secret else 'None'}")
+        logger.info(f"extra_params: {self.extra_params}")
+        
         content = post_data.get("content", "")
         
         # Validate length
