@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAutomation, useSocialAccounts, useAutomationRules, usePosts, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
+import { useAutomation, useSocialAccounts, useAutomationRules, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
 import CreateRuleModal from './CreateRuleModal';
@@ -242,10 +242,9 @@ export default function AutomationDashboard() {
   const [dateRange, setDateRange] = useState(30);
 
   // Hooks
-  const { checkHealth } = useAutomation();
+  const { checkHealth, posts, loading: postsLoading, deletePost, publishPost, getPosts } = useAutomation();
   const { accounts, fetchAccounts, connect, disconnect } = useSocialAccounts();
   const { rules, loading: rulesLoading, fetchRules, createRule, remove: removeRule, toggleRule } = useAutomationRules();
-  const { posts, loading: postsLoading, fetchPosts, delete: deletePost, publishPost } = usePosts();
   const { analytics, loading: analyticsLoading, fetchAnalytics, fetchPlatformStats, platformStats } = useAnalytics();
   const { user: profile, fetchUser, isAuthenticated, logout } = useAuth();
 
@@ -273,6 +272,12 @@ export default function AutomationDashboard() {
   }, [apiStatus]);
 
   const [postStatusFilter, setPostStatusFilter] = useState('all');
+  
+  // Handle status filter change
+  const handleStatusFilterChange = (status) => {
+    setPostStatusFilter(status);
+    getPosts({ status });
+  };
 
   // Fetch data when tab changes or API connects
   useEffect(() => {
@@ -281,34 +286,17 @@ export default function AutomationDashboard() {
     }
   }, [apiStatus, fetchUser]);
 
-  // Fetch posts with status filter
-  const loadPosts = useCallback(async (status = 'all') => {
-    setPostsLoading(true);
-    try {
-      let options = {};
-      if (status && status !== 'all') {
-        options.status_filter = status;
-      }
-      const result = await fetchPosts(options);
-      setPosts(result || []);
-    } catch (err) {
-      console.error('Error fetching posts:', err);
-    } finally {
-      setPostsLoading(false);
-    }
-  }, [fetchPosts]);
-
   useEffect(() => {
     if (apiStatus === 'connected') {
       if (activeTab === 'accounts') fetchAccounts();
-      if (activeTab === 'posts') loadPosts(postStatusFilter);
+      if (activeTab === 'posts') getPosts({ status: postStatusFilter });
       if (activeTab === 'automation') fetchRules();
       if (activeTab === 'analytics') {
         fetchAnalytics(dateRange);
         fetchPlatformStats(null, dateRange);
       }
     }
-  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchRules, fetchAnalytics, fetchPlatformStats, loadPosts, postStatusFilter]);
+  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchRules, fetchAnalytics, fetchPlatformStats, getPosts, postStatusFilter]);
 
   // Tab definitions
   const tabs = [
@@ -697,7 +685,7 @@ export default function AutomationDashboard() {
               />
               <StatCard 
                 title="Total Posts" 
-                value={posts.length} 
+                value={posts?.length || 0} 
                 icon="📝" 
                 gradient="from-blue-600 to-cyan-600" 
               />
@@ -763,7 +751,7 @@ export default function AutomationDashboard() {
                   <div className="flex justify-center py-8">
                     <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                   </div>
-                ) : posts.length > 0 ? (
+                ) : posts?.length > 0 ? (
                   <div className="space-y-3">
                     {posts.slice(0, 3).map((post) => (
                       <div key={post._id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl">
@@ -916,7 +904,7 @@ export default function AutomationDashboard() {
                   }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
-                  {status === 'all' && ` (${posts.length})`}
+                  {status === 'all' && ` (${posts?.length || 0})`}
                 </button>
               ))}
             </div>
@@ -925,7 +913,7 @@ export default function AutomationDashboard() {
               <div className="flex justify-center py-16">
                 <div className="w-10 h-10 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
-            ) : posts.length > 0 ? (
+            ) : posts?.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {posts.map((post) => (
                   <PostCard key={post._id} post={post} onDelete={handleDeletePost} onPublish={handlePublishPost} />

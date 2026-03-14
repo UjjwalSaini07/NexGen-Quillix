@@ -7,6 +7,7 @@ from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, Field
 import logging
+import os
 
 from app.database import db
 from app.core.security import get_current_user
@@ -285,6 +286,7 @@ async def publish_post(
     """Publish a post immediately"""
     from bson import ObjectId
     
+    logger.info(f"=== PUBLISH ENDPOINT CALLED for post_id: {post_id} ===")
     user_id = str(current_user["_id"])
     
     try:
@@ -313,12 +315,18 @@ async def publish_post(
     # Publish to each platform
     results = []
     for platform in post["platforms"]:
+        logger.info(f"Publishing to platform: {platform} for post {post_id}")
+        
         # Get account
         account = await db.social_accounts.find_one({
             "user_id": user_id,
             "platform": platform,
             "is_active": True
         })
+        
+        logger.info(f"Account for {platform}: {account is not None}")
+        if account:
+            logger.info(f"Account has extra_credentials: {account.get('extra_credentials') is not None}")
         
         if not account:
             results.append({
@@ -335,9 +343,54 @@ async def publish_post(
                 await token_refresh_service.refresh_token(account)
             
             # Get service
+            # For X platform, we need to pass extra credentials
+            service_kwargs = {}
+            logger.info(f"Checking X credentials - account has extra_credentials: {account.get('extra_credentials') is not None}")
+            
+            if platform == "x":
+                extra_creds = account.get("extra_credentials", {})
+                
+                # Use .env credentials as PRIMARY (more reliable), not user-stored ones
+                from app.config import settings
+                
+                # Try to get from settings first, then os.getenv as fallback
+                api_key = getattr(settings, 'TWITTER_API_KEY', None) or os.getenv("TWITTER_API_KEY")
+                api_secret = getattr(settings, 'TWITTER_API_SECRET', None) or os.getenv("TWITTER_API_SECRET")
+                access_token_secret = getattr(settings, 'TWITTER_ACCESS_SECRET', None) or os.getenv("TWITTER_ACCESS_SECRET")
+                bearer_token = getattr(settings, 'TWITTER_BEARER_TOKEN', None) or os.getenv("TWITTER_BEARER_TOKEN")
+                access_token = getattr(settings, 'TWITTER_ACCESS_TOKEN', None) or os.getenv("TWITTER_ACCESS_TOKEN")
+                
+                # If .env credentials don't work, try user-stored credentials
+                if not api_key:
+                    api_key = extra_creds.get("api_key")
+                if not api_secret:
+                    api_secret = extra_creds.get("api_secret")
+                if not access_token_secret:
+                    access_token_secret = extra_creds.get("access_token_secret")
+                if not bearer_token:
+                    bearer_token = extra_creds.get("bearer_token")
+                if not access_token:
+                    access_token = account.get("access_token_encrypted")
+                
+                service_kwargs = {
+                    "bearer_token": bearer_token,
+                    "api_key": api_key,
+                    "api_secret": api_secret,
+                    "access_token_secret": access_token_secret,
+                    "access_token": access_token,
+                }
+                logger.info(f"X service kwargs: bearer={'yes' if service_kwargs.get('bearer_token') else 'no'}, api_key={'yes' if service_kwargs.get('api_key') else 'no'}, api_secret={'yes' if service_kwargs.get('api_secret') else 'no'}, access_token_secret={'yes' if service_kwargs.get('access_token_secret') else 'no'}, access_token={'yes' if service_kwargs.get('access_token') else 'no'}")
+            
+            # Get the access token to use
+            if platform == "x":
+                access_token_for_service = service_kwargs.pop("access_token", None) or account.get("access_token_encrypted")
+            else:
+                access_token_for_service = account.get("access_token_encrypted")
+            
             service = PlatformFactory.get_service(
                 platform,
-                account.get("access_token_encrypted")
+                access_token_for_service,
+                **service_kwargs
             )
             
             # Publish
