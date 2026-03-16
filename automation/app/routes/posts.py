@@ -14,6 +14,7 @@ from app.core.security import get_current_user
 from app.models import serialize_doc
 from app.services.platform.factory import PlatformFactory
 from app.services.platform.token_refresh import token_refresh_service
+from app.services.platform.base import TokenExpiredError, PlatformError
 
 logger = logging.getLogger(__name__)
 
@@ -405,6 +406,48 @@ async def publish_post(
                 "result": publish_result
             })
             
+        except TokenExpiredError as e:
+            # Token expired - try to refresh and retry
+            logger.warning(f"Token expired for {platform}, attempting refresh...")
+            try:
+                refresh_result = await token_refresh_service.refresh_token(account)
+                if refresh_result and refresh_result.get("access_token"):
+                    # Update account with new token
+                    new_access_token = refresh_result["access_token"]
+                    await db.social_accounts.update_one(
+                        {"_id": account["_id"]},
+                        {"$set": {
+                            "access_token_encrypted": new_access_token,
+                            "expires_at": datetime.utcnow() if platform != "facebook" else None
+                        }}
+                    )
+                    
+                    # Retry with new token
+                    service = PlatformFactory.get_service(
+                        platform,
+                        new_access_token,
+                        **service_kwargs
+                    )
+                    publish_result = service.publish({
+                        "content": post["content"],
+                        "media_urls": post.get("media_urls", [])
+                    })
+                    
+                    results.append({
+                        "platform": platform,
+                        "status": "success",
+                        "result": publish_result
+                    })
+                    logger.info(f"Token refresh and retry successful for {platform}")
+                else:
+                    raise Exception(f"Token refresh failed for {platform}")
+            except Exception as refresh_error:
+                logger.error(f"Token refresh failed for {platform}: {refresh_error}")
+                results.append({
+                    "platform": platform,
+                    "status": "error",
+                    "message": f"Token expired. Please reconnect your {platform} account."
+                })
         except Exception as e:
             logger.error(f"Publish error for {platform}: {e}")
             results.append({
