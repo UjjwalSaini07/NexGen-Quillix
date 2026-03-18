@@ -339,9 +339,22 @@ async def publish_post(
         
         try:
             # Check if token needs refresh
+            access_token_for_service = account.get("access_token_encrypted")
+            
             if account.get("expires_at") and account["expires_at"] < datetime.utcnow():
                 # Refresh token
-                await token_refresh_service.refresh_token(account)
+                refresh_result = await token_refresh_service.refresh_token(account)
+                if refresh_result and refresh_result.get("access_token"):
+                    access_token_for_service = refresh_result["access_token"]
+                    # Update account with new token
+                    await db.social_accounts.update_one(
+                        {"_id": account["_id"]},
+                        {"$set": {
+                            "access_token_encrypted": access_token_for_service,
+                            "expires_at": datetime.utcnow() if platform != "facebook" else None
+                        }}
+                    )
+                    logger.info(f"Proactively refreshed token for {platform}")
             
             # Get service
             # For X platform, we need to pass extra credentials
@@ -359,7 +372,13 @@ async def publish_post(
                 api_secret = getattr(settings, 'TWITTER_API_SECRET', None) or os.getenv("TWITTER_API_SECRET")
                 access_token_secret = getattr(settings, 'TWITTER_ACCESS_SECRET', None) or os.getenv("TWITTER_ACCESS_SECRET")
                 bearer_token = getattr(settings, 'TWITTER_BEARER_TOKEN', None) or os.getenv("TWITTER_BEARER_TOKEN")
+                
+                # For X/OAuth, we need the access token. Use refreshed token if available.
+                # Try settings first, then use the (potentially refreshed) access_token_for_service
                 access_token = getattr(settings, 'TWITTER_ACCESS_TOKEN', None) or os.getenv("TWITTER_ACCESS_TOKEN")
+                if not access_token:
+                    # Use the potentially refreshed token
+                    access_token = access_token_for_service
                 
                 # If .env credentials don't work, try user-stored credentials
                 if not api_key:
@@ -370,8 +389,6 @@ async def publish_post(
                     access_token_secret = extra_creds.get("access_token_secret")
                 if not bearer_token:
                     bearer_token = extra_creds.get("bearer_token")
-                if not access_token:
-                    access_token = account.get("access_token_encrypted")
                 
                 service_kwargs = {
                     "bearer_token": bearer_token,
@@ -382,15 +399,73 @@ async def publish_post(
                 }
                 logger.info(f"X service kwargs: bearer={'yes' if service_kwargs.get('bearer_token') else 'no'}, api_key={'yes' if service_kwargs.get('api_key') else 'no'}, api_secret={'yes' if service_kwargs.get('api_secret') else 'no'}, access_token_secret={'yes' if service_kwargs.get('access_token_secret') else 'no'}, access_token={'yes' if service_kwargs.get('access_token') else 'no'}")
             
-            # Get the access token to use
+            # Get the access token to use (use refreshed token if available)
+            # For X platform, the access token is in service_kwargs
             if platform == "x":
-                access_token_for_service = service_kwargs.pop("access_token", None) or account.get("access_token_encrypted")
+                # X uses OAuth 1.0a or OAuth 2.0 - use the token we already set up
+                access_token_final = service_kwargs.get("access_token") or account.get("access_token_encrypted")
+            elif platform == "facebook":
+                # For Facebook, check if there's a page access token
+                extra_params = account.get("extra_params", {})
+                extra_creds = account.get("extra_credentials", {})
+                
+                # First try extra_params, then fall back to extra_credentials
+                page_access_token = extra_params.get("page_access_token") or extra_creds.get("selected_page_access_token")
+                page_id = extra_params.get("page_id") or extra_creds.get("selected_page_id")
+                
+                logger.info(f"Facebook account check - extra_params: {extra_params}, extra_creds keys: {list(extra_creds.keys()) if extra_creds else 'None'}, page_access_token exists: {bool(page_access_token)}, page_id: {page_id}")
+                
+                if page_access_token and page_id:
+                    access_token_final = page_access_token
+                    # Pass page_id to the service
+                    service_kwargs["page_id"] = page_id
+                    logger.info(f"Using Facebook page access token for page: {page_id}")
+                else:
+                    logger.warning(f"No page access token found. Using user token. Extra params: {extra_params}, Extra creds keys: {list(extra_creds.keys()) if extra_creds else 'None'}")
+                    # Try to fetch pages now if not found
+                    try:
+                        import requests as req
+                        user_token = account.get("access_token_encrypted")
+                        if user_token:
+                            page_params = {
+                                "access_token": user_token,
+                                "fields": "id,name,access_token"
+                            }
+                            pages_response = req.get(
+                                "https://graph.facebook.com/v19.0/me/accounts",
+                                params=page_params,
+                                timeout=30
+                            )
+                            pages_data = pages_response.json()
+                            logger.info(f"Dynamic page fetch result: {pages_data}")
+                            
+                            if "data" in pages_data and len(pages_data["data"]) > 0:
+                                page_access_token = pages_data["data"][0]["access_token"]
+                                page_id = pages_data["data"][0]["id"]
+                                access_token_final = page_access_token
+                                service_kwargs["page_id"] = page_id
+                                
+                                # Update account with page info
+                                await db.social_accounts.update_one(
+                                    {"_id": account["_id"]},
+                                    {"$set": {
+                                        "extra_params": {"page_id": page_id, "page_access_token": page_access_token},
+                                        "updated_at": datetime.utcnow()
+                                    }}
+                                )
+                                logger.info(f"Dynamically fetched and stored page token for page: {page_id}")
+                            else:
+                                access_token_final = access_token_for_service
+                    except Exception as fetch_error:
+                        logger.error(f"Error dynamically fetching pages: {fetch_error}")
+                        access_token_final = access_token_for_service
             else:
-                access_token_for_service = account.get("access_token_encrypted")
+                # For other platforms
+                access_token_final = access_token_for_service
             
             service = PlatformFactory.get_service(
                 platform,
-                access_token_for_service,
+                access_token_final,
                 **service_kwargs
             )
             

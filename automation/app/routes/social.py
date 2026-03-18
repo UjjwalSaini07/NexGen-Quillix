@@ -251,6 +251,47 @@ async def connect_platform(
             "access_token_secret": request.access_token_secret
         }
     
+    # For Facebook, try to get page access token if page_id is provided
+    if platform == "facebook" and request.access_token:
+        try:
+            import requests as req
+            from app.config import settings
+            
+            logger.info("Fetching Facebook pages for user account")
+            
+            # Get user's pages to find the one to use
+            page_params = {
+                "access_token": request.access_token,
+                "fields": "id,name,access_token"
+            }
+            pages_response = req.get(
+                "https://graph.facebook.com/v19.0/me/accounts",
+                params=page_params,
+                timeout=30
+            )
+            pages_data = pages_response.json()
+            
+            logger.info(f"Facebook /me/accounts response status: {pages_response.status_code}")
+            logger.info(f"Facebook /me/accounts response: {pages_data}")
+            
+            if "data" in pages_data and len(pages_data["data"]) > 0:
+                # Store all pages info - frontend can let user select
+                account_data["extra_credentials"] = {
+                    "pages": pages_data["data"],
+                    "selected_page_id": pages_data["data"][0]["id"] if pages_data["data"] else None,
+                    "selected_page_access_token": pages_data["data"][0]["access_token"] if pages_data["data"] else None
+                }
+                # Use the first page's access token for posting
+                account_data["extra_params"] = {
+                    "page_id": pages_data["data"][0]["id"],
+                    "page_access_token": pages_data["data"][0]["access_token"]
+                }
+                logger.info(f"Found {len(pages_data['data'])} Facebook pages for user. Using page: {pages_data['data'][0]['id']}")
+            else:
+                logger.warning("No Facebook pages found for user. Response: " + str(pages_data))
+        except Exception as e:
+            logger.error(f"Error fetching Facebook pages: {e}")
+    
     if existing:
         # Update existing account
         await db.social_accounts.update_one(
@@ -288,6 +329,106 @@ async def connect_platform(
         "platform": platform,
         "account_id": str(result.inserted_id),
         "status": "connected"
+    }
+
+
+@router.get("/platforms/facebook/pages")
+async def get_facebook_pages(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get Facebook pages for the connected account.
+    Returns list of pages the user can post to.
+    """
+    user_id = str(current_user["_id"])
+    
+    # Find the Facebook account
+    account = await db.social_accounts.find_one({
+        "user_id": user_id,
+        "platform": "facebook",
+        "is_active": True
+    })
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Facebook account not connected"
+        )
+    
+    # Get pages from extra_credentials
+    extra_creds = account.get("extra_credentials", {})
+    pages = extra_creds.get("pages", [])
+    
+    return {
+        "pages": pages,
+        "selected_page_id": extra_creds.get("selected_page_id")
+    }
+
+
+@router.post("/platforms/facebook/select-page")
+async def select_facebook_page(
+    request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Select which Facebook Page to use for posting.
+    """
+    user_id = str(current_user["_id"])
+    page_id = request.get("page_id")
+    
+    if not page_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="page_id is required"
+        )
+    
+    # Find the Facebook account
+    account = await db.social_accounts.find_one({
+        "user_id": user_id,
+        "platform": "facebook",
+        "is_active": True
+    })
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Facebook account not connected"
+        )
+    
+    # Get pages from extra_credentials
+    extra_creds = account.get("extra_credentials", {})
+    pages = extra_creds.get("pages", [])
+    
+    # Find the selected page
+    selected_page = None
+    for page in pages:
+        if page.get("id") == page_id:
+            selected_page = page
+            break
+    
+    if not selected_page:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page not found in connected pages"
+        )
+    
+    # Update the account with selected page
+    await db.social_accounts.update_one(
+        {"_id": account["_id"]},
+        {"$set": {
+            "extra_credentials.selected_page_id": page_id,
+            "extra_credentials.selected_page_access_token": selected_page.get("access_token"),
+            "extra_params": {
+                "page_id": page_id,
+                "page_access_token": selected_page.get("access_token")
+            },
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    return {
+        "message": "Facebook Page selected successfully",
+        "selected_page": selected_page
     }
 
 
