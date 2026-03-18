@@ -41,3 +41,6 @@ aioredis
 
 # Validation
 email-validator
+
+# Timezone
+pytz

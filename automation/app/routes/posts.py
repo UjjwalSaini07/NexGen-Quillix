@@ -709,7 +709,19 @@ async def trigger_scheduled_posts(
     user_id = str(current_user["_id"])
     
     # Find all scheduled posts for current user that are due
-    now = datetime.utcnow()
+    # Use local timezone-aware comparison
+    import pytz
+    
+    # Get server's local timezone or default to UTC
+    try:
+        local_tz = pytz.timezone('Asia/Calcutta')  # Default to India timezone
+    except:
+        local_tz = pytz.UTC
+    
+    # Get current time as UTC with timezone info
+    now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    
+    logger.info(f"Triggering scheduled posts - Current UTC time: {now_utc}, Timezone: {local_tz}")
     
     # Get all scheduled posts for this user - handle both datetime and string formats
     due_posts = []
@@ -718,6 +730,8 @@ async def trigger_scheduled_posts(
         "status": "scheduled"
     }).to_list(length=100)
     
+    logger.info(f"Found {len(all_scheduled_posts)} scheduled posts for user {user_id}")
+    
     for post in all_scheduled_posts:
         scheduled_time = post.get("scheduled_time")
         if not scheduled_time:
@@ -725,20 +739,32 @@ async def trigger_scheduled_posts(
             
         # Convert scheduled_time to datetime for comparison
         if isinstance(scheduled_time, str):
-            try:
-                scheduled_time = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00'))
-            except:
+            # Try parsing as ISO format with timezone first
+            if 'Z' in scheduled_time or '+' in scheduled_time or scheduled_time.endswith('+00:00'):
                 try:
-                    scheduled_time = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M:%S')
+                    scheduled_time = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00'))
                 except:
                     continue
+            else:
+                # Parse as naive datetime (local time from frontend)
+                try:
+                    scheduled_time_naive = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M:%S')
+                    # Treat as local time and convert to UTC for comparison
+                    scheduled_time = local_tz.localize(scheduled_time_naive).astimezone(pytz.UTC)
+                except:
+                    continue
+        elif scheduled_time.tzinfo is not None:
+            # Already timezone-aware, convert to UTC
+            scheduled_time = scheduled_time.astimezone(pytz.UTC)
+        else:
+            # Naive datetime, treat as local time
+            scheduled_time = local_tz.localize(scheduled_time).astimezone(pytz.UTC)
         
-        # Remove timezone info for comparison
-        if scheduled_time.tzinfo is not None:
-            scheduled_time = scheduled_time.replace(tzinfo=None)
-        
-        if scheduled_time <= now:
+        # Compare with UTC time
+        if scheduled_time <= now_utc:
             due_posts.append(post)
+    
+    logger.info(f"Found {len(due_posts)} posts due for publishing")
     
     results = []
     for post in due_posts:
@@ -748,6 +774,8 @@ async def trigger_scheduled_posts(
             platforms = post.get("platforms", [])
             content = post.get("content", "")
             media_urls = post.get("media_urls", [])
+            
+            logger.info(f"Processing post {post_id} for platforms: {platforms}")
             
             publish_results = []
             all_success = True
@@ -762,6 +790,7 @@ async def trigger_scheduled_posts(
                     })
                     
                     if not account:
+                        logger.warning(f"No account found for {platform}")
                         publish_results.append({
                             "platform": platform,
                             "status": "error",
@@ -770,10 +799,17 @@ async def trigger_scheduled_posts(
                         all_success = False
                         continue
                     
-                    # Get access token
-                    access_token = account.get("access_token_encrypted") or account.get("access_token")
+                    logger.info(f"Found account for {platform}: {account.get('platform_username')}")
+                    
+                    # Get access token - check all possible sources
+                    access_token = (
+                        account.get("access_token_encrypted") or
+                        account.get("access_token") or
+                        account.get("extra_credentials", {}).get("access_token")
+                    )
                     
                     if not access_token:
+                        logger.warning(f"No access token for {platform}")
                         publish_results.append({
                             "platform": platform,
                             "status": "error",
@@ -782,14 +818,89 @@ async def trigger_scheduled_posts(
                         all_success = False
                         continue
                     
-                    # Get service with access token
-                    service = PlatformFactory.get_service(platform, access_token)
+                    logger.info(f"Got access token for {platform}")
+                    
+                    
+                    # Build service kwargs (like regular posts do)
+                    service_kwargs = {}
+                    
+                    # For Facebook, handle page access tokens (same logic as regular posts)
+                    if platform == "facebook":
+                        # First check extra_params and extra_credentials
+                        extra_params = account.get("extra_params", {})
+                        extra_creds = account.get("extra_credentials", {})
+                        
+                        page_access_token = extra_params.get("page_access_token") or extra_creds.get("selected_page_access_token")
+                        page_id = extra_params.get("page_id") or extra_creds.get("selected_page_id")
+                        
+                        if page_access_token and page_id:
+                            access_token = page_access_token
+                            service_kwargs["page_id"] = page_id
+                        else:
+                            # Try to fetch pages dynamically
+                            try:
+                                import requests as req
+                                user_token = account.get("access_token_encrypted")
+                                if user_token:
+                                    page_params = {
+                                        "access_token": user_token,
+                                        "fields": "id,name,access_token"
+                                    }
+                                    pages_response = req.get(
+                                        "https://graph.facebook.com/v19.0/me/accounts",
+                                        params=page_params,
+                                        timeout=30
+                                    )
+                                    pages_data = pages_response.json()
+                                    
+                                    if "data" in pages_data and len(pages_data["data"]) > 0:
+                                        page_access_token = pages_data["data"][0]["access_token"]
+                                        page_id = pages_data["data"][0]["id"]
+                                        access_token = page_access_token
+                                        service_kwargs["page_id"] = page_id
+                                        
+                                        # Update account with page info
+                                        await db.social_accounts.update_one(
+                                            {"_id": account["_id"]},
+                                            {"$set": {
+                                                "extra_params": {"page_id": page_id, "page_access_token": page_access_token},
+                                                "updated_at": datetime.utcnow()
+                                            }}
+                                        )
+                            except Exception as fetch_error:
+                                logger.error(f"Error fetching Facebook pages: {fetch_error}")
+                    
+                    # For X/Twitter, handle extra credentials
+                    elif platform == "x" or platform == "twitter":
+                        extra = account.get("extra_credentials", {})
+                        if extra:
+                            bearer_token = extra.get("bearer_token")
+                            api_key = extra.get("api_key")
+                            api_secret = extra.get("api_secret")
+                            access_token_secret = extra.get("access_token_secret")
+                            
+                            if bearer_token:
+                                service_kwargs["bearer_token"] = bearer_token
+                            if api_key:
+                                service_kwargs["api_key"] = api_key
+                            if api_secret:
+                                service_kwargs["api_secret"] = api_secret
+                            if access_token_secret:
+                                service_kwargs["access_token_secret"] = access_token_secret
+                            if access_token:
+                                service_kwargs["access_token"] = access_token
+                    
+                    # Get service with access token and page_id if applicable
+                    service = PlatformFactory.get_service(platform, access_token, **service_kwargs)
                     
                     # Publish
+                    logger.info(f"Publishing to {platform}...")
                     result = service.publish({
                         "content": content,
                         "media_urls": media_urls
                     })
+                    
+                    logger.info(f"Published to {platform}: {result}")
                     
                     publish_results.append({
                         "platform": platform,
@@ -798,6 +909,9 @@ async def trigger_scheduled_posts(
                     })
                     
                 except Exception as e:
+                    logger.error(f"Error publishing to {platform}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                     publish_results.append({
                         "platform": platform,
                         "status": "error",
@@ -807,6 +921,8 @@ async def trigger_scheduled_posts(
             
             # Update post status
             new_status = "published" if all_success else "partial_failure"
+            logger.info(f"Scheduled post {post_id} status updated to: {new_status}")
+            
             await db.posts.update_one(
                 {"_id": post["_id"]},
                 {"$set": {
@@ -820,7 +936,8 @@ async def trigger_scheduled_posts(
             results.append({
                 "post_id": post_id,
                 "status": new_status,
-                "success": True
+                "success": True,
+                "publish_results": publish_results
             })
             
         except Exception as e:
