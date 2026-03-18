@@ -2,20 +2,59 @@ from app.tasks.worker import celery
 from app.database import db
 from datetime import datetime
 from bson import ObjectId
+import pytz
 
 @celery.task
 def publish_scheduled_posts():
     """Publish scheduled posts that have reached their scheduled time"""
-    now = datetime.utcnow()
     
-    # Find posts that are scheduled and past their scheduled time
-    posts = db.posts.find({
-        "status": "scheduled",
-        "scheduled_time": {"$lte": now}
-    })
+    # Use local timezone for comparison
+    try:
+        local_tz = pytz.timezone('Asia/Calcutta')  # Default to India timezone
+    except:
+        local_tz = pytz.UTC
+    
+    now_utc = datetime.utcnow()
+    
+    # Get all scheduled posts first (we'll filter in Python for local time handling)
+    posts = list(db.posts.find({
+        "status": "scheduled"
+    }))
+    
+    # Filter posts that are due (considering local time)
+    due_posts = []
+    for post in posts:
+        scheduled_time = post.get("scheduled_time")
+        if not scheduled_time:
+            continue
+        
+        # Convert scheduled_time to UTC for comparison
+        if isinstance(scheduled_time, str):
+            if 'Z' in scheduled_time or '+' in scheduled_time or scheduled_time.endswith('+00:00'):
+                # Already has timezone info
+                try:
+                    scheduled_time_utc = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00')).astimezone(pytz.UTC)
+                except:
+                    continue
+            else:
+                # Parse as naive datetime (local time from frontend)
+                try:
+                    scheduled_time_naive = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M:%S')
+                    scheduled_time_utc = local_tz.localize(scheduled_time_naive).astimezone(pytz.UTC)
+                except:
+                    continue
+        elif hasattr(scheduled_time, 'tzinfo') and scheduled_time.tzinfo is not None:
+            scheduled_time_utc = scheduled_time.astimezone(pytz.UTC)
+        else:
+            # Naive datetime, treat as local
+            scheduled_time_utc = local_tz.localize(scheduled_time).astimezone(pytz.UTC)
+        
+        # Check if scheduled time has passed
+        if scheduled_time_utc <= now_utc:
+            due_posts.append(post)
     
     results = []
-    for post in posts:
+    for post in due_posts:
         try:
             post_id = str(post["_id"])
             user_id = post["user_id"]
