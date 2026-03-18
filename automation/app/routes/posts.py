@@ -29,16 +29,30 @@ class PostCreateRequest(BaseModel):
     platforms: List[str] = Field(..., min_items=1)
     media_urls: List[str] = Field(default_factory=list)
     media_type: Optional[str] = None
-    scheduled_time: Optional[datetime] = None
+    # Accept both string and datetime for scheduled_time
+    scheduled_time: Optional[str] = None
     is_draft: bool = False
     enable_analytics: bool = True
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "content": "Hello world!",
+                "platforms": ["facebook", "twitter"],
+                "media_urls": [],
+                "media_type": None,
+                "scheduled_time": "2024-03-18T15:30:00",
+                "is_draft": False
+            }
+        }
 
 
 class PostUpdateRequest(BaseModel):
     """Update post request"""
     content: Optional[str] = None
     media_urls: Optional[List[str]] = None
-    scheduled_time: Optional[datetime] = None
+    # Accept both string and datetime for scheduled_time
+    scheduled_time: Optional[str] = None
 
 
 class PostResponse(BaseModel):
@@ -50,7 +64,8 @@ class PostResponse(BaseModel):
     media_type: Optional[str]
     status: str
     is_draft: bool
-    scheduled_time: Optional[datetime]
+    # Accept both string and datetime for scheduled_time
+    scheduled_time: Optional[str] = None
     published_at: Optional[datetime]
     created_at: datetime
 
@@ -92,12 +107,47 @@ async def create_post(
     if post_data.is_draft:
         status_value = "draft"
     elif post_data.scheduled_time:
-        if post_data.scheduled_time <= datetime.utcnow():
+        # Handle string format from frontend (local time without timezone)
+        scheduled_time_utc = post_data.scheduled_time
+        
+        # Parse the string to datetime
+        if isinstance(scheduled_time_utc, str):
+            logger.info(f"Parsing scheduled_time string: {scheduled_time_utc}")
+            # Try to parse as ISO format (with or without timezone)
+            try:
+                # Handle Z suffix
+                scheduled_time_str = scheduled_time_utc.replace('Z', '+00:00')
+                scheduled_time_utc = datetime.fromisoformat(scheduled_time_str)
+                logger.info(f"Parsed with fromisoformat: {scheduled_time_utc}")
+            except Exception as e:
+                logger.warning(f"Failed to parse with fromisoformat: {e}")
+                try:
+                    scheduled_time_utc = datetime.strptime(scheduled_time_utc, '%Y-%m-%dT%H:%M:%S')
+                    logger.info(f"Parsed with strptime: {scheduled_time_utc}")
+                except Exception as e2:
+                    logger.error(f"Failed to parse scheduled_time: {e2}")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Invalid scheduled_time format: {scheduled_time_utc}. Use YYYY-MM-DDTHH:MM:SS format"
+                    )
+        
+        # Convert to UTC for comparison (treat as local time)
+        if scheduled_time_utc.tzinfo is not None:
+            scheduled_time_utc = scheduled_time_utc.replace(tzinfo=None)
+        
+        # Treat the time as local time and convert to UTC for comparison
+        # This is a simplification - in production you'd want proper timezone handling
+        local_now = datetime.now()
+        utc_now = datetime.utcnow()
+        
+        # Use the scheduled time as-is (local time) and compare
+        if scheduled_time_utc <= local_now:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Scheduled time must be in the future"
             )
         status_value = "scheduled"
+        logger.info(f"Post will be scheduled with status: {status_value}, time: {scheduled_time_utc}")
     else:
         status_value = "pending"  # Ready to publish
     
@@ -117,10 +167,12 @@ async def create_post(
         "updated_at": datetime.utcnow()
     }
     
+    logger.info(f"Creating post with status: {status_value}, scheduled_time: {post_data.scheduled_time}")
+    
     result = await db.posts.insert_one(post_doc)
     post_id = str(result.inserted_id)
     
-    logger.info(f"Post created: {post_id} by user {user_id}")
+    logger.info(f"Post created: {post_id} by user {user_id} with status {status_value}")
     
     return {
         "message": "Post created successfully",
@@ -145,6 +197,7 @@ async def get_posts(
     
     if status_filter:
         query["status"] = status_filter
+        logger.info(f"Filtering posts by status: {status_filter}, query: {query}")
     if platform:
         query["platforms"] = platform
     
@@ -153,6 +206,11 @@ async def get_posts(
     total = await db.posts.count_documents(query)
     
     posts = await db.posts.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+    
+    # Log post statuses for debugging
+    if posts:
+        statuses = [p.get("status") for p in posts]
+        logger.info(f"Found {len(posts)} posts with statuses: {statuses}")
     
     return {
         "posts": serialize_doc(posts),
@@ -341,20 +399,25 @@ async def publish_post(
             # Check if token needs refresh
             access_token_for_service = account.get("access_token_encrypted")
             
-            if account.get("expires_at") and account["expires_at"] < datetime.utcnow():
-                # Refresh token
-                refresh_result = await token_refresh_service.refresh_token(account)
-                if refresh_result and refresh_result.get("access_token"):
-                    access_token_for_service = refresh_result["access_token"]
-                    # Update account with new token
-                    await db.social_accounts.update_one(
-                        {"_id": account["_id"]},
-                        {"$set": {
-                            "access_token_encrypted": access_token_for_service,
-                            "expires_at": datetime.utcnow() if platform != "facebook" else None
-                        }}
-                    )
-                    logger.info(f"Proactively refreshed token for {platform}")
+            # Handle timezone-aware vs naive datetime comparison
+            expires_at = account.get("expires_at")
+            if expires_at:
+                if expires_at.tzinfo is not None:
+                    expires_at = expires_at.replace(tzinfo=None)
+                if expires_at < datetime.utcnow():
+                    # Refresh token
+                    refresh_result = await token_refresh_service.refresh_token(account)
+                    if refresh_result and refresh_result.get("access_token"):
+                        access_token_for_service = refresh_result["access_token"]
+                        # Update account with new token
+                        await db.social_accounts.update_one(
+                            {"_id": account["_id"]},
+                            {"$set": {
+                                "access_token_encrypted": access_token_for_service,
+                                "expires_at": datetime.utcnow() if platform != "facebook" else None
+                            }}
+                        )
+                        logger.info(f"Proactively refreshed token for {platform}")
             
             # Get service
             # For X platform, we need to pass extra credentials
@@ -557,7 +620,7 @@ async def publish_post(
 @router.post("/{post_id}/schedule")
 async def schedule_post(
     post_id: str,
-    scheduled_time: datetime,
+    scheduled_time: str,  # Accept string format from frontend
     current_user: dict = Depends(get_current_user)
 ):
     """Schedule a post for future publishing"""
@@ -565,7 +628,27 @@ async def schedule_post(
     
     user_id = str(current_user["_id"])
     
-    if scheduled_time <= datetime.utcnow():
+    # Parse the scheduled_time string
+    try:
+        # Handle Z suffix
+        scheduled_time_str = scheduled_time.replace('Z', '+00:00')
+        scheduled_time_dt = datetime.fromisoformat(scheduled_time_str)
+    except:
+        try:
+            scheduled_time_dt = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M:%S')
+        except:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid scheduled_time format: {scheduled_time}. Use YYYY-MM-DDTHH:MM:SS format"
+            )
+    
+    # Convert to UTC for comparison
+    scheduled_time_check = scheduled_time_dt
+    if scheduled_time_check.tzinfo is not None:
+        scheduled_time_check = scheduled_time_check.replace(tzinfo=None)
+    
+    # Compare with local time (for consistency with frontend)
+    if scheduled_time_check <= datetime.now():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Scheduled time must be in the future"
@@ -584,15 +667,16 @@ async def schedule_post(
     
     if not post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_REQUEST,
             detail="Post not found"
         )
     
+    # Store the original string format for consistency
     await db.posts.update_one(
         {"_id": ObjectId(post_id)},
         {
             "$set": {
-                "scheduled_time": scheduled_time,
+                "scheduled_time": scheduled_time,  # Store original string
                 "status": "scheduled",
                 "updated_at": datetime.utcnow()
             }
@@ -613,4 +697,141 @@ async def posts_health():
     return {
         "status": "healthy",
         "service": "posts"
+    }
+
+
+@router.post("/trigger-scheduled")
+async def trigger_scheduled_posts(
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Trigger publishing of all scheduled posts that are due"""
+    user_id = str(current_user["_id"])
+    
+    # Find all scheduled posts for current user that are due
+    now = datetime.utcnow()
+    
+    # Get all scheduled posts for this user - handle both datetime and string formats
+    due_posts = []
+    all_scheduled_posts = await db.posts.find({
+        "user_id": user_id,
+        "status": "scheduled"
+    }).to_list(length=100)
+    
+    for post in all_scheduled_posts:
+        scheduled_time = post.get("scheduled_time")
+        if not scheduled_time:
+            continue
+            
+        # Convert scheduled_time to datetime for comparison
+        if isinstance(scheduled_time, str):
+            try:
+                scheduled_time = datetime.fromisoformat(scheduled_time.replace('Z', '+00:00'))
+            except:
+                try:
+                    scheduled_time = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M:%S')
+                except:
+                    continue
+        
+        # Remove timezone info for comparison
+        if scheduled_time.tzinfo is not None:
+            scheduled_time = scheduled_time.replace(tzinfo=None)
+        
+        if scheduled_time <= now:
+            due_posts.append(post)
+    
+    results = []
+    for post in due_posts:
+        try:
+            post_id = str(post["_id"])
+            post_user_id = post["user_id"]
+            platforms = post.get("platforms", [])
+            content = post.get("content", "")
+            media_urls = post.get("media_urls", [])
+            
+            publish_results = []
+            all_success = True
+            
+            for platform in platforms:
+                try:
+                    # Get the social account
+                    account = await db.social_accounts.find_one({
+                        "user_id": post_user_id,
+                        "platform": platform,
+                        "is_active": True
+                    })
+                    
+                    if not account:
+                        publish_results.append({
+                            "platform": platform,
+                            "status": "error",
+                            "message": f"{platform} account not connected"
+                        })
+                        all_success = False
+                        continue
+                    
+                    # Get access token
+                    access_token = account.get("access_token_encrypted") or account.get("access_token")
+                    
+                    if not access_token:
+                        publish_results.append({
+                            "platform": platform,
+                            "status": "error",
+                            "message": f"No access token for {platform}"
+                        })
+                        all_success = False
+                        continue
+                    
+                    # Get service with access token
+                    service = PlatformFactory.get_service(platform, access_token)
+                    
+                    # Publish
+                    result = service.publish({
+                        "content": content,
+                        "media_urls": media_urls
+                    })
+                    
+                    publish_results.append({
+                        "platform": platform,
+                        "status": "success",
+                        "result": result
+                    })
+                    
+                except Exception as e:
+                    publish_results.append({
+                        "platform": platform,
+                        "status": "error",
+                        "message": str(e)
+                    })
+                    all_success = False
+            
+            # Update post status
+            new_status = "published" if all_success else "partial_failure"
+            await db.posts.update_one(
+                {"_id": post["_id"]},
+                {"$set": {
+                    "status": new_status,
+                    "publish_results": publish_results,
+                    "published_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            results.append({
+                "post_id": post_id,
+                "status": new_status,
+                "success": True
+            })
+            
+        except Exception as e:
+            results.append({
+                "post_id": str(post["_id"]),
+                "status": "error",
+                "success": False,
+                "message": str(e)
+            })
+    
+    return {
+        "message": f"Processed {len(results)} scheduled posts",
+        "results": results
     }

@@ -111,12 +111,60 @@ const AccountCard = ({ account, onDisconnect }) => {
 
 // Post Card Component
 const PostCard = ({ post, onDelete, onPublish }) => {
+  const [timeRemaining, setTimeRemaining] = useState('');
+  
   const statusColors = {
     published: 'bg-green-500/20 text-green-400 border-green-500/30',
     scheduled: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     draft: 'bg-gray-700/50 text-gray-400 border-gray-600/30',
     failed: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
+  
+  const statusIcons = {
+    published: '✅',
+    scheduled: '⏰',
+    draft: '📝',
+    failed: '❌',
+  };
+  
+  // Calculate time remaining for scheduled posts
+  useEffect(() => {
+    if (post.status !== 'scheduled' || !post.scheduled_time) {
+      setTimeRemaining('');
+      return;
+    }
+    
+    const calculateTimeRemaining = () => {
+      const now = new Date();
+      const scheduled = new Date(post.scheduled_time);
+      const diff = scheduled - now;
+      
+      if (diff <= 0) {
+        setTimeRemaining('Publishing...');
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      if (days > 0) {
+        setTimeRemaining(`${days}d ${hours}h`);
+      } else if (hours > 0) {
+        setTimeRemaining(`${hours}h ${minutes}m`);
+      } else if (minutes > 0) {
+        setTimeRemaining(`${minutes}m ${seconds}s`);
+      } else {
+        setTimeRemaining(`${seconds}s`);
+      }
+    };
+    
+    calculateTimeRemaining();
+    const interval = setInterval(calculateTimeRemaining, 1000);
+    
+    return () => clearInterval(interval);
+  }, [post.status, post.scheduled_time]);
 
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
@@ -130,19 +178,25 @@ const PostCard = ({ post, onDelete, onPublish }) => {
           ))}
         </div>
         <span className={`text-xs px-3 py-1 rounded-full border ${statusColors[post.status] || statusColors.draft}`}>
-          {post.status}
+          {statusIcons[post.status] || ''} {post.status}
         </span>
       </div>
       <p className="text-gray-300 mb-4 line-clamp-2">{post.content}</p>
       <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-500">{new Date(post.created_at).toLocaleDateString()}</span>
+        <span className="text-gray-500">
+          {post.status === 'scheduled' && post.scheduled_time 
+            ? timeRemaining 
+              ? `⏰ ${timeRemaining} - ${new Date(post.scheduled_time).toLocaleString()}`
+              : `📅 Scheduled: ${new Date(post.scheduled_time).toLocaleString()}`
+            : new Date(post.created_at).toLocaleDateString()}
+        </span>
         <div className="flex gap-2">
-          {post.status === 'draft' && (
+          {(post.status === 'draft' || post.status === 'scheduled') && (
             <button
               onClick={() => onPublish(post._id)}
               className="text-green-400 hover:text-green-300 hover:bg-green-500/10 px-3 py-1.5 rounded-lg transition-all"
             >
-              Publish
+              Publish Now
             </button>
           )}
           {(post.status !== 'published') && (
@@ -242,14 +296,19 @@ export default function AutomationDashboard() {
   const [dateRange, setDateRange] = useState(30);
 
   // Hooks
-  const { checkHealth, posts, loading: postsLoading, deletePost, publishPost, getPosts } = useAutomation();
+  const { checkHealth, posts, loading: postsLoading, deletePost, publishPost, getPosts, fetchPosts, triggerScheduledPosts } = useAutomation();
   const { accounts, fetchAccounts, connect, disconnect } = useSocialAccounts();
   const { rules, loading: rulesLoading, fetchRules, createRule, remove: removeRule, toggleRule } = useAutomationRules();
   const { analytics, loading: analyticsLoading, fetchAnalytics, fetchPlatformStats, platformStats } = useAnalytics();
   const { user: profile, fetchUser, isAuthenticated, logout } = useAuth();
 
-  // Auth modal
-  const [showAuthModal, setShowAuthModal] = useState(!isAuthenticated);
+  // Auth modal - use useEffect to sync with isAuthenticated
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  // Sync auth modal with authentication state
+  useEffect(() => {
+    setShowAuthModal(!isAuthenticated);
+  }, [isAuthenticated]);
   const [showCreateRuleModal, setShowCreateRuleModal] = useState(false);
   const [showPostCreator, setShowPostCreator] = useState(false);
   const [creatingRule, setCreatingRule] = useState(false);
@@ -261,6 +320,54 @@ export default function AutomationDashboard() {
       .catch(() => setApiStatus('disconnected'));
   }, [checkHealth]);
 
+  // Filter state for posts
+  const [postStatusFilter, setPostStatusFilter] = useState('all');
+
+  // Check and publish scheduled posts every minute
+  useEffect(() => {
+    let isMounted = true;
+    let hasRunOnce = false; // Track if we've run once
+    
+    const checkScheduledPosts = async () => {
+      if (!isMounted) return;
+      try {
+        const result = await triggerScheduledPosts();
+        console.log('Scheduled posts check result:', result);
+        
+        // Only show notifications after initial load (not on first mount)
+        if (hasRunOnce && result?.results?.length > 0) {
+          const publishedCount = result.results.filter(r => r.success).length;
+          if (publishedCount > 0) {
+            toast.success(`🎉 ${publishedCount} scheduled post(s) published successfully!`);
+          }
+        }
+        hasRunOnce = true;
+        
+        // Only refresh if component is still mounted and on posts tab
+        if (isMounted && activeTab === 'posts') {
+          getPosts({ status_filter: postStatusFilter });
+        }
+      } catch (err) {
+        console.error('Error checking scheduled posts:', err);
+        hasRunOnce = true; // Mark as run even on error
+      }
+    };
+    
+    // Wait a bit before first check to not interfere with initial load
+    const initialTimeout = setTimeout(() => {
+      checkScheduledPosts();
+    }, 3000);
+    
+    // Then check every minute
+    const interval = setInterval(checkScheduledPosts, 60000);
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [triggerScheduledPosts, getPosts, activeTab, postStatusFilter]);
+
   // Cycle through connection stages for animation
   useEffect(() => {
     if (apiStatus === 'checking') {
@@ -271,12 +378,13 @@ export default function AutomationDashboard() {
     }
   }, [apiStatus]);
 
-  const [postStatusFilter, setPostStatusFilter] = useState('all');
-  
   // Handle status filter change
   const handleStatusFilterChange = (status) => {
+    console.log('Filter changed to:', status);
     setPostStatusFilter(status);
-    getPosts({ status });
+    getPosts({ status_filter: status }).then(result => {
+      console.log('Posts fetched:', result);
+    });
   };
 
   // Fetch data when tab changes or API connects
@@ -289,7 +397,7 @@ export default function AutomationDashboard() {
   useEffect(() => {
     if (apiStatus === 'connected') {
       if (activeTab === 'accounts') fetchAccounts();
-      if (activeTab === 'posts') getPosts({ status: postStatusFilter });
+      if (activeTab === 'posts') getPosts({ status_filter: postStatusFilter });
       if (activeTab === 'automation') fetchRules();
       if (activeTab === 'analytics') {
         fetchAnalytics(dateRange);
@@ -395,7 +503,8 @@ export default function AutomationDashboard() {
         await deletePost(postId);
         console.log('Post deleted successfully');
         toast.success('Post deleted successfully');
-        fetchPosts();
+        // Use getPosts to refetch with current filter
+        getPosts({ status_filter: postStatusFilter });
       } catch (err) {
         console.error('Failed to delete post:', err);
         toast.error(err.message || 'Failed to delete post');
@@ -406,10 +515,27 @@ export default function AutomationDashboard() {
   const handlePublishPost = async (postId) => {
     console.log('Publishing post:', postId);
     try {
-      await publishPost(postId);
-      console.log('Post published successfully');
-      toast.success('Post published successfully!');
-      fetchPosts();
+      const result = await publishPost(postId);
+      console.log('Post published result:', result);
+      
+      // Show appropriate message based on result
+      if (result?.results) {
+        const successCount = result.results.filter(r => r.status === 'success').length;
+        const failCount = result.results.filter(r => r.status === 'error').length;
+        
+        if (failCount > 0 && successCount > 0) {
+          toast.warning(`Posted to ${successCount} platform(s). Failed: ${failCount}`);
+        } else if (failCount > 0) {
+          toast.error('Failed to publish post');
+        } else {
+          toast.success('Post published successfully!');
+        }
+      } else {
+        toast.success('Post published successfully!');
+      }
+      
+      // Use getPosts to refetch with current filter
+      getPosts({ status_filter: postStatusFilter });
     } catch (err) {
       console.error('Failed to publish post:', err);
       toast.error(err.message || 'Failed to publish post');
