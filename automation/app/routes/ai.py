@@ -22,7 +22,8 @@ ai_service = GroqService()
 
 class GeneratePostRequest(BaseModel):
     """Request to generate a post"""
-    niche: str = Field(..., min_length=1, max_length=100)
+    prompt: Optional[str] = Field(None, description="Short prompt/topic for the post")
+    niche: Optional[str] = Field(None, min_length=1, max_length=100)
     tone: str = Field("professional", pattern="^(professional|friendly|humorous|inspirational|educational)$")
     platform: Optional[str] = None
     include_emoji: bool = True
@@ -69,8 +70,11 @@ async def generate_post(
 ):
     """Generate a social media post using AI"""
     try:
+        # If prompt is provided, use it; otherwise use niche
+        topic = request.prompt or request.niche
+        
         result = ai_service.generate_post(
-            niche=request.niche,
+            niche=topic,
             tone=request.tone,
             platform=request.platform,
             include_emoji=request.include_emoji,
@@ -82,7 +86,7 @@ async def generate_post(
         return {
             "success": True,
             "content": result.get("content"),
-            "niche": request.niche,
+            "niche": topic,
             "tone": request.tone
         }
         
