@@ -125,14 +125,13 @@ export default function PostCreator() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   
-  // Advanced features state
-  const [activeTab, setActiveTab] = useState('create'); // create, ai, preview
-  const [showAIPanel, setShowAIPanel] = useState(false);
-  const [aiTone, setAiTone] = useState('professional');
-  const [aiNiche, setAiNiche] = useState('tech');
+  // AI Panel State
+  const [aiPrompt, setAiPrompt] = useState('');
   const [aiGenerating, setAIGenerating] = useState(false);
   const [generatedVariations, setGeneratedVariations] = useState([]);
   const [selectedVariation, setSelectedVariation] = useState(0);
+  const [activeTab, setActiveTab] = useState('create'); // create, ai, preview
+  const [showAIPanel, setShowAIPanel] = useState(false);
   const [showMediaPreview, setShowMediaPreview] = useState(false);
   const [postVariations, setPostVariations] = useState({}); // Platform-specific content
   const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
@@ -237,35 +236,32 @@ export default function PostCreator() {
     return variations;
   }, [content, selectedPlatforms, hashtagSuggestions]);
   
-  // Handle AI content generation
+  // Handle AI content generation with simple prompt
   const handleGenerateContent = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error('Please enter a topic or prompt');
+      return;
+    }
+    
     setAIGenerating(true);
     setError(null);
     try {
       const response = await generatePost({ 
-        niche: aiNiche, 
-        tone: aiTone,
+        prompt: aiPrompt,
         platform: selectedPlatforms[0] || null,
-        include_hashtags: true,
-        length: 'medium',
       });
       
       if (response && response.content) {
         setContent(response.content);
-        if (response.hashtags) {
-          setHashtagSuggestions(response.hashtags);
-        }
         // Generate multiple variations
         const variations = [];
         for (let i = 0; i < 3; i++) {
           variations.push({
             id: i,
-            content: response.content + (i > 0 ? ` ${i + 1}` : ''),
-            tone: aiTone
+            content: response.content + (i > 0 ? ` (${i + 1})` : ''),
           });
         }
         setGeneratedVariations(variations);
-        setActiveTab('ai');
         toast.success('AI content generated!');
       } else {
         setError('Failed to generate content');
@@ -358,7 +354,15 @@ export default function PostCreator() {
         if (scheduleDate <= new Date()) {
           throw new Error('Scheduled time must be in the future');
         }
-        postData.scheduled_time = scheduleDate.toISOString();
+        // Store as local ISO string without timezone conversion
+        // Format: YYYY-MM-DDTHH:MM:SS (local time)
+        const year = scheduleDate.getFullYear();
+        const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
+        const day = String(scheduleDate.getDate()).padStart(2, '0');
+        const hours = String(scheduleDate.getHours()).padStart(2, '0');
+        const minutes = String(scheduleDate.getMinutes()).padStart(2, '0');
+        const seconds = String(scheduleDate.getSeconds()).padStart(2, '0');
+        postData.scheduled_time = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       }
       
       console.log('Creating post:', postData);
@@ -366,6 +370,12 @@ export default function PostCreator() {
       // Create post
       const response = await createPost(postData);
       console.log('Post created:', response);
+      
+      // Debug: Log the status of the created post
+      if (response) {
+        console.log('Created post status:', response.status);
+        console.log('Created post scheduled_time:', response.scheduled_time);
+      }
       
       // Handle publishing
       if (!isSchedule && response?.post_id) {
@@ -410,14 +420,19 @@ export default function PostCreator() {
       const errorMessage = err.message || 'Failed to create post';
       
       // Handle specific errors
-      if (errorMessage.includes('account not connected')) {
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError') || errorMessage.includes('Network request failed')) {
+        toast.error('Cannot connect to server. Please ensure the automation server is running.');
+        setError('Server unreachable. Check if the backend is running on port 8000.');
+      } else if (errorMessage.includes('account not connected')) {
         toast.error('Please connect your social accounts first');
+        setError(errorMessage);
       } else if (errorMessage.includes('permission')) {
         toast.error('Permission denied. Please check your account permissions.');
+        setError(errorMessage);
       } else {
         toast.error(errorMessage);
+        setError(errorMessage);
       }
-      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -584,21 +599,13 @@ export default function PostCreator() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setShowAIPanel(!showAIPanel)}
-                    className="text-sm text-purple-400 hover:text-purple-300"
-                  >
-                    ✨ AI Assist
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => {
-                      const tags = ['tech', 'business', 'innovation', 'AI', 'digital'];
-                      const randomTag = tags[Math.floor(Math.random() * tags.length)];
-                      addHashtag(randomTag);
+                      setActiveTab('ai');
+                      setShowAIPanel(false);
                     }}
-                    className="text-sm text-blue-400 hover:text-blue-300"
+                    className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
                   >
-                    # Add Tag
+                    ✨ Generate with AI
                   </button>
                 </div>
               </div>
@@ -722,54 +729,43 @@ export default function PostCreator() {
         {/* AI Tab */}
         {activeTab === 'ai' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-400 mb-2 block">Select Tone</label>
-                <div className="space-y-2">
-                  {TONE_OPTIONS.map(tone => (
-                    <button
-                      key={tone.id}
-                      type="button"
-                      onClick={() => setAiTone(tone.id)}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition-all ${
-                        aiTone === tone.id 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {tone.icon} {tone.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 mb-2 block">Select Niche</label>
-                <div className="space-y-2">
-                  {NICHE_OPTIONS.map(niche => (
-                    <button
-                      key={niche.id}
-                      type="button"
-                      onClick={() => setAiNiche(niche.id)}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition-all ${
-                        aiNiche === niche.id 
-                          ? 'bg-purple-600 text-white' 
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {niche.icon} {niche.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            {/* Simple Prompt Input */}
+            <div>
+              <label className="text-sm text-gray-400 mb-2 block">
+                📝 What do you want to post about?
+              </label>
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="e.g., Launching our new AI product, Tips for remote work, Happy Diwali wishes..."
+                className="w-full h-32 bg-gray-900 text-white rounded-lg p-4 border border-gray-700 focus:border-purple-500 focus:outline-none resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Enter a short description or topic, and our AI will create engaging content for you!
+              </p>
+            </div>
+            
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap gap-2">
+              {['🚀 New Product Launch', '📢 Promotional', '💡 Tips & Tricks', '🎉 Festival Wishes', '📚 Educational', '💼 Business Update'].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => setAiPrompt(suggestion)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded-full transition-all"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
             
             <button
               type="button"
               onClick={handleGenerateContent}
-              disabled={aiGenerating}
+              disabled={aiGenerating || !aiPrompt.trim()}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold text-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
             >
-              {aiGenerating ? '🤖 Generating Amazing Content...' : '🚀 Generate AI Content'}
+              {aiGenerating ? '🤖 Creating Amazing Content...' : '✨ Generate Content'}
             </button>
             
             {/* Generated variations */}
@@ -876,41 +872,48 @@ export default function PostCreator() {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Schedule Date & Time
             </label>
-            <input
-              type="datetime-local"
-              value={scheduleTime}
-              onChange={(e) => {
-                setScheduleTime(e.target.value);
-                setIsSchedule(true);
-              }}
-              min={new Date().toISOString().slice(0, 16)}
-              className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
-            />
-            <div className="flex gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  tomorrow.setHours(9, 0, 0, 0);
-                  setScheduleTime(tomorrow.toISOString().slice(0, 16));
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={scheduleTime ? scheduleTime.split('T')[0] : ''}
+                onChange={(e) => {
+                  const timePart = scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) || '09:00' : '09:00';
+                  setScheduleTime(`${e.target.value}T${timePart}:00`);
+                  setIsSchedule(true);
                 }}
-                className="text-xs text-blue-400 hover:text-blue-300"
-              >
-                Tomorrow 9AM
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const nextWeek = new Date();
-                  nextWeek.setDate(nextWeek.getDate() + 7);
-                  nextWeek.setHours(9, 0, 0, 0);
-                  setScheduleTime(nextWeek.toISOString().slice(0, 16));
+                min={new Date().toISOString().split('T')[0]}
+                className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
+              />
+              <input
+                type="time"
+                value={scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) || '09:00' : '09:00'}
+                onChange={(e) => {
+                  const datePart = scheduleTime ? scheduleTime.split('T')[0] : new Date().toISOString().split('T')[0];
+                  setScheduleTime(`${datePart}T${e.target.value}:00`);
+                  setIsSchedule(true);
                 }}
-                className="text-xs text-blue-400 hover:text-blue-300"
+                min={scheduleTime && scheduleTime.split('T')[0] === new Date().toISOString().split('T')[0] 
+                  ? new Date().toTimeString().slice(0, 5) 
+                  : '00:00'}
+                className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
+              />
+              <select
+                value={scheduleTime && parseInt(scheduleTime.split('T')[1]?.split(':')[0] || '0') >= 12 ? 'PM' : 'AM'}
+                onChange={(e) => {
+                  if (!scheduleTime) return;
+                  const [datePart, timePart] = scheduleTime.split('T');
+                  let [hours, minutes] = timePart.split(':');
+                  hours = parseInt(hours);
+                  if (e.target.value === 'PM' && hours < 12) hours += 12;
+                  if (e.target.value === 'AM' && hours >= 12) hours -= 12;
+                  setScheduleTime(`${datePart}T${String(hours).padStart(2, '0')}:${minutes}:00`);
+                  setIsSchedule(true);
+                }}
+                className="bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
               >
-                Next Week
-              </button>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
           </div>
         )}
