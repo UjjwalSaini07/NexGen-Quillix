@@ -7,6 +7,7 @@ import AuthModal from './AuthModal';
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 // Platform icons with colors
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -439,7 +440,19 @@ export default function AutomationDashboard() {
 
   const handleDisconnect = async (platform) => {
     console.log('Attempting to disconnect platform:', platform);
-    if (confirm(`Disconnect ${platform}?`)) {
+    const result = await Swal.fire({
+      title: 'Disconnect Account',
+      text: `Are you sure you want to disconnect ${platform}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, disconnect',
+      cancelButtonText: 'Cancel',
+      background: '#1f2937',
+      color: '#fff',
+    });
+    if (result.isConfirmed) {
       try {
         await disconnect(platform);
         console.log('Platform disconnected successfully:', platform);
@@ -483,7 +496,19 @@ export default function AutomationDashboard() {
 
   const handleDeleteRule = async (ruleId) => {
     console.log('Deleting rule:', ruleId);
-    if (confirm('Delete this rule?')) {
+    const result = await Swal.fire({
+      title: 'Delete Rule',
+      text: 'Are you sure you want to delete this automation rule?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel',
+      background: '#1f2937',
+      color: '#fff',
+    });
+    if (result.isConfirmed) {
       try {
         await removeRule(ruleId);
         console.log('Rule deleted successfully');
@@ -498,7 +523,19 @@ export default function AutomationDashboard() {
 
   const handleDeletePost = async (postId) => {
     console.log('Deleting post:', postId);
-    if (confirm('Delete this post?')) {
+    const result = await Swal.fire({
+      title: 'Delete Post',
+      text: 'Are you sure you want to delete this post?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel',
+      background: '#1f2937',
+      color: '#fff',
+    });
+    if (result.isConfirmed) {
       try {
         await deletePost(postId);
         console.log('Post deleted successfully');
