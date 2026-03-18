@@ -1,30 +1,200 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAutomation } from '@/components/hooks/useAutomation';
 import { toast } from 'react-toastify';
 
-const PLATFORMS = [
-  { id: 'instagram', label: 'Instagram', color: 'pink' },
-  { id: 'facebook', label: 'Facebook', color: 'blue' },
-  { id: 'linkedin', label: 'LinkedIn', color: 'blue' },
-  { id: 'x', label: 'X (Twitter)', color: 'black' },
-  { id: 'youtube', label: 'YouTube', color: 'red' },
-  { id: 'whatsapp', label: 'WhatsApp', color: 'green' },
+// Platform configuration with character limits and features
+const PLATFORM_CONFIG = {
+  facebook: {
+    id: 'facebook',
+    label: 'Facebook',
+    color: '#1877F2',
+    bgColor: 'bg-blue-600',
+    hoverColor: 'hover:bg-blue-700',
+    icon: '📘',
+    maxChars: 63206,
+    optimalLength: 80,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: true,
+    hashtags: 30,
+  },
+  instagram: {
+    id: 'instagram',
+    label: 'Instagram',
+    color: '#E4405F',
+    bgColor: 'bg-pink-600',
+    hoverColor: 'hover:bg-pink-700',
+    icon: '📸',
+    maxChars: 2200,
+    optimalLength: 125,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: false,
+    hashtags: 30,
+  },
+  linkedin: {
+    id: 'linkedin',
+    label: 'LinkedIn',
+    color: '#0A66C2',
+    bgColor: 'bg-blue-700',
+    hoverColor: 'hover:bg-blue-800',
+    icon: '💼',
+    maxChars: 3000,
+    optimalLength: 100,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: true,
+    hashtags: 3,
+  },
+  x: {
+    id: 'x',
+    label: 'X (Twitter)',
+    color: '#000000',
+    bgColor: 'bg-gray-900',
+    hoverColor: 'hover:bg-gray-800',
+    icon: '𝕏',
+    maxChars: 280,
+    optimalLength: 70,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: true,
+    hashtags: 3,
+  },
+  youtube: {
+    id: 'youtube',
+    label: 'YouTube',
+    color: '#FF0000',
+    bgColor: 'bg-red-600',
+    hoverColor: 'hover:bg-red-700',
+    icon: '▶️',
+    maxChars: 5000,
+    optimalLength: 200,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: true,
+    hashtags: 15,
+  },
+  whatsapp: {
+    id: 'whatsapp',
+    label: 'WhatsApp',
+    color: '#25D366',
+    bgColor: 'bg-green-500',
+    hoverColor: 'hover:bg-green-600',
+    icon: '💬',
+    maxChars: 4096,
+    optimalLength: 100,
+    supportsMedia: true,
+    supportsVideo: true,
+    supportsLinks: true,
+    hashtags: 10,
+  },
+};
+
+// AI Generation options
+const TONE_OPTIONS = [
+  { id: 'professional', label: 'Professional', icon: '👔' },
+  { id: 'casual', label: 'Casual', icon: '😎' },
+  { id: 'humorous', label: 'Humorous', icon: '😂' },
+  { id: 'inspirational', label: 'Inspirational', icon: '✨' },
+  { id: 'educational', label: 'Educational', icon: '📚' },
+  { id: 'promotional', label: 'Promotional', icon: '📢' },
+];
+
+const NICHE_OPTIONS = [
+  { id: 'tech', label: 'Technology', icon: '💻' },
+  { id: 'business', label: 'Business', icon: '💼' },
+  { id: 'marketing', label: 'Marketing', icon: '📈' },
+  { id: 'health', label: 'Health & Wellness', icon: '🏥' },
+  { id: 'education', label: 'Education', icon: '🎓' },
+  { id: 'entertainment', label: 'Entertainment', icon: '🎬' },
+  { id: 'finance', label: 'Finance', icon: '💰' },
+  { id: 'lifestyle', label: 'Lifestyle', icon: '🌟' },
 ];
 
 export default function PostCreator() {
+  // Core state
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaType, setMediaType] = useState('image'); // image, video
   const [scheduleTime, setScheduleTime] = useState('');
   const [isSchedule, setIsSchedule] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-
-  const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
-
+  
+  // Advanced features state
+  const [activeTab, setActiveTab] = useState('create'); // create, ai, preview
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  const [aiTone, setAiTone] = useState('professional');
+  const [aiNiche, setAiNiche] = useState('tech');
+  const [aiGenerating, setAIGenerating] = useState(false);
+  const [generatedVariations, setGeneratedVariations] = useState([]);
+  const [selectedVariation, setSelectedVariation] = useState(0);
+  const [showMediaPreview, setShowMediaPreview] = useState(false);
+  const [postVariations, setPostVariations] = useState({}); // Platform-specific content
+  const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  
+  const { createPost, publishPost, schedulePost, generatePost, getConnectedAccounts } = useAutomation();
+  
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('postCreatorDraft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setContent(draft.content || '');
+        setMediaUrl(draft.mediaUrl || '');
+        setSelectedPlatforms(draft.selectedPlatforms || []);
+        if (draft.content || draft.mediaUrl) {
+          toast.info('Draft restored from previous session');
+        }
+      } catch (e) {
+        console.error('Error loading draft:', e);
+      }
+    }
+  }, []);
+  
+  // Auto-save draft
+  useEffect(() => {
+    if (content || mediaUrl) {
+      setIsDirty(true);
+      const draft = { content, mediaUrl, selectedPlatforms };
+      localStorage.setItem('postCreatorDraft', JSON.stringify(draft));
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2000);
+    }
+  }, [content, mediaUrl, selectedPlatforms]);
+  
+  // Character count for selected platforms
+  const getCharacterLimit = useCallback(() => {
+    if (selectedPlatforms.length === 0) return 280;
+    const limits = selectedPlatforms.map(p => PLATFORM_CONFIG[p]?.maxChars || 280);
+    return Math.min(...limits);
+  }, [selectedPlatforms]);
+  
+  // Optimal length for selected platforms
+  const getOptimalLength = useCallback(() => {
+    if (selectedPlatforms.length === 0) return 280;
+    const lengths = selectedPlatforms.map(p => PLATFORM_CONFIG[p]?.optimalLength || 100);
+    return Math.min(...lengths);
+  }, [selectedPlatforms]);
+  
+  // Get character count status
+  const getCharacterStatus = useCallback(() => {
+    const limit = getCharacterLimit();
+    const percentage = (content.length / limit) * 100;
+    if (percentage < 80) return 'good';
+    if (percentage < 100) return 'warning';
+    return 'error';
+  }, [content, getCharacterLimit]);
+  
+  // Toggle platform selection
   const togglePlatform = (platformId) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
@@ -32,97 +202,218 @@ export default function PostCreator() {
         : [...prev, platformId]
     );
   };
-
+  
+  // Select all platforms
+  const selectAllPlatforms = () => {
+    setSelectedPlatforms(Object.keys(PLATFORM_CONFIG));
+  };
+  
+  // Clear all platforms
+  const clearPlatforms = () => {
+    setSelectedPlatforms([]);
+  };
+  
+  // Generate platform-specific variations
+  const generateVariations = useCallback(() => {
+    const variations = {};
+    selectedPlatforms.forEach(platform => {
+      const config = PLATFORM_CONFIG[platform];
+      let platformContent = content;
+      
+      // Adjust content based on platform limits
+      if (platformContent.length > config.maxChars) {
+        platformContent = platformContent.substring(0, config.maxChars - 10) + '...';
+      }
+      
+      // Add platform-specific hashtags if needed
+      if (config.hashtags && !platformContent.includes('#')) {
+        const hashtags = hashtagSuggestions.slice(0, config.hashtags).join(' ');
+        platformContent = platformContent + '\n\n' + hashtags;
+      }
+      
+      variations[platform] = platformContent;
+    });
+    setPostVariations(variations);
+    return variations;
+  }, [content, selectedPlatforms, hashtagSuggestions]);
+  
+  // Handle AI content generation
+  const handleGenerateContent = async () => {
+    setAIGenerating(true);
+    setError(null);
+    try {
+      const response = await generatePost({ 
+        niche: aiNiche, 
+        tone: aiTone,
+        platform: selectedPlatforms[0] || null,
+        include_hashtags: true,
+        length: 'medium',
+      });
+      
+      if (response && response.content) {
+        setContent(response.content);
+        if (response.hashtags) {
+          setHashtagSuggestions(response.hashtags);
+        }
+        // Generate multiple variations
+        const variations = [];
+        for (let i = 0; i < 3; i++) {
+          variations.push({
+            id: i,
+            content: response.content + (i > 0 ? ` ${i + 1}` : ''),
+            tone: aiTone
+          });
+        }
+        setGeneratedVariations(variations);
+        setActiveTab('ai');
+        toast.success('AI content generated!');
+      } else {
+        setError('Failed to generate content');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to generate content');
+      toast.error('AI generation failed');
+    } finally {
+      setAIGenerating(false);
+    }
+  };
+  
+  // Add hashtag
+  const addHashtag = (hashtag) => {
+    const formattedTag = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
+    if (!content.includes(formattedTag)) {
+      setContent(prev => prev + (prev ? ' ' : '') + formattedTag);
+    }
+  };
+  
+  // Copy content to clipboard
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    } catch (err) {
+      toast.error('Failed to copy');
+    }
+  };
+  
+  // Clear draft
+  const clearDraft = () => {
+    localStorage.removeItem('postCreatorDraft');
+    setContent('');
+    setMediaUrl('');
+    setSelectedPlatforms([]);
+    setPostVariations({});
+    setHashtagSuggestions([]);
+    setGeneratedVariations([]);
+    setResult(null);
+    setError(null);
+    setIsDirty(false);
+    toast.info('Draft cleared');
+  };
+  
+  // Main form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
-
+    
     try {
+      // Validation
       if (!content.trim()) {
         toast.error('Please enter some content for your post');
         throw new Error('Please enter some content');
       }
-
-      if (selectedPlatforms.length === 0) {
-        toast.error('Please select at least one platform to post to');
-        throw new Error('Please select at least one platform');
+      
+      if (content.length > getCharacterLimit()) {
+        toast.error(`Content exceeds maximum length of ${getCharacterLimit()} characters`);
+        throw new Error('Content too long');
       }
-
-      // Prepare post data for the API
-      // If scheduling is enabled, publish at scheduled time. Otherwise publish immediately.
+      
+      if (selectedPlatforms.length === 0) {
+        toast.error('Please select at least one platform');
+        throw new Error('No platforms selected');
+      }
+      
+      // Check character limits for each platform
+      for (const platform of selectedPlatforms) {
+        const limit = PLATFORM_CONFIG[platform]?.maxChars;
+        if (content.length > limit) {
+          throw new Error(`Content exceeds ${PLATFORM_CONFIG[platform].label} limit of ${limit} characters`);
+        }
+      }
+      
+      // Prepare post data
       const postData = {
         content: content,
         platforms: selectedPlatforms,
         media_urls: mediaUrl ? [mediaUrl] : [],
-        media_type: mediaUrl ? 'image' : null,
-        is_draft: false, // Always publish (either immediately or scheduled)
+        media_type: mediaUrl ? mediaType : null,
+        is_draft: false,
       };
-
+      
       // Add scheduled time if scheduling is enabled
       if (isSchedule && scheduleTime) {
-        postData.scheduled_time = new Date(scheduleTime).toISOString();
-      }
-
-      console.log('Creating post with data:', postData);
-      console.log('isSchedule:', isSchedule);
-      const response = await createPost(postData);
-      console.log('Post created successfully:', response);
-      console.log('Response post_id:', response?.post_id);
-      
-      // If not scheduling, publish immediately
-      if (!isSchedule && response && response.post_id) {
-        console.log('Auto-publishing post:', response.post_id);
-        try {
-          const publishResult = await publishPost(response.post_id);
-          console.log('Post published result:', publishResult);
-          console.log('Full publish results:', JSON.stringify(publishResult.results, null, 2));
-          
-          // Check if publish was successful
-          if (publishResult && publishResult.results) {
-            const xResult = publishResult.results.find(r => r.platform === 'x');
-            console.log('X platform result:', xResult);
-            
-            if (xResult) {
-              if (xResult.status === 'success') {
-                toast.success('✅ Post published successfully to X!');
-              } else if (xResult.status === 'error') {
-                toast.error(`❌ Failed to publish to X: ${xResult.message}`);
-              }
-            } else {
-              if (publishResult.overall_status === 'published') {
-                toast.success('✅ Post published successfully!');
-              } else {
-                toast.warning('⚠️ Post created but some platforms failed to publish');
-              }
-            }
-          } else {
-            toast.success('Post published successfully!');
-          }
-        } catch (publishError) {
-          console.error('Error publishing post:', publishError);
-          console.error('Error details:', publishError.message);
-          toast.error(`Failed to publish: ${publishError.message}`);
+        const scheduleDate = new Date(scheduleTime);
+        if (scheduleDate <= new Date()) {
+          throw new Error('Scheduled time must be in the future');
         }
+        postData.scheduled_time = scheduleDate.toISOString();
+      }
+      
+      console.log('Creating post:', postData);
+      
+      // Create post
+      const response = await createPost(postData);
+      console.log('Post created:', response);
+      
+      // Handle publishing
+      if (!isSchedule && response?.post_id) {
+        const publishResult = await publishPost(response.post_id);
+        console.log('Publish result:', publishResult);
+        
+        // Show platform-specific results
+        if (publishResult?.results) {
+          const successCount = publishResult.results.filter(r => r.status === 'success').length;
+          const failCount = publishResult.results.filter(r => r.status === 'error').length;
+          
+          if (failCount > 0) {
+            const failedPlatforms = publishResult.results
+              .filter(r => r.status === 'error')
+              .map(r => `${PLATFORM_CONFIG[r.platform]?.icon || ''} ${r.platform}`)
+              .join(', ');
+            
+            toast.warning(`Posted to ${successCount} platform(s). Failed: ${failedPlatforms}`);
+          } else {
+            toast.success(`Posted successfully to all ${successCount} platform(s)!`);
+          }
+          
+          // Show individual platform errors
+          publishResult.results.forEach(r => {
+            if (r.status === 'error') {
+              console.error(`${r.platform} error:`, r.message);
+            }
+          });
+        }
+      } else if (isSchedule) {
+        toast.success('Post scheduled successfully!');
       } else {
-        console.log('Skipping auto-publish. isSchedule:', isSchedule, 'response:', response);
         toast.success('Post created successfully!');
       }
+      
+      // Clear form on success
       setResult(response);
-      setContent('');
-      setMediaUrl('');
-      setScheduleTime('');
-      setSelectedPlatforms([]);
+      clearDraft();
+      
     } catch (err) {
-      console.error('Error creating post:', err);
+      console.error('Error:', err);
       const errorMessage = err.message || 'Failed to create post';
       
-      // Check for specific error messages and show user-friendly toasts
+      // Handle specific errors
       if (errorMessage.includes('account not connected')) {
-        toast.error('Please connect your social media accounts first before creating posts');
-      } else if (errorMessage.includes('Unsupported platform')) {
-        toast.error('Please select a supported platform');
+        toast.error('Please connect your social accounts first');
+      } else if (errorMessage.includes('permission')) {
+        toast.error('Permission denied. Please check your account permissions.');
       } else {
         toast.error(errorMessage);
       }
@@ -131,143 +422,544 @@ export default function PostCreator() {
       setLoading(false);
     }
   };
-
-  const handleGenerateContent = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await generatePost({ niche: 'tech', tone: 'professional' });
-      if (response && response.content) {
-        setContent(response.content);
-      } else {
-        setError('Failed to generate content');
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to generate content');
-    } finally {
-      setLoading(false);
-    }
+  
+  // Calculate progress
+  const completionProgress = () => {
+    let score = 0;
+    if (content.trim()) score += 40;
+    if (selectedPlatforms.length > 0) score += 30;
+    if (mediaUrl) score += 20;
+    if (isSchedule && scheduleTime) score += 10;
+    return score;
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6">
-      <h2 className="text-xl font-bold text-white mb-6">Create New Post</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-gray-800 rounded-xl p-6 shadow-2xl">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-white">Create Post</h2>
+        <div className="flex items-center gap-3">
+          {draftSaved && (
+            <span className="text-xs text-green-400">✓ Draft saved</span>
+          )}
+          {isDirty && (
+            <button
+              onClick={clearDraft}
+              className="text-xs text-gray-400 hover:text-white"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+      
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <div className="flex justify-between text-xs text-gray-400 mb-1">
+          <span>Completion</span>
+          <span>{completionProgress()}%</span>
+        </div>
+        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+            style={{ width: `${completionProgress()}%` }}
+          />
+        </div>
+      </div>
+      
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6">
+        {[
+          { id: 'create', label: '✏️ Create' },
+          { id: 'ai', label: '🤖 AI Generate' },
+          { id: 'preview', label: '👁️ Preview' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              activeTab === tab.id 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Platform Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Select Platforms
-          </label>
+        <div className="bg-gray-900/50 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-sm font-medium text-gray-300">
+              Select Platforms ({selectedPlatforms.length} selected)
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={selectAllPlatforms}
+                className="text-xs text-blue-400 hover:text-blue-300"
+              >
+                Select All
+              </button>
+              <span className="text-gray-600">|</span>
+              <button
+                type="button"
+                onClick={clearPlatforms}
+                className="text-xs text-gray-400 hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-2">
-            {PLATFORMS.map((platform) => (
+            {Object.values(PLATFORM_CONFIG).map((platform) => (
               <button
                 key={platform.id}
                 type="button"
                 onClick={() => togglePlatform(platform.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 ${
                   selectedPlatforms.includes(platform.id)
-                    ? `bg-${platform.color}-600 text-white`
+                    ? platform.bgColor + ' text-white shadow-lg'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
+                style={selectedPlatforms.includes(platform.id) ? { backgroundColor: platform.color } : {}}
               >
+                <span className="mr-1">{platform.icon}</span>
                 {platform.label}
               </button>
             ))}
           </div>
+          
+          {/* Platform-specific limits warning */}
+          {selectedPlatforms.length > 0 && (
+            <div className="mt-3 text-xs text-gray-500">
+              Character limit: {getCharacterLimit().toLocaleString()} | Optimal: {getOptimalLength()} chars
+            </div>
+          )}
         </div>
-
-        {/* Content */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Post Content
-          </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind?"
-            className="w-full h-40 bg-gray-900 text-white rounded-lg p-4 border border-gray-700 focus:border-blue-500 focus:outline-none resize-none"
-          />
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-sm text-gray-500">
-              {content.length} characters
-            </span>
+        
+        {/* Content Tab */}
+        {activeTab === 'create' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Post Content
+              </label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind? Start typing or use AI to generate..."
+                className="w-full h-48 bg-gray-900 text-white rounded-lg p-4 border border-gray-700 focus:border-blue-500 focus:outline-none resize-none transition-all"
+                maxLength={getCharacterLimit() + 100}
+              />
+              
+              {/* Character count bar */}
+              <div className="mt-2">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className={
+                    getCharacterStatus() === 'good' ? 'text-green-400' :
+                    getCharacterStatus() === 'warning' ? 'text-yellow-400' : 'text-red-400'
+                  }>
+                    {content.length} / {getCharacterLimit().toLocaleString()} characters
+                  </span>
+                  {content.length >= getOptimalLength() && (
+                    <span className="text-blue-400">✓ Optimal length</span>
+                  )}
+                </div>
+                <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all ${
+                      getCharacterStatus() === 'good' ? 'bg-green-500' :
+                      getCharacterStatus() === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min((content.length / getCharacterLimit()) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* Quick actions */}
+              <div className="flex justify-between items-center mt-3">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAIPanel(!showAIPanel)}
+                    className="text-sm text-purple-400 hover:text-purple-300"
+                  >
+                    ✨ AI Assist
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const tags = ['tech', 'business', 'innovation', 'AI', 'digital'];
+                      const randomTag = tags[Math.floor(Math.random() * tags.length)];
+                      addHashtag(randomTag);
+                    }}
+                    className="text-sm text-blue-400 hover:text-blue-300"
+                  >
+                    # Add Tag
+                  </button>
+                </div>
+              </div>
+              
+              {/* AI Panel */}
+              {showAIPanel && (
+                <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Tone</label>
+                      <select
+                        value={aiTone}
+                        onChange={(e) => setAiTone(e.target.value)}
+                        className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
+                      >
+                        {TONE_OPTIONS.map(opt => (
+                          <option key={opt.id} value={opt.id}>{opt.icon} {opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Niche</label>
+                      <select
+                        value={aiNiche}
+                        onChange={(e) => setAiNiche(e.target.value)}
+                        className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
+                      >
+                        {NICHE_OPTIONS.map(opt => (
+                          <option key={opt.id} value={opt.id}>{opt.icon} {opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateContent}
+                    disabled={aiGenerating || selectedPlatforms.length === 0}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+                  >
+                    {aiGenerating ? '🤖 Generating...' : '🚀 Generate with AI'}
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Media URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Media URL (Optional)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={mediaUrl}
+                  onChange={(e) => setMediaUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                />
+                {mediaUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaPreview(!showMediaPreview)}
+                    className="px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                  >
+                    {showMediaPreview ? 'Hide' : 'Preview'}
+                  </button>
+                )}
+              </div>
+              
+              {/* Media type selection */}
+              {mediaUrl && (
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 text-sm text-gray-400">
+                    <input
+                      type="radio"
+                      name="mediaType"
+                      value="image"
+                      checked={mediaType === 'image'}
+                      onChange={(e) => setMediaType(e.target.value)}
+                      className="text-blue-500"
+                    />
+                    🖼️ Image
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-400">
+                    <input
+                      type="radio"
+                      name="mediaType"
+                      value="video"
+                      checked={mediaType === 'video'}
+                      onChange={(e) => setMediaType(e.target.value)}
+                      className="text-blue-500"
+                    />
+                    🎬 Video
+                  </label>
+                </div>
+              )}
+              
+              {/* Media preview */}
+              {showMediaPreview && mediaUrl && (
+                <div className="mt-3 p-3 bg-gray-900 rounded-lg">
+                  {mediaType === 'image' ? (
+                    <img 
+                      src={mediaUrl} 
+                      alt="Preview" 
+                      className="max-h-48 rounded mx-auto"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                  ) : (
+                    <video 
+                      src={mediaUrl} 
+                      className="max-h-48 rounded mx-auto"
+                      controls
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* AI Tab */}
+        {activeTab === 'ai' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Select Tone</label>
+                <div className="space-y-2">
+                  {TONE_OPTIONS.map(tone => (
+                    <button
+                      key={tone.id}
+                      type="button"
+                      onClick={() => setAiTone(tone.id)}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-all ${
+                        aiTone === tone.id 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {tone.icon} {tone.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 mb-2 block">Select Niche</label>
+                <div className="space-y-2">
+                  {NICHE_OPTIONS.map(niche => (
+                    <button
+                      key={niche.id}
+                      type="button"
+                      onClick={() => setAiNiche(niche.id)}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-all ${
+                        aiNiche === niche.id 
+                          ? 'bg-purple-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {niche.icon} {niche.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
             <button
               type="button"
               onClick={handleGenerateContent}
-              disabled={loading}
-              className="text-sm text-blue-400 hover:text-blue-300 disabled:opacity-50"
+              disabled={aiGenerating}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold text-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
             >
-              ✨ Generate with AI
+              {aiGenerating ? '🤖 Generating Amazing Content...' : '🚀 Generate AI Content'}
             </button>
+            
+            {/* Generated variations */}
+            {generatedVariations.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-white font-medium mb-3">Generated Variations</h3>
+                <div className="space-y-3">
+                  {generatedVariations.map((variation, idx) => (
+                    <div
+                      key={variation.id}
+                      onClick={() => {
+                        setSelectedVariation(idx);
+                        setContent(variation.content);
+                      }}
+                      className={`p-4 rounded-lg cursor-pointer transition-all ${
+                        selectedVariation === idx
+                          ? 'bg-blue-600/30 border-2 border-blue-500'
+                          : 'bg-gray-700/50 border-2 border-transparent hover:border-gray-500'
+                      }`}
+                    >
+                      <p className="text-white text-sm">{variation.content}</p>
+                      <div className="mt-2 flex justify-between items-center">
+                        <span className="text-xs text-gray-400">{variation.tone}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(variation.content);
+                          }}
+                          className="text-xs text-blue-400 hover:text-blue-300"
+                        >
+                          📋 Copy
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Media URL */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Media URL (Optional)
-          </label>
-          <input
-            type="url"
-            value={mediaUrl}
-            onChange={(e) => setMediaUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-            className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-blue-500 focus:outline-none"
-          />
-        </div>
-
+        )}
+        
+        {/* Preview Tab */}
+        {activeTab === 'preview' && (
+          <div className="space-y-4">
+            <h3 className="text-white font-medium">Platform Previews</h3>
+            
+            {selectedPlatforms.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Select platforms to see previews
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {selectedPlatforms.map(platformId => {
+                  const config = PLATFORM_CONFIG[platformId];
+                  const previewContent = postVariations[platformId] || content;
+                  
+                  return (
+                    <div
+                      key={platformId}
+                      className="bg-gray-900 rounded-lg p-4 border-l-4"
+                      style={{ borderLeftColor: config.color }}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">{config.icon}</span>
+                        <span className="font-medium text-white">{config.label}</span>
+                        <span className="text-xs text-gray-500">
+                          {previewContent.length}/{config.maxChars}
+                        </span>
+                      </div>
+                      <div className="bg-gray-800 rounded p-3 text-white text-sm whitespace-pre-wrap">
+                        {previewContent || 'No content yet...'}
+                      </div>
+                      {mediaUrl && config.supportsMedia && (
+                        <div className="mt-2 text-xs text-green-400">
+                          ✓ Media will be attached
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        
         {/* Schedule Toggle */}
         <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="schedule"
-            checked={isSchedule}
-            onChange={(e) => setIsSchedule(e.target.checked)}
-            className="w-4 h-4 rounded bg-gray-700 border-gray-600"
-          />
-          <label htmlFor="schedule" className="text-gray-300">
-            Schedule for later
-          </label>
+          <button
+            type="button"
+            onClick={() => setShowScheduler(!showScheduler)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              showScheduler ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'
+            }`}
+          >
+            <span>📅</span>
+            {showScheduler ? 'Scheduling Enabled' : 'Schedule Post'}
+          </button>
         </div>
-
+        
         {/* Schedule Time */}
-        {isSchedule && (
-          <div>
+        {showScheduler && (
+          <div className="bg-gray-900/50 p-4 rounded-lg">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Schedule Time
+              Schedule Date & Time
             </label>
             <input
               type="datetime-local"
               value={scheduleTime}
-              onChange={(e) => setScheduleTime(e.target.value)}
-              className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-blue-500 focus:outline-none"
+              onChange={(e) => {
+                setScheduleTime(e.target.value);
+                setIsSchedule(true);
+              }}
+              min={new Date().toISOString().slice(0, 16)}
+              className="w-full bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
             />
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  tomorrow.setHours(9, 0, 0, 0);
+                  setScheduleTime(tomorrow.toISOString().slice(0, 16));
+                }}
+                className="text-xs text-blue-400 hover:text-blue-300"
+              >
+                Tomorrow 9AM
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextWeek = new Date();
+                  nextWeek.setDate(nextWeek.getDate() + 7);
+                  nextWeek.setHours(9, 0, 0, 0);
+                  setScheduleTime(nextWeek.toISOString().slice(0, 16));
+                }}
+                className="text-xs text-blue-400 hover:text-blue-300"
+              >
+                Next Week
+              </button>
+            </div>
           </div>
         )}
-
+        
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-400 text-sm">
-            {error}
+          <div className="p-4 bg-red-500/20 border border-red-500 rounded-lg">
+            <div className="flex items-start gap-2">
+              <span className="text-red-400">⚠️</span>
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
           </div>
         )}
-
+        
         {/* Success Message */}
         {result && (
-          <div className="p-3 bg-green-500/20 border border-green-500 rounded-lg text-green-400 text-sm">
-            {result.message || 'Post published successfully!'}
+          <div className="p-4 bg-green-500/20 border border-green-500 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-green-400">✅</span>
+              <p className="text-green-400">{result.message || 'Post published successfully!'}</p>
+            </div>
           </div>
         )}
-
+        
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={loading || completionProgress() < 50}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02]"
         >
-          {loading ? 'Processing...' : isSchedule ? 'Schedule Post' : 'Publish Now'}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin">⏳</span>
+              Processing...
+            </span>
+          ) : isSchedule ? (
+            '📅 Schedule Post'
+          ) : (
+            '🚀 Publish Now'
+          )}
         </button>
+        
+        {/* Tips */}
+        {selectedPlatforms.length > 0 && (
+          <div className="text-xs text-gray-500 text-center mt-2">
+            Tip: {selectedPlatforms.map(p => PLATFORM_CONFIG[p].label).join(', ')} work best with{' '}
+            {getOptimalLength()}-{getCharacterLimit()} characters
+          </div>
+        )}
       </form>
     </div>
   );
