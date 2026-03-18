@@ -60,11 +60,21 @@ async function fetchAPI(endpoint, options = {}) {
     }
 
     if (!response.ok) {
-      throw new Error(data.detail || data.message || `API request failed with status ${response.status}`);
+      // Add error type for better handling
+      const error = new Error(data.detail || data.message || `API request failed with status ${response.status}`);
+      error.status = response.status;
+      error.isAuthError = response.status === 401 || response.status === 403;
+      error.isNetworkError = !response.ok && response.status === 0;
+      throw error;
     }
 
     return data;
   } catch (error) {
+    // Add network error detection
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      error.isNetworkError = true;
+      error.isAuthError = false;
+    }
     console.error(`API Error [${endpoint}]:`, error);
     throw error;
   }
@@ -93,12 +103,13 @@ export const ENDPOINTS = {
   // Posts Endpoints
   POSTS: {
     CREATE: '/posts/create',
-    LIST: '/posts',
+    LIST: '/posts/',  // Note: trailing slash required
     GET: (postId) => `/posts/${postId}`,
     UPDATE: (postId) => `/posts/${postId}`,
     DELETE: (postId) => `/posts/${postId}`,
     PUBLISH: (postId) => `/posts/${postId}/publish`,
     SCHEDULE: (postId) => `/posts/${postId}/schedule`,
+    TRIGGER_SCHEDULED: '/posts/trigger-scheduled/',
   },
   
   // Social/Platforms Endpoints
@@ -426,6 +437,13 @@ export async function schedulePost(postId, scheduledTime) {
   return fetchAPI(ENDPOINTS.POSTS.SCHEDULE(postId), {
     method: 'POST',
     body: JSON.stringify({ scheduled_time: scheduledTime }),
+  });
+}
+
+// Trigger publishing of scheduled posts that are due
+export async function triggerScheduledPosts() {
+  return fetchAPI(ENDPOINTS.POSTS.TRIGGER_SCHEDULED, {
+    method: 'POST',
   });
 }
 
