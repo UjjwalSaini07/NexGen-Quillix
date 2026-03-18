@@ -119,7 +119,19 @@ export default function PostCreator() {
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState('image'); // image, video
-  const [scheduleTime, setScheduleTime] = useState('');
+  // Default to current time for scheduling (local time, not UTC)
+  const getDefaultScheduleTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 5); // Add 5 minutes buffer
+    // Format as YYYY-MM-DDTHH:MM (local time)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+  const [scheduleTime, setScheduleTime] = useState(getDefaultScheduleTime);
   const [isSchedule, setIsSchedule] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -862,7 +874,11 @@ export default function PostCreator() {
             }`}
           >
             <span>📅</span>
-            {showScheduler ? 'Scheduling Enabled' : 'Schedule Post'}
+            {showScheduler 
+              ? scheduleTime 
+                ? `Scheduled: ${new Date(scheduleTime).toLocaleString()}` 
+                : 'Scheduling Enabled' 
+              : 'Schedule Post'}
           </button>
         </div>
         
@@ -875,9 +891,9 @@ export default function PostCreator() {
             <div className="flex gap-2">
               <input
                 type="date"
-                value={scheduleTime ? scheduleTime.split('T')[0] : ''}
+                value={scheduleTime ? scheduleTime.split('T')[0] : new Date().toISOString().split('T')[0]}
                 onChange={(e) => {
-                  const timePart = scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) || '09:00' : '09:00';
+                  const timePart = scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) : getDefaultScheduleTime().split('T')[1];
                   setScheduleTime(`${e.target.value}T${timePart}:00`);
                   setIsSchedule(true);
                 }}
@@ -886,7 +902,7 @@ export default function PostCreator() {
               />
               <input
                 type="time"
-                value={scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) || '09:00' : '09:00'}
+                value={scheduleTime ? scheduleTime.split('T')[1]?.substring(0, 5) : getDefaultScheduleTime().split('T')[1]}
                 onChange={(e) => {
                   const datePart = scheduleTime ? scheduleTime.split('T')[0] : new Date().toISOString().split('T')[0];
                   setScheduleTime(`${datePart}T${e.target.value}:00`);
