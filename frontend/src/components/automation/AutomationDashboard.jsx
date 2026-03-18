@@ -119,6 +119,7 @@ const PostCard = ({ post, onDelete, onPublish }) => {
     scheduled: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     draft: 'bg-gray-700/50 text-gray-400 border-gray-600/30',
     failed: 'bg-red-500/20 text-red-400 border-red-500/30',
+    partial_failure: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   };
   
   const statusIcons = {
@@ -126,6 +127,7 @@ const PostCard = ({ post, onDelete, onPublish }) => {
     scheduled: '⏰',
     draft: '📝',
     failed: '❌',
+    partial_failure: '⚠️',
   };
   
   // Calculate time remaining for scheduled posts
@@ -327,30 +329,54 @@ export default function AutomationDashboard() {
   // Check and publish scheduled posts every minute
   useEffect(() => {
     let isMounted = true;
-    let hasRunOnce = false; // Track if we've run once
     
     const checkScheduledPosts = async () => {
       if (!isMounted) return;
       try {
         const result = await triggerScheduledPosts();
-        console.log('Scheduled posts check result:', result);
         
-        // Only show notifications after initial load (not on first mount)
-        if (hasRunOnce && result?.results?.length > 0) {
-          const publishedCount = result.results.filter(r => r.success).length;
-          if (publishedCount > 0) {
-            toast.success(`🎉 ${publishedCount} scheduled post(s) published successfully!`);
+        // Show notifications when scheduled posts are processed
+        if (result && result.results && result.results.length > 0) {
+          // Get posts that were successfully published
+          const published = result.results.filter(r => r.status === 'published');
+          const failed = result.results.filter(r => r.status === 'partial_failure' || r.status === 'error');
+          
+          if (published.length > 0) {
+            await Swal.fire({
+              title: '✅ Scheduled Post Published!',
+              text: `${published.length} scheduled post(s) published successfully to social media!`,
+              icon: 'success',
+              confirmButtonText: 'Great!',
+              timer: 5000,
+              timerProgressBar: true
+            });
+          }
+          
+          if (failed.length > 0) {
+            await Swal.fire({
+              title: '⚠️ Scheduled Post Failed',
+              text: `${failed.length} scheduled post(s) failed to publish.`,
+              icon: 'warning',
+              confirmButtonText: 'OK'
+            });
           }
         }
-        hasRunOnce = true;
         
-        // Only refresh if component is still mounted and on posts tab
-        if (isMounted && activeTab === 'posts') {
+        // Refresh posts - fetch all statuses to update the UI properly
+        if (isMounted) {
+          // First, refresh the current filter to update statuses
           getPosts({ status_filter: postStatusFilter });
+          
+          // Also refresh all posts to ensure status changes are reflected
+          // This handles the case where a scheduled post becomes published
+          setTimeout(() => {
+            if (isMounted) {
+              getPosts({ status_filter: postStatusFilter });
+            }
+          }, 1500);
         }
       } catch (err) {
         console.error('Error checking scheduled posts:', err);
-        hasRunOnce = true; // Mark as run even on error
       }
     };
     
@@ -926,9 +952,10 @@ export default function AutomationDashboard() {
                         <p className="flex-1 text-gray-300 text-sm truncate">{post.content}</p>
                         <span className={`text-xs px-2 py-1 rounded-full ${
                           post.status === 'published' ? 'bg-green-500/20 text-green-400' : 
-                          post.status === 'scheduled' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-700/50 text-gray-400'
+                          post.status === 'scheduled' ? 'bg-yellow-500/20 text-yellow-400' :
+                          post.status === 'partial_failure' ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/50 text-gray-400'
                         }`}>
-                          {post.status}
+                          {post.status === 'partial_failure' ? 'Failed' : post.status}
                         </span>
                       </div>
                     ))}
@@ -1056,7 +1083,7 @@ export default function AutomationDashboard() {
 
             {/* Status Filter Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {['all', 'draft', 'scheduled', 'published'].map((status) => (
+              {['all', 'draft', 'scheduled', 'published', 'partial_failure'].map((status) => (
                 <button
                   key={status}
                   onClick={() => handleStatusFilterChange(status)}
@@ -1066,7 +1093,7 @@ export default function AutomationDashboard() {
                       : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'partial_failure' ? 'Failed' : status.charAt(0).toUpperCase() + status.slice(1)}
                   {status === 'all' && ` (${posts?.length || 0})`}
                 </button>
               ))}
@@ -1264,7 +1291,7 @@ export default function AutomationDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <PostCreator />
+            <PostCreator onClose={() => { setShowPostCreator(false); getPosts({ status_filter: postStatusFilter }); }} />
           </div>
         </div>
       )}
