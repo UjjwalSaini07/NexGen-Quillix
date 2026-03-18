@@ -103,6 +103,8 @@ export function useAutomationRules() {
 export function useAutomation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [pagination, setPagination] = useState(null);
 
   // Helper function to handle API calls
   const handleApiCall = useCallback(async (apiFunction, ...args) => {
@@ -178,8 +180,57 @@ export function useAutomation() {
   const schedulePost = useCallback((postId, scheduledTime) => 
     handleApiCall(api.schedulePost, postId, scheduledTime), [handleApiCall]);
   
-  const getPosts = useCallback((options) => 
-    handleApiCall(api.getPosts, options || {}), [handleApiCall]);
+  const triggerScheduledPosts = useCallback(() => 
+    handleApiCall(api.triggerScheduledPosts), [handleApiCall]);
+  
+  const getPosts = useCallback(async (options = {}) => {
+    // Don't clear posts here - let the component handle loading state
+    // We should only update posts AFTER we get the result
+    setLoading(true);
+    setError(null);
+    console.log('getPosts called with options:', options);
+    try {
+      const result = await handleApiCall(api.getPosts, options || {});
+      console.log('getPosts result:', result);
+      // Debug: Log the status of each post
+      if (result.posts && result.posts.length > 0) {
+        const statuses = result.posts.map(p => ({ id: p._id, status: p.status, scheduled_time: p.scheduled_time }));
+        console.log('Post statuses:', statuses);
+      }
+      // Update local posts state ONLY with the result
+      if (result.posts) {
+        setPosts(result.posts);
+        setPagination(result.pagination || null);
+      } else {
+        // If no posts returned, still update with empty array
+        setPosts([]);
+      }
+      return result;
+    } catch (err) {
+      console.error('getPosts error:', err);
+      // On error, don't clear posts - keep existing data
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [handleApiCall]);
+  
+  // Fetch posts with filters (updates local state)
+  const fetchPosts = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getPosts(options);
+      setPosts(result.posts || []);
+      setPagination(result.pagination || null);
+      return result.posts;
+    } catch (err) {
+      setError(err.message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   
   const getPost = useCallback((postId) => 
     handleApiCall(api.getPost, postId), [handleApiCall]);
@@ -187,8 +238,12 @@ export function useAutomation() {
   const updatePost = useCallback((postId, updateData) => 
     handleApiCall(api.updatePost, postId, updateData), [handleApiCall]);
   
-  const deletePost = useCallback((postId) => 
-    handleApiCall(api.deletePost, postId), [handleApiCall]);
+  const deletePost = useCallback(async (postId) => {
+    const result = await handleApiCall(api.deletePost, postId);
+    // Update local posts state
+    setPosts(prev => prev.filter(p => p._id !== postId));
+    return result;
+  }, [handleApiCall]);
 
   // ==================== Analytics ====================
   const getSummary = useCallback((days) => 
@@ -266,10 +321,13 @@ export function useAutomation() {
     refreshPlatformToken,
     
     // Posts
+    posts,
+    fetchPosts,
     createPost,
     createSocialPost,
     publishPost,
     schedulePost,
+    triggerScheduledPosts,
     getPosts,
     getPost,
     updatePost,
@@ -798,20 +856,22 @@ export function useAuth() {
   // Check if user is authenticated and restore session
   useEffect(() => {
     const checkAuth = async () => {
+      // Simply check if token exists - don't validate against server on page load
+      // This prevents unnecessary logout on refresh
       const hasToken = api.isAuthenticated();
       setIsAuthenticated(hasToken);
       
-      // If token exists, try to fetch user profile
+      // If token exists, try to fetch user profile in background (non-blocking)
       if (hasToken) {
         try {
           const profile = await api.getCurrentUser();
           setUser(profile);
         } catch (err) {
-          // Token might be invalid/expired, clear auth
-          console.warn('Failed to fetch user profile, clearing auth:', err.message);
-          api.clearAuth();
-          setIsAuthenticated(false);
-          setUser(null);
+          // Don't clear auth on API failure - token might still be valid
+          // The API call will handle token refresh automatically
+          console.warn('Background auth check failed, keeping session:', err.message);
+          // Keep user logged in even if we can't fetch profile
+          setIsAuthenticated(true);
         }
       }
     };
