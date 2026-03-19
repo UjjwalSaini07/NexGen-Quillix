@@ -362,3 +362,168 @@ Format each tweet on a separate line.
             tweets = [f"🧵 {topic} (1/{num_tweets})"]
         
         return {"tweets": tweets}
+    
+    def generate_media(self, prompt: str, media_type: str = "image") -> Dict[str, Any]:
+        """
+        Generate relevant image or video suggestions based on the prompt.
+        Uses AI to find relevant media from free stock sources.
+        """
+        try:
+            # Generate search terms using AI
+            if self.is_available():
+                analysis_prompt = f"""
+Analyze this social media post prompt: "{prompt}"
+
+Generate 5 highly specific search terms that would find the MOST RELEVANT {media_type} for this content.
+Think about: the exact subject, mood, setting, colors, and context.
+
+Return ONLY a JSON array of strings like: ["term1", "term2", "term3", "term4", "term5"]
+No other text. Prioritize the most specific and descriptive terms first.
+"""
+                try:
+                    response = self.llm.invoke(analysis_prompt)
+                    search_terms = self._parse_search_terms(response.content)
+                except Exception as e:
+                    logger.error(f"AI search term generation error: {e}")
+                    search_terms = prompt.split()[:5]
+            else:
+                search_terms = prompt.split()[:5] if prompt.split() else ["business", "technology"]
+            
+            # Search based on media type
+            if media_type == "video":
+                media_urls = self._search_pixabay_videos(search_terms)
+            else:
+                media_urls = self._search_unsplash(search_terms, media_type)
+            
+            return {
+                "success": True,
+                "media_type": media_type,
+                "search_terms": search_terms,
+                "media_urls": media_urls,
+                "primary_media": media_urls[0] if media_urls else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Media generation error: {e}")
+            return self._get_fallback_media(prompt, media_type)
+    
+    def _parse_search_terms(self, response: str) -> List[str]:
+        """Parse AI response to extract search terms"""
+        import json
+        try:
+            terms = json.loads(response.strip())
+            if isinstance(terms, list):
+                return terms[:5]
+        except:
+            pass
+        lines = [line.strip() for line in response.split('\n') if line.strip()]
+        return lines[:5] if lines else ["business", "technology", "social media"]
+    
+    def _search_unsplash(self, search_terms: List[str], media_type: str) -> List[Dict[str, Any]]:
+        """Generate images using Quillix API with AI-refined prompt"""
+        import requests
+        QUILLIX_API_KEY = os.environ.get("QUILLIX_IMAGE_ACCESS_KEY", "") or getattr(settings, 'QUILLIX_IMAGE_ACCESS_KEY', '') or ""
+        
+        logger.info(f"Quillix API Key present: {bool(QUILLIX_API_KEY)}")
+        
+        if not QUILLIX_API_KEY:
+            logger.error("QUILLIX_IMAGE_ACCESS_KEY is not set!")
+            return []
+        
+        # Use the first (best) search term as the refined prompt
+        refined_prompt = search_terms[0] if search_terms else "beautiful landscape"
+        logger.info(f"Generating image with prompt: {refined_prompt}")
+        
+        media_results = []
+        
+        # Generate 3 images using Quillix API
+        for i in range(3):
+            try:
+                url = "https://quillix-engine.ujjwalsaini0007.workers.dev/"
+                headers = {
+                    "Authorization": f"Bearer {QUILLIX_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                data = {"prompt": refined_prompt}
+                
+                response = requests.post(url, headers=headers, json=data, timeout=60)
+                logger.info(f"Quillix API response ({i+1}/3): {response.status_code}")
+                
+                if response.status_code == 200:
+                    # The API returns binary image data
+                    # We need to return the URL or handle the image differently
+                    # Since Quillix returns the image directly, we'll use a placeholder approach
+                    # Try to get the image URL from response or use data URL
+                    image_data = response.content
+                    import base64
+                    b64_image = base64.b64encode(image_data).decode('utf-8')
+                    data_url = f"data:image/png;base64,{b64_image}"
+                    
+                    media_results.append({
+                        "url": data_url,
+                        "thumb_url": data_url,
+                        "photographer": "AI Generated",
+                        "source": "quillix",
+                        "description": refined_prompt
+                    })
+                else:
+                    logger.error(f"Quillix error: {response.text}")
+            except Exception as e:
+                logger.error(f"Quillix generation error: {e}")
+        
+        logger.info(f"Found {len(media_results)} images from Quillix")
+        return media_results
+    
+    def _search_pixabay_videos(self, search_terms: List[str]) -> List[Dict[str, Any]]:
+        """Search Pixabay for relevant videos"""
+        import requests
+        PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "") or getattr(settings, 'PIXABAY_API_KEY', '') or ""
+        
+        logger.info(f"Pixabay API Key present: {bool(PIXABAY_API_KEY)}")
+        
+        if not PIXABAY_API_KEY:
+            logger.error("PIXABAY_API_KEY is not set!")
+            return []
+        
+        video_results = []
+        for term in search_terms[:3]:
+            url = "https://pixabay.com/api/videos/"
+            params = {"key": PIXABAY_API_KEY, "q": term, "per_page": 5}
+            
+            response = requests.get(url, params=params, timeout=10)
+            logger.info(f"Pixabay API response for '{term}': {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                for video in data.get("hits", [])[:3]:
+                    videos = video.get("videos", {})
+                    hd_video = videos.get("hd", {})
+                    fullhd_video = videos.get("fullhd", {})
+                    
+                    video_url = fullhd_video.get("url") or hd_video.get("url") or video.get("pageURL")
+                    thumb_url = video.get("largeImageURL") or ""
+                    
+                    video_results.append({
+                        "url": video_url,
+                        "thumb_url": thumb_url,
+                        "duration": video.get("duration", 0),
+                        "width": hd_video.get("width", 0) or fullhd_video.get("width", 0),
+                        "height": hd_video.get("height", 0) or fullhd_video.get("height", 0),
+                        "source": "pixabay",
+                        "description": video.get("tags", "").split(",")[0] if video.get("tags") else "Pixabay Video",
+                        "type": "video"
+                    })
+        
+        logger.info(f"Found {len(video_results)} videos from Pixabay")
+        return video_results[:3]  # Limit to exactly 3 videos
+    
+    def _get_fallback_media(self, prompt: str, media_type: str) -> Dict[str, Any]:
+        """Return empty result when no media found"""
+        return {
+            "success": False,
+            "media_type": media_type,
+            "search_terms": [],
+            "media_urls": [],
+            "primary_media": None,
+            "error": "No media found. Check API keys and try again."
+        }
