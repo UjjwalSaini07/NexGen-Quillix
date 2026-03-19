@@ -202,3 +202,14 @@ input[type="range"]::-moz-range-thumb {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
 }
+
+/* Purple slider thumb for AI word count */
+.slider-thumb-purple::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+}
+
+.slider-thumb-purple::-moz-range-thumb {
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+}
