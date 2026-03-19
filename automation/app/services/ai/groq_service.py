@@ -6,6 +6,7 @@ import os
 import logging
 from typing import Optional, List, Dict, Any
 from app.config import settings
+from app.services.cloudinary_service import cloudinary_service
 
 logger = logging.getLogger(__name__)
 
@@ -363,10 +364,16 @@ Format each tweet on a separate line.
         
         return {"tweets": tweets}
     
-    def generate_media(self, prompt: str, media_type: str = "image") -> Dict[str, Any]:
+    def generate_media(self, prompt: str, media_type: str = "image", scheduled_time: Optional[str] = None) -> Dict[str, Any]:
         """
         Generate relevant image or video suggestions based on the prompt.
         Uses AI to find relevant media from free stock sources.
+        
+        Args:
+            prompt: The prompt to generate media for
+            media_type: Type of media ("image" or "video")
+            scheduled_time: Optional ISO format datetime for scheduled post
+                          If provided, images will expire at scheduled_time + 1 hour
         """
         try:
             # Generate search terms using AI
@@ -393,7 +400,44 @@ No other text. Prioritize the most specific and descriptive terms first.
             if media_type == "video":
                 media_urls = self._search_pixabay_videos(search_terms)
             else:
+                # Generate images and upload to Cloudinary
                 media_urls = self._search_unsplash(search_terms, media_type)
+                
+                # Upload images to Cloudinary if available
+                if media_urls and cloudinary_service.is_available():
+                    logger.info("Uploading generated images to Cloudinary...")
+                    cloudinary_urls = []
+                    for media in media_urls:
+                        if media.get("url") and media.get("url").startswith("data:"):
+                            # Upload base64 image to Cloudinary
+                            upload_result = cloudinary_service.upload_base64_image(
+                                base64_data=media["url"],
+                                scheduled_time=scheduled_time
+                            )
+                            if upload_result.get("success"):
+                                # Replace the data URL with Cloudinary URL
+                                cloudinary_urls.append({
+                                    **media,
+                                    "url": upload_result["url"],
+                                    "thumb_url": upload_result["url"],
+                                    "source": "cloudinary",
+                                    "public_id": upload_result.get("public_id"),
+                                    "cloudinary_uploaded": True,
+                                    "expires_at": upload_result.get("expires_at")
+                                })
+                                logger.info(f"Uploaded to Cloudinary: {upload_result['url']}")
+                            else:
+                                # Keep original if upload failed
+                                cloudinary_urls.append(media)
+                                logger.warning(f"Cloudinary upload failed: {upload_result.get('error')}")
+                        else:
+                            # Keep non-base64 URLs as-is
+                            cloudinary_urls.append(media)
+                    
+                    if cloudinary_urls:
+                        media_urls = cloudinary_urls
+                elif media_urls:
+                    logger.info("Cloudinary not available, using original image URLs")
             
             return {
                 "success": True,

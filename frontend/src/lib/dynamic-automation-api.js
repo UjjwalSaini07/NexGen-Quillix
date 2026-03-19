@@ -543,6 +543,7 @@ export async function generateMedia(request) {
     body: JSON.stringify({
       prompt: request.prompt,
       media_type: request.media_type || 'image',
+      scheduled_time: request.scheduled_time || null,
     }),
   });
 }
