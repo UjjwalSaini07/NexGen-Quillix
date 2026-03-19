@@ -145,6 +145,7 @@ export const ENDPOINTS = {
     GENERATE_POST: '/ai/generate-post',
     GENERATE_REPLY: '/ai/generate-reply',
     GENERATE_HASHTAGS: '/ai/generate-hashtags',
+    GENERATE_MEDIA: '/ai/generate-media',
     OPTIMIZE_CONTENT: '/ai/optimize-content',
     GENERATE_CAPTIONS: '/ai/generate-captions',
     ANALYZE_SENTIMENT: '/ai/analyze-sentiment',
@@ -531,6 +532,17 @@ export async function generatePost(request) {
       include_hashtags: request.include_hashtags !== false,
       length: request.length || 'medium',
       word_count: request.word_count || null,
+    }),
+  });
+}
+
+// Generate media (images/videos) using AI
+export async function generateMedia(request) {
+  return fetchAPI(ENDPOINTS.AI.GENERATE_MEDIA, {
+    method: 'POST',
+    body: JSON.stringify({
+      prompt: request.prompt,
+      media_type: request.media_type || 'image',
     }),
   });
 }
