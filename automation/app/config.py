@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     # Instagram (uses Meta)
     INSTAGRAM_CLIENT_ID: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_ID")
     INSTAGRAM_CLIENT_SECRET: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_SECRET")
+    
+    # Quillix Image Generation API
+    QUILLIX_IMAGE_ACCESS_KEY: Optional[str] = Field(None, env="QUILLIX_IMAGE_ACCESS_KEY")
     INSTAGRAM_REDIRECT_URI: Optional[str] = Field(None, env="INSTAGRAM_REDIRECT_URI")
     
     # WhatsApp (Business API)
@@ -65,6 +68,10 @@ class Settings(BaseSettings):
     # AI Services
     GROQ_API_KEY: Optional[str] = Field(None, env="GROQ_API_KEY")
     OPENAI_API_KEY: Optional[str] = Field(None, env="OPENAI_API_KEY")
+    
+    # Stock Media APIs
+    UNSPLASH_ACCESS_KEY: Optional[str] = Field(None, env="UNSPLASH_ACCESS_KEY")
+    PIXABAY_API_KEY: Optional[str] = Field(None, env="PIXABAY_API_KEY")
     
     # CORS
     CORS_ORIGINS: List[str] = Field(
