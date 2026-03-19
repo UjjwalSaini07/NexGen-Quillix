@@ -995,7 +995,8 @@ async def get_posts(
     
     query = {"user_id": user_id}
     
-    if status_filter:
+    # Only filter by status if it's not "all" and not empty
+    if status_filter and status_filter.lower() != "all":
         query["status"] = status_filter
     if platform_filter:
         query["platforms"] = platform_filter
