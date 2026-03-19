@@ -128,6 +128,34 @@ async def generate_reply(
         )
 
 
+class GenerateMediaRequest(BaseModel):
+    """Request to generate media suggestions"""
+    prompt: str = Field(..., min_length=1, max_length=500)
+    media_type: str = Field("image", pattern="^(image|video)$")
+
+
+@router.post("/generate-media")
+async def generate_media(
+    request: GenerateMediaRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate relevant image or video suggestions based on the prompt"""
+    try:
+        result = ai_service.generate_media(
+            prompt=request.prompt,
+            media_type=request.media_type
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Media generation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate media suggestions"
+        )
+
+
 @router.post("/generate-hashtags")
 async def generate_hashtags(
     request: GenerateHashtagsRequest,

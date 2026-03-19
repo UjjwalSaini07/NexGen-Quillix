@@ -79,6 +79,7 @@ async def create_post(
 ):
     """Create a new post"""
     user_id = str(current_user["_id"])
+    logger.info(f"=== CREATE POST called with user_id: {user_id} ===")
     
     # Validate platforms
     supported_platforms = ["facebook", "instagram", "linkedin", "x", "youtube", "whatsapp"]
@@ -98,9 +99,22 @@ async def create_post(
         })
         
         if not account:
+            # Log for debugging
+            logger.error(f"Account not found for user {user_id} on platform {platform}")
+            # Check if account exists but is inactive
+            inactive_account = await db.social_accounts.find_one({
+                "user_id": user_id,
+                "platform": platform
+            })
+            if inactive_account:
+                logger.error(f"Account exists but is_active={inactive_account.get('is_active')}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"{platform} account is inactive. Please reconnect your account."
+                )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"{platform} account not connected"
+                detail=f"{platform} account not connected. Please connect your {platform} account first."
             )
     
     # Determine status
@@ -192,6 +206,7 @@ async def get_posts(
 ):
     """Get all posts for the current user"""
     user_id = str(current_user["_id"])
+    logger.info(f"=== GET POSTS called with user_id: {user_id} ===")
     
     query = {"user_id": user_id}
     
