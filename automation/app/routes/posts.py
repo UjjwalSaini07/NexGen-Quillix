@@ -79,7 +79,6 @@ async def create_post(
 ):
     """Create a new post"""
     user_id = str(current_user["_id"])
-    logger.info(f"=== CREATE POST called with user_id: {user_id} ===")
     
     # Validate platforms
     supported_platforms = ["facebook", "instagram", "linkedin", "x", "youtube", "whatsapp"]
@@ -206,13 +205,11 @@ async def get_posts(
 ):
     """Get all posts for the current user"""
     user_id = str(current_user["_id"])
-    logger.info(f"=== GET POSTS called with user_id: {user_id} ===")
     
     query = {"user_id": user_id}
     
     if status_filter:
         query["status"] = status_filter
-        logger.info(f"Filtering posts by status: {status_filter}, query: {query}")
     if platform:
         query["platforms"] = platform
     
@@ -221,11 +218,6 @@ async def get_posts(
     total = await db.posts.count_documents(query)
     
     posts = await db.posts.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
-    
-    # Log post statuses for debugging
-    if posts:
-        statuses = [p.get("status") for p in posts]
-        logger.info(f"Found {len(posts)} posts with statuses: {statuses}")
     
     return {
         "posts": serialize_doc(posts),

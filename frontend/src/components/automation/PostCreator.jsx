@@ -434,17 +434,8 @@ export default function PostCreator({ onClose }) {
         postData.scheduled_time = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       }
       
-      console.log('Creating post:', postData);
-      
       // Create post
       const response = await createPost(postData);
-      console.log('Post created:', response);
-      
-      // Debug: Log the status of the created post
-      if (response) {
-        console.log('Created post status:', response.status);
-        console.log('Created post scheduled_time:', response.scheduled_time);
-      }
       
       // Handle publishing
       if (!isSchedule && response?.post_id) {

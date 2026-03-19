@@ -412,9 +412,7 @@ export default function AutomationDashboard() {
 
   // Handle status filter change
   const handleStatusFilterChange = (status) => {
-    console.log('Filter changed to:', status);
     setPostStatusFilter(status);
-    // Only fetch posts if authenticated
     if (isAuthenticated) {
       getPosts({ status_filter: status }).then(result => {
         console.log('Posts fetched:', result);
@@ -473,7 +471,6 @@ export default function AutomationDashboard() {
   };
 
   const handleDisconnect = async (platform) => {
-    console.log('Attempting to disconnect platform:', platform);
     const result = await Swal.fire({
       title: 'Disconnect Account',
       text: `Are you sure you want to disconnect ${platform}?`,

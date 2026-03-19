@@ -184,31 +184,18 @@ export function useAutomation() {
     handleApiCall(api.triggerScheduledPosts), [handleApiCall]);
   
   const getPosts = useCallback(async (options = {}) => {
-    // Don't clear posts here - let the component handle loading state
-    // We should only update posts AFTER we get the result
     setLoading(true);
     setError(null);
-    console.log('getPosts called with options:', options);
     try {
       const result = await handleApiCall(api.getPosts, options || {});
-      console.log('getPosts result:', result);
-      // Debug: Log the status of each post
-      if (result.posts && result.posts.length > 0) {
-        const statuses = result.posts.map(p => ({ id: p._id, status: p.status, scheduled_time: p.scheduled_time }));
-        console.log('Post statuses:', statuses);
-      }
-      // Update local posts state ONLY with the result
       if (result.posts) {
         setPosts(result.posts);
         setPagination(result.pagination || null);
       } else {
-        // If no posts returned, still update with empty array
         setPosts([]);
       }
       return result;
     } catch (err) {
-      console.error('getPosts error:', err);
-      // On error, don't clear posts - keep existing data
       throw err;
     } finally {
       setLoading(false);
