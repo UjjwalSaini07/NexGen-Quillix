@@ -159,8 +159,8 @@ export default function PostCreator({ onClose }) {
   const [mediaSuggestions, setMediaSuggestions] = useState([]); // AI media suggestions
   const [selectedMedia, setSelectedMedia] = useState(null); // Selected media URL
   const [isGeneratingMedia, setIsGeneratingMedia] = useState(false);
-  const [includeMedia, setIncludeMedia] = useState(true); // Whether to include media
-  const [aiMediaType, setAiMediaType] = useState('image'); // image or video for AI
+  const [includeMedia, setIncludeMedia] = useState(false); // Whether to include media
+  const [aiMediaType, setAiMediaType] = useState('none'); // image or video for AI
   const [previewMedia, setPreviewMedia] = useState(null); // Media preview modal
   
   const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
@@ -302,9 +302,24 @@ export default function PostCreator({ onClose }) {
       if (includeMedia && aiPrompt.trim()) {
         try {
           setIsGeneratingMedia(true);
+          
+          // Calculate scheduled time if post is scheduled
+          let scheduledTime = null;
+          if (isSchedule && scheduleTime) {
+            const scheduleDate = new Date(scheduleTime);
+            const year = scheduleDate.getFullYear();
+            const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
+            const day = String(scheduleDate.getDate()).padStart(2, '0');
+            const hours = String(scheduleDate.getHours()).padStart(2, '0');
+            const minutes = String(scheduleDate.getMinutes()).padStart(2, '0');
+            const seconds = String(scheduleDate.getSeconds()).padStart(2, '0');
+            scheduledTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+          }
+          
           const mediaResponse = await generateMedia({
             prompt: aiPrompt,
             media_type: aiMediaType,
+            scheduled_time: scheduledTime,
           });
           
           if (mediaResponse && mediaResponse.media_urls && mediaResponse.media_urls.length > 0) {
