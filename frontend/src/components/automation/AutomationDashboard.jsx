@@ -331,6 +331,11 @@ export default function AutomationDashboard() {
     let isMounted = true;
     
     const checkScheduledPosts = async () => {
+      // Skip if not authenticated
+      if (!isAuthenticated) {
+        return;
+      }
+      
       if (!isMounted) return;
       try {
         const result = await triggerScheduledPosts();
@@ -409,20 +414,23 @@ export default function AutomationDashboard() {
   const handleStatusFilterChange = (status) => {
     console.log('Filter changed to:', status);
     setPostStatusFilter(status);
-    getPosts({ status_filter: status }).then(result => {
-      console.log('Posts fetched:', result);
-    });
+    // Only fetch posts if authenticated
+    if (isAuthenticated) {
+      getPosts({ status_filter: status }).then(result => {
+        console.log('Posts fetched:', result);
+      });
+    }
   };
 
   // Fetch data when tab changes or API connects
   useEffect(() => {
-    if (apiStatus === 'connected') {
+    if (apiStatus === 'connected' && isAuthenticated) {
       fetchUser();
     }
-  }, [apiStatus, fetchUser]);
+  }, [apiStatus, fetchUser, isAuthenticated]);
 
   useEffect(() => {
-    if (apiStatus === 'connected') {
+    if (apiStatus === 'connected' && isAuthenticated) {
       if (activeTab === 'accounts') fetchAccounts();
       if (activeTab === 'posts') getPosts({ status_filter: postStatusFilter });
       if (activeTab === 'automation') fetchRules();

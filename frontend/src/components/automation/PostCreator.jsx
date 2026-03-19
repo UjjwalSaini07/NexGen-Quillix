@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAutomation } from '@/components/hooks/useAutomation';
 import { toast } from 'react-toastify';
+import { generateMedia } from '@/lib/dynamic-automation-api';
 
 // Platform configuration with character limits and features
 const PLATFORM_CONFIG = {
@@ -142,6 +143,7 @@ export default function PostCreator({ onClose }) {
   const [generatedVariations, setGeneratedVariations] = useState([]);
   const [selectedVariation, setSelectedVariation] = useState(0);
   const [activeTab, setActiveTab] = useState('create'); // create, ai, preview
+  const [selectedNiche, setSelectedNiche] = useState('tech'); // Default niche
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showMediaPreview, setShowMediaPreview] = useState(false);
   const [postVariations, setPostVariations] = useState({}); // Platform-specific content
@@ -154,8 +156,14 @@ export default function PostCreator({ onClose }) {
   const [aiWordCount, setAiWordCount] = useState(150); // Default 150 words
   const [numVariations, setNumVariations] = useState(1); // Default 1 variation
   const [selectedTone, setSelectedTone] = useState('friendly'); // Default tone
+  const [mediaSuggestions, setMediaSuggestions] = useState([]); // AI media suggestions
+  const [selectedMedia, setSelectedMedia] = useState(null); // Selected media URL
+  const [isGeneratingMedia, setIsGeneratingMedia] = useState(false);
+  const [includeMedia, setIncludeMedia] = useState(true); // Whether to include media
+  const [aiMediaType, setAiMediaType] = useState('image'); // image or video for AI
+  const [previewMedia, setPreviewMedia] = useState(null); // Media preview modal
   
-  const { createPost, publishPost, schedulePost, generatePost, getConnectedAccounts } = useAutomation();
+  const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
   
   // Load draft on mount
   useEffect(() => {
@@ -289,6 +297,29 @@ export default function PostCreator({ onClose }) {
       } else {
         setError('Failed to generate content');
       }
+      
+      // Generate relevant media only if user wants media
+      if (includeMedia && aiPrompt.trim()) {
+        try {
+          setIsGeneratingMedia(true);
+          const mediaResponse = await generateMedia({
+            prompt: aiPrompt,
+            media_type: aiMediaType,
+          });
+          
+          if (mediaResponse && mediaResponse.media_urls && mediaResponse.media_urls.length > 0) {
+            setMediaSuggestions(mediaResponse.media_urls);
+            setSelectedMedia(mediaResponse.media_urls[0]);
+            setMediaUrl(mediaResponse.media_urls[0].url);
+            toast.success(`AI found ${mediaResponse.media_urls.length} relevant ${aiMediaType === 'video' ? 'videos' : 'images'}!`);
+          }
+        } catch (mediaErr) {
+          console.error('Media generation error:', mediaErr);
+        } finally {
+          setIsGeneratingMedia(false);
+        }
+      }
+      
     } catch (err) {
       setError(err.message || 'Failed to generate content');
       toast.error('AI generation failed');
@@ -647,8 +678,8 @@ export default function PostCreator({ onClose }) {
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">Tone</label>
                       <select
-                        value={aiTone}
-                        onChange={(e) => setAiTone(e.target.value)}
+                        value={selectedTone}
+                        onChange={(e) => setSelectedTone(e.target.value)}
                         className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
                       >
                         {TONE_OPTIONS.map(opt => (
@@ -659,8 +690,8 @@ export default function PostCreator({ onClose }) {
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">Niche</label>
                       <select
-                        value={aiNiche}
-                        onChange={(e) => setAiNiche(e.target.value)}
+                        value={selectedNiche}
+                        onChange={(e) => setSelectedNiche(e.target.value)}
                         className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
                       >
                         {NICHE_OPTIONS.map(opt => (
@@ -872,15 +903,194 @@ export default function PostCreator({ onClose }) {
               </p>
             </div>
             
+            {/* Media Type Selector */}
+            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-sm text-gray-300 font-medium">
+                  🖼️ Include Media
+                </label>
+                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                  aiMediaType === 'none' 
+                    ? 'bg-gray-600/20 text-gray-400' 
+                    : aiMediaType === 'image'
+                      ? 'bg-blue-600/20 text-blue-400'
+                      : 'bg-red-600/20 text-red-400'
+                }`}>
+                  {aiMediaType === 'none' ? '🚫 No Media' : aiMediaType === 'image' ? '🖼️ Image' : '🎬 Video'}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {/* No Media Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiMediaType('none');
+                    setIncludeMedia(false);
+                    setMediaSuggestions([]);
+                  }}
+                  className={`py-3 px-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                    aiMediaType === 'none'
+                      ? 'bg-gray-600 text-white shadow-lg shadow-gray-600/30 border-2 border-gray-400'
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700 border-2 border-transparent'
+                  }`}
+                >
+                  <span className="text-2xl">🚫</span>
+                  <span>No Media</span>
+                </button>
+                
+                {/* Image Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiMediaType('image');
+                    setIncludeMedia(true);
+                  }}
+                  className={`py-3 px-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                    aiMediaType === 'image'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 border-2 border-blue-400'
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700 border-2 border-transparent'
+                  }`}
+                >
+                  <span className="text-2xl">🖼️</span>
+                  <span>Image</span>
+                </button>
+                
+                {/* Video Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiMediaType('video');
+                    setIncludeMedia(true);
+                  }}
+                  className={`py-3 px-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                    aiMediaType === 'video'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/30 border-2 border-red-400'
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700 border-2 border-transparent'
+                  }`}
+                >
+                  <span className="text-2xl">🎬</span>
+                  <span>Video</span>
+                </button>
+              </div>
+              
+              {aiMediaType !== 'none' && (
+                <p className="text-xs text-gray-400 mt-3">
+                  ✨ AI will search and find the most relevant {aiMediaType === 'video' ? 'videos' : 'images'} based on your prompt
+                </p>
+              )}
+              
+              {aiMediaType === 'none' && (
+                <p className="text-xs text-gray-400 mt-3">
+                  📝 Your post will be text-only with no media attachments
+                </p>
+              )}
+            </div>
+            
             
             <button
               type="button"
               onClick={handleGenerateContent}
               disabled={aiGenerating || !aiPrompt.trim()}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold text-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
+              className={`w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 transition-all transform hover:scale-[1.02] ${
+                aiMediaType === 'none' ? 'from-gray-600 to-gray-700' : ''
+              }`}
             >
-              {aiGenerating ? '🤖 Creating Amazing Content...' : '✨ Generate Content'}
+              {aiGenerating ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="animate-spin">🤖</span>
+                  {aiMediaType === 'none' ? 'Generating Content...' : aiMediaType === 'image' ? 'Creating Content & Finding Images...' : 'Creating Content & Finding Videos...'}
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  {aiMediaType === 'none' ? '✨ Generate Content' : aiMediaType === 'image' ? '🖼️ Generate Content & Images' : '🎬 Generate Content & Videos'}
+                </span>
+              )}
             </button>
+            
+            {/* AI-Generated Media Suggestions */}
+            {(mediaSuggestions.length > 0 || isGeneratingMedia) && (
+              <div className="mt-4 bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm text-gray-300 font-medium">
+                    {aiMediaType === 'video' ? '🎬' : '🖼️'} AI-Generated {aiMediaType === 'video' ? 'Videos' : 'Images'}
+                  </label>
+                  {isGeneratingMedia && (
+                    <span className="text-xs text-yellow-400 animate-pulse">
+                      🔄 Finding relevant {aiMediaType === 'video' ? 'videos' : 'images'}...
+                    </span>
+                  )}
+                </div>
+                
+                {mediaSuggestions.length > 0 && (
+                  <>
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {mediaSuggestions.map((media, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMedia(media);
+                            setMediaUrl(media.url);
+                            // Set media type based on the media's type
+                            setMediaType(media.type === 'video' ? 'video' : 'image');
+                          }}
+                          onDoubleClick={() => {
+                            // Double-click to preview
+                            setPreviewMedia(media);
+                          }}
+                          className={`relative rounded-lg overflow-hidden border-2 transition-all group ${
+                            selectedMedia?.url === media.url
+                              ? 'border-green-500 ring-2 ring-green-500/30'
+                              : 'border-transparent hover:border-gray-500'
+                          }`}
+                        >
+                          {/* Show video indicator for videos */}
+                          {media.type === 'video' && (
+                            <div className="absolute top-1 left-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
+                              <span>🎬</span>
+                              {media.duration && <span>{Math.floor(media.duration / 60)}:{String(media.duration % 60).padStart(2, '0')}</span>}
+                            </div>
+                          )}
+                          
+                          <img
+                            src={media.thumb_url || media.url}
+                            alt={media.description || 'Media suggestion'}
+                            className="w-full h-20 object-cover"
+                          />
+                          
+                          {/* Play button overlay for videos */}
+                          {media.type === 'video' && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
+                                <span className="text-red-600 text-lg">▶</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {selectedMedia?.url === media.url && (
+                            <div className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1 rounded z-10">
+                              ✓
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {selectedMedia && (
+                      <div className="text-xs text-gray-400">
+                        {selectedMedia.type === 'video' ? (
+                          <p>🎬 Video from {selectedMedia.source}</p>
+                        ) : (
+                          <p>📷 Photo by {selectedMedia.photographer} on {selectedMedia.source}</p>
+                        )}
+                        {selectedMedia.description && <p>📝 {selectedMedia.description}</p>}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
             
             {/* Generated content */}
             {generatedVariations.length > 0 && (
@@ -1082,6 +1292,53 @@ export default function PostCreator({ onClose }) {
           </div>
         )}
       </form>
+      
+      {/* Media Preview Modal */}
+      {previewMedia && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewMedia(null)}>
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-gray-900 rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => setPreviewMedia(null)}
+              className="absolute top-3 right-3 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white text-xl transition-colors"
+            >
+              ✕
+            </button>
+            
+            {/* Media content */}
+            {previewMedia.type === 'video' ? (
+              <video
+                src={previewMedia.url}
+                controls
+                autoPlay
+                className="w-full max-h-[80vh] object-contain"
+              />
+            ) : (
+              <img
+                src={previewMedia.url}
+                alt={previewMedia.description || 'Preview'}
+                className="w-full max-h-[80vh] object-contain"
+              />
+            )}
+            
+            {/* Info */}
+            <div className="p-4 bg-gray-800">
+              <p className="text-white font-medium">
+                {previewMedia.type === 'video' ? '🎬 Video' : '🖼️ Image'} from {previewMedia.source}
+              </p>
+              {previewMedia.description && (
+                <p className="text-gray-400 text-sm mt-1">{previewMedia.description}</p>
+              )}
+              {previewMedia.photographer && (
+                <p className="text-gray-500 text-xs mt-1">Photo by {previewMedia.photographer}</p>
+              )}
+              <p className="text-gray-500 text-xs mt-2">
+                💡 Double-click on a media to preview
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
