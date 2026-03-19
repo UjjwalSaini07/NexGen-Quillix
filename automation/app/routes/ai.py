@@ -4,6 +4,7 @@ AI-powered content generation and assistance
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional, List
+from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
 import logging
 
@@ -132,6 +133,7 @@ class GenerateMediaRequest(BaseModel):
     """Request to generate media suggestions"""
     prompt: str = Field(..., min_length=1, max_length=500)
     media_type: str = Field("image", pattern="^(image|video)$")
+    scheduled_time: Optional[str] = Field(None, description="ISO format datetime for scheduled post")
 
 
 @router.post("/generate-media")
@@ -143,7 +145,8 @@ async def generate_media(
     try:
         result = ai_service.generate_media(
             prompt=request.prompt,
-            media_type=request.media_type
+            media_type=request.media_type,
+            scheduled_time=request.scheduled_time
         )
         
         return result

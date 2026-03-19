@@ -44,3 +44,6 @@ email-validator
 
 # Timezone
 pytz
+
+# Cloudinary
+cloudinary

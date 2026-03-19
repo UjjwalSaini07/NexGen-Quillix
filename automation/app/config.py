@@ -73,6 +73,13 @@ class Settings(BaseSettings):
     UNSPLASH_ACCESS_KEY: Optional[str] = Field(None, env="UNSPLASH_ACCESS_KEY")
     PIXABAY_API_KEY: Optional[str] = Field(None, env="PIXABAY_API_KEY")
     
+    # Cloudinary Configuration
+    CLOUDINARY_CLOUD_NAME: Optional[str] = Field(None, env="CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY: Optional[str] = Field(None, env="CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET: Optional[str] = Field(None, env="CLOUDINARY_API_SECRET")
+    CLOUDINARY_UPLOAD_PRESET: Optional[str] = Field(None, env="CLOUDINARY_UPLOAD_PRESET")
+    CLOUDINARY_UPLOAD_FOLDER: str = Field("Quillix-Engine", env="CLOUDINARY_UPLOAD_FOLDER")
+    
     # CORS
     CORS_ORIGINS: List[str] = Field(
         default=["http://localhost:3000", "http://127.0.0.1:3000"],
