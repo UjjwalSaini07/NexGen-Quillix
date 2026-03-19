@@ -95,11 +95,10 @@ const PLATFORM_CONFIG = {
 // AI Generation options
 const TONE_OPTIONS = [
   { id: 'professional', label: 'Professional', icon: '👔' },
-  { id: 'casual', label: 'Casual', icon: '😎' },
+  { id: 'friendly', label: 'Friendly', icon: '😊' },
   { id: 'humorous', label: 'Humorous', icon: '😂' },
   { id: 'inspirational', label: 'Inspirational', icon: '✨' },
   { id: 'educational', label: 'Educational', icon: '📚' },
-  { id: 'promotional', label: 'Promotional', icon: '📢' },
 ];
 
 const NICHE_OPTIONS = [
@@ -113,7 +112,7 @@ const NICHE_OPTIONS = [
   { id: 'lifestyle', label: 'Lifestyle', icon: '🌟' },
 ];
 
-export default function PostCreator() {
+export default function PostCreator({ onClose }) {
   // Core state
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
@@ -150,6 +149,11 @@ export default function PostCreator() {
   const [showScheduler, setShowScheduler] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  
+  // Word count for AI generation
+  const [aiWordCount, setAiWordCount] = useState(150); // Default 150 words
+  const [numVariations, setNumVariations] = useState(1); // Default 1 variation
+  const [selectedTone, setSelectedTone] = useState('friendly'); // Default tone
   
   const { createPost, publishPost, schedulePost, generatePost, getConnectedAccounts } = useAutomation();
   
@@ -258,23 +262,30 @@ export default function PostCreator() {
     setAIGenerating(true);
     setError(null);
     try {
-      const response = await generatePost({ 
-        prompt: aiPrompt,
-        platform: selectedPlatforms[0] || null,
-      });
+      // Generate multiple variations by making multiple API calls
+      const variations = [];
       
-      if (response && response.content) {
-        setContent(response.content);
-        // Generate multiple variations
-        const variations = [];
-        for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < numVariations; i++) {
+        const response = await generatePost({ 
+          prompt: aiPrompt,
+          word_count: aiWordCount,
+          tone: selectedTone,
+          length: aiWordCount <= 100 ? 'short' : aiWordCount <= 250 ? 'medium' : 'long',
+        });
+        
+        if (response && response.content) {
           variations.push({
             id: i,
-            content: response.content + (i > 0 ? ` (${i + 1})` : ''),
+            content: response.content,
           });
         }
+      }
+      
+      if (variations.length > 0) {
         setGeneratedVariations(variations);
-        toast.success('AI content generated!');
+        setSelectedVariation(0);
+        setContent(variations[0]?.content || '');
+        toast.success(`AI generated ${variations.length} variations with ${aiWordCount} words!`);
       } else {
         setError('Failed to generate content');
       }
@@ -427,6 +438,11 @@ export default function PostCreator() {
       setResult(response);
       clearDraft();
       
+      // Close the modal if onClose callback is provided
+      if (onClose) {
+        setTimeout(() => onClose(), 1500);
+      }
+      
     } catch (err) {
       console.error('Error:', err);
       const errorMessage = err.message || 'Failed to create post';
@@ -516,7 +532,8 @@ export default function PostCreator() {
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Platform Selection */}
+        {/* Platform Selection - Only show in Create tab */}
+        {activeTab === 'create' && (
         <div className="bg-gray-900/50 rounded-lg p-4">
           <div className="flex justify-between items-center mb-3">
             <label className="text-sm font-medium text-gray-300">
@@ -566,6 +583,7 @@ export default function PostCreator() {
             </div>
           )}
         </div>
+        )}
         
         {/* Content Tab */}
         {activeTab === 'create' && (
@@ -654,7 +672,7 @@ export default function PostCreator() {
                   <button
                     type="button"
                     onClick={handleGenerateContent}
-                    disabled={aiGenerating || selectedPlatforms.length === 0}
+                    disabled={aiGenerating || !aiPrompt.trim()}
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
                   >
                     {aiGenerating ? '🤖 Generating...' : '🚀 Generate with AI'}
@@ -757,19 +775,103 @@ export default function PostCreator() {
               </p>
             </div>
             
-            {/* Quick Suggestions */}
-            <div className="flex flex-wrap gap-2">
-              {['🚀 New Product Launch', '📢 Promotional', '💡 Tips & Tricks', '🎉 Festival Wishes', '📚 Educational', '💼 Business Update'].map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => setAiPrompt(suggestion)}
-                  className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded-full transition-all"
-                >
-                  {suggestion}
-                </button>
-              ))}
+            {/* Word Count Slider */}
+            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-sm text-gray-300 font-medium">
+                  📊 Number of Words
+                </label>
+                <span className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  {aiWordCount} words
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={1000}
+                step={10}
+                value={aiWordCount}
+                onChange={(e) => setAiWordCount(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb-purple"
+                style={{
+                  background: `linear-gradient(to right, #9333ea 0%, #9333ea ${(aiWordCount/1000)*100}%, #374151 ${(aiWordCount/1000)*100}%, #374151 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <span>10</span>
+                <span>250</span>
+                <span>500</span>
+                <span>750</span>
+                <span>1000</span>
+              </div>
             </div>
+            
+            {/* Number of Variations Slider */}
+            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-sm text-gray-300 font-medium">
+                  🎨 Number of Variations
+                </label>
+                <span className="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  {numVariations} {numVariations === 1 ? 'variation' : 'variations'}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
+                value={numVariations}
+                onChange={(e) => setNumVariations(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer variation-slider"
+                style={{
+                  background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((numVariations-1)/9)*100}%, #374151 ${((numVariations-1)/9)*100}%, #374151 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <span>1</span>
+                <span>3</span>
+                <span>5</span>
+                <span>7</span>
+                <span>10</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-3">
+                💡 Coming soon: Generate multiple variations and pick the best one!
+              </p>
+            </div>
+            
+            {/* Tone Selector */}
+            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-sm text-gray-300 font-medium">
+                  🎭 Select Tone
+                </label>
+                <span className="bg-green-600/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  {TONE_OPTIONS.find(t => t.id === selectedTone)?.icon} {TONE_OPTIONS.find(t => t.id === selectedTone)?.label}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {TONE_OPTIONS.map((tone) => (
+                  <button
+                    key={tone.id}
+                    type="button"
+                    onClick={() => setSelectedTone(tone.id)}
+                    className={`py-2 px-2 rounded-lg text-sm font-medium transition-all flex flex-col items-center gap-1 ${
+                      selectedTone === tone.id
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-600/30'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    <span className="text-lg">{tone.icon}</span>
+                    <span>{tone.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-3">
+                ✨ Content will be generated with a {TONE_OPTIONS.find(t => t.id === selectedTone)?.label.toLowerCase()} tone
+              </p>
+            </div>
+            
             
             <button
               type="button"
@@ -780,10 +882,10 @@ export default function PostCreator() {
               {aiGenerating ? '🤖 Creating Amazing Content...' : '✨ Generate Content'}
             </button>
             
-            {/* Generated variations */}
+            {/* Generated content */}
             {generatedVariations.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-white font-medium mb-3">Generated Variations</h3>
+                <h3 className="text-white font-medium mb-3">Generated Content</h3>
                 <div className="space-y-3">
                   {generatedVariations.map((variation, idx) => (
                     <div

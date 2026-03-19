@@ -522,13 +522,15 @@ export async function generatePost(request) {
   return fetchAPI(ENDPOINTS.AI.GENERATE_POST, {
     method: 'POST',
     body: JSON.stringify({
-      niche: request.niche,
+      prompt: request.prompt || request.niche || '',
+      niche: request.niche || request.prompt || '',
       tone: request.tone || 'professional',
       platform: request.platform || null,
       include_emoji: request.include_emoji !== false,
       include_cta: request.include_cta !== false,
       include_hashtags: request.include_hashtags !== false,
       length: request.length || 'medium',
+      word_count: request.word_count || null,
     }),
   });
 }

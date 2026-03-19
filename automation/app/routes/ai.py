@@ -30,6 +30,7 @@ class GeneratePostRequest(BaseModel):
     include_cta: bool = True
     include_hashtags: bool = True
     length: str = Field("medium", pattern="^(short|medium|long)$")
+    word_count: Optional[int] = Field(None, ge=10, le=1000, description="Exact word count for generated content")
 
 
 class GenerateReplyRequest(BaseModel):
@@ -80,14 +81,16 @@ async def generate_post(
             include_emoji=request.include_emoji,
             include_cta=request.include_cta,
             include_hashtags=request.include_hashtags,
-            length=request.length
+            length=request.length,
+            word_count=request.word_count
         )
         
         return {
             "success": True,
             "content": result.get("content"),
             "niche": topic,
-            "tone": request.tone
+            "tone": request.tone,
+            "word_count": request.word_count
         }
         
     except Exception as e:

@@ -47,9 +47,16 @@ class GroqService:
         include_emoji: bool = True,
         include_cta: bool = True,
         include_hashtags: bool = True,
-        length: str = "medium"
+        length: str = "medium",
+        word_count: Optional[int] = None
     ) -> Dict[str, Any]:
-        """Generate a social media post"""
+        """Generate a single social media post"""
+        
+        # Word count specification
+        if word_count:
+            word_count_spec = f"Generate EXACTLY {word_count} words. Count the words carefully to ensure exactly {word_count} words."
+        else:
+            word_count_spec = ""
         
         # Length specifications
         length_specs = {
@@ -57,6 +64,9 @@ class GroqService:
             "medium": "100-200 words",
             "long": "200-300 words"
         }
+        
+        # Use word count if provided, otherwise use length
+        final_length = f"{word_count} words" if word_count else length_specs.get(length, length_specs['medium'])
         
         # Emoji placeholder
         emoji_instruction = "Include relevant emojis throughout." if include_emoji else "No emojis."
@@ -67,20 +77,32 @@ class GroqService:
         # Hashtag instruction
         hashtag_instruction = "Include 5-10 relevant hashtags at the end." if include_hashtags else "No hashtags."
         
+        # Main topic/prompt to focus on
+        main_topic = niche.strip()
+        
         prompt = f"""
-Create a viral social media post about {niche}.
-Tone: {tone}.
-Length: {length_specs.get(length, length_specs['medium'])}.
+Create ONE viral social media post about: "{main_topic}"
+
+Tone: {tone}
+{word_count_spec}
+Length: {final_length}
 {emoji_instruction}
 {cta_instruction}
 {hashtag_instruction}
 
-Requirements:
-- Start with a powerful hook
-- Provide value to the audience
-- Be authentic and engaging
-- Match the specified tone
-- Platform optimized: {platform if platform else 'general'}
+CRITICAL REQUIREMENTS - FOLLOW THESE STRICTLY:
+1. The post MUST be directly and ONLY about: "{main_topic}"
+2. DO NOT deviate from "{main_topic}" - stay focused on this exact topic
+3. Start with a powerful hook about {main_topic}
+4. Every sentence must be relevant to {main_topic}
+5. Be authentic and engaging
+6. Match the specified tone: {tone}
+7. Platform optimized: {platform if platform else 'general'}
+
+IMPORTANT: 
+- The post must be about "{main_topic}" only
+- Do not include any unrelated information
+- Generate exactly {word_count if word_count else 'the specified'} words
 """
         
         if self.is_available():
