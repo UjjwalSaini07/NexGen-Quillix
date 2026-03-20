@@ -1,7 +1,3 @@
-"""
-Enhanced AI Routes for NexGen-Quillix Automation Platform
-AI-powered content generation and assistance
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional, List
 from datetime import datetime, timedelta
@@ -20,7 +16,6 @@ ai_service = GroqService()
 
 
 # ==================== Pydantic Models ====================
-
 class GeneratePostRequest(BaseModel):
     """Request to generate a post"""
     prompt: Optional[str] = Field(None, description="Short prompt/topic for the post")
@@ -64,7 +59,6 @@ class ContentOptimizationRequest(BaseModel):
 
 
 # ==================== AI Endpoints ====================
-
 @router.post("/generate-post")
 async def generate_post(
     request: GeneratePostRequest,
@@ -289,7 +283,6 @@ async def translate_content(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def ai_health():
     """AI service health check"""

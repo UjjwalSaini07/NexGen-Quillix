@@ -1,7 +1,3 @@
-"""
-Enhanced Posts Routes for NexGen-Quillix Automation Platform
-Complete post management functionality
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from typing import Optional, List
 from datetime import datetime
@@ -22,7 +18,6 @@ router = APIRouter()
 
 
 # ==================== Pydantic Models ====================
-
 class PostCreateRequest(BaseModel):
     """Create post request"""
     content: str = Field(..., min_length=1, max_length=5000)
@@ -71,7 +66,6 @@ class PostResponse(BaseModel):
 
 
 # ==================== Post Endpoints ====================
-
 @router.post("/create")
 async def create_post(
     post_data: PostCreateRequest,
@@ -698,7 +692,6 @@ async def schedule_post(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def posts_health():
     """Posts service health check"""

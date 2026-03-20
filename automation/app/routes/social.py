@@ -1,7 +1,3 @@
-"""
-Enhanced Social Routes for NexGen-Quillix Automation Platform
-Complete social media account management and posting functionality
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
@@ -42,7 +38,6 @@ OAUTH_URLS = {
 
 
 # ==================== Pydantic Models ====================
-
 class PlatformConnectRequest(BaseModel):
     """Request to connect a social platform"""
     platform: str
@@ -336,10 +331,6 @@ async def connect_platform(
 async def get_facebook_pages(
     current_user: dict = Depends(get_current_user)
 ):
-    """
-    Get Facebook pages for the connected account.
-    Returns list of pages the user can post to.
-    """
     user_id = str(current_user["_id"])
     
     # Find the Facebook account
@@ -438,10 +429,6 @@ async def validate_platform_credentials(
     request: PlatformConnectRequest,
     current_user: dict = Depends(get_current_user)
 ):
-    """
-    Validate social media platform credentials before connecting.
-    Makes a test API call to verify the token is valid.
-    """
     import httpx
     
     logger.info(f"Validating credentials for platform: {platform}")
@@ -491,17 +478,12 @@ async def validate_platform_credentials(
                     validation_result["error"] = "Invalid or expired Bearer Token"
                     return validation_result
                 elif response.status_code == 403:
-                    # 403 means the token is valid but doesn't have required permissions
-                    # For X API v2, the users/me endpoint requires specific permissions
-                    # Let's accept the token anyway for basic posting functionality
                     logger.warning("X API returned 403 - token valid but lacks permissions. Accepting anyway.")
                     validation_result["valid"] = True
                     validation_result["user_id"] = "validated_user"
                     validation_result["username"] = "x_user"
                     return validation_result
                 else:
-                    # For other errors, still accept the token but mark as valid with a warning
-                    # This allows users to connect even if validation API has issues
                     logger.warning(f"X API returned {response.status_code}: {response.text}")
                     validation_result["valid"] = True
                     validation_result["user_id"] = "validated_user"
@@ -915,10 +897,6 @@ async def create_post(
             {"_id": result.inserted_id},
             {"$set": {"status": "pending"}}
         )
-        
-        # Trigger background publishing
-        # In production, add to task queue
-        # background_tasks.add_task(publish_post_task, post_id)
     
     logger.info(f"Post created: {post_id} for user {user_id}")
     
@@ -1021,7 +999,6 @@ async def get_posts(
         }
     }
 
-
 @router.get("/posts/{post_id}")
 async def get_post(
     post_id: str,
@@ -1050,7 +1027,6 @@ async def get_post(
         )
     
     return serialize_doc(post)
-
 
 @router.put("/posts/{post_id}")
 async def update_post(
@@ -1241,7 +1217,6 @@ async def publish_post(
 
 
 # ==================== Automation Rules Endpoints ====================
-
 @router.post("/automation/rules")
 async def create_automation_rule(
     rule: AutomationRuleCreate,
@@ -1434,7 +1409,6 @@ async def toggle_automation_rule(
 
 
 # ==================== Engagement Endpoints ====================
-
 @router.post("/engagement")
 async def perform_engagement(
     action: EngagementAction,
@@ -1499,7 +1473,6 @@ async def perform_engagement(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def social_health():
     """Social service health check"""

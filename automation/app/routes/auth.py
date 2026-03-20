@@ -1,7 +1,3 @@
-"""
-Enhanced Authentication Routes for NexGen-Quillix Automation Platform
-Complete authentication system with JWT, OAuth 2.0, and token management
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import JSONResponse
 from typing import Optional, List
@@ -41,7 +37,6 @@ router = APIRouter()
 
 
 # ==================== User Registration & Login ====================
-
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate):
     """
@@ -307,7 +302,6 @@ async def logout(
 
 
 # ==================== OAuth Endpoints ====================
-
 @router.get("/oauth/{provider}")
 async def oauth_init(
     provider: str,
@@ -463,7 +457,6 @@ async def oauth_callback(
 
 
 # ==================== User Profile ====================
-
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(current_user: dict = Depends(get_current_user)):
     """Get current authenticated user's profile"""
@@ -605,7 +598,6 @@ async def delete_user_account(
 
 
 # ==================== Password Management ====================
-
 @router.post("/password/reset-request")
 async def request_password_reset(email: str = Query(...)):
     """Request password reset email"""
@@ -689,7 +681,6 @@ async def confirm_password_reset(token: str = Query(...), new_password: str = Qu
 
 
 # ==================== Token Validation ====================
-
 @router.get("/verify")
 async def verify_token(current_user: dict = Depends(get_current_user)):
     """Verify if current access token is valid"""
@@ -701,7 +692,6 @@ async def verify_token(current_user: dict = Depends(get_current_user)):
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def auth_health():
     """Authentication service health check"""

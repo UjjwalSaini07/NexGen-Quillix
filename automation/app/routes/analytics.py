@@ -1,7 +1,3 @@
-"""
-Enhanced Analytics Routes for NexGen-Quillix Automation Platform
-Complete analytics and reporting functionality
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional, List
 from datetime import datetime, timedelta
@@ -19,7 +15,6 @@ router = APIRouter()
 
 
 # ==================== Response Models ====================
-
 class AnalyticsSummary(BaseModel):
     """Analytics summary response"""
     total_posts: int
@@ -45,7 +40,6 @@ class PlatformStats(BaseModel):
 
 
 # ==================== Analytics Endpoints ====================
-
 @router.get("/summary")
 async def get_analytics_summary(
     current_user: dict = Depends(get_current_user),
@@ -453,8 +447,6 @@ async def track_post_metrics(
 
 
 # ==================== Advanced Analytics Endpoints ====================
-
-
 @router.get("/time-series")
 async def get_time_series_analytics(
     current_user: dict = Depends(get_current_user),
@@ -606,7 +598,6 @@ async def get_growth_metrics(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def analytics_health():
     """Analytics service health check"""
