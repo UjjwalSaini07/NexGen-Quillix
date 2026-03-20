@@ -1,17 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-
 def analytics_schema(post_id: str, platform: str, metrics: Dict[str, Any], user_id: str = None) -> Dict[str, Any]:
-    """
-    Create analytics schema for post metrics
-    
-    Args:
-        post_id: The ID of the post
-        platform: The social media platform
-        metrics: Dictionary containing likes, comments, shares, impressions, reach, etc.
-        user_id: Optional user ID for the analytics record
-    """
     return {
         "post_id": post_id,
         "platform": platform,
@@ -51,9 +41,6 @@ def analytics_schema(post_id: str, platform: str, metrics: Dict[str, Any], user_
 
 
 def engagement_trend_schema(platform: str, period: str, metrics: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Create engagement trend schema for time-series analytics
-    """
     return {
         "platform": platform,
         "period": period,  # daily, weekly, monthly
@@ -75,9 +62,7 @@ def audience_insight_schema(
     data: Dict[str, Any],
     user_id: str = None
 ) -> Dict[str, Any]:
-    """
-    Create audience insight schema
-    """
+
     return {
         "platform": platform,
         "user_id": user_id,

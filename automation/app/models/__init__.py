@@ -1,13 +1,8 @@
-"""
-Enhanced User Models with Pydantic for NexGen-Quillix Automation Platform
-Complete user schema with validation and serialization
-"""
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, EmailStr, Field, validator
 from bson import ObjectId
 import re
-
 
 class PyObjectId(str):
     """Custom ObjectId type for Pydantic"""
@@ -29,7 +24,6 @@ class PyObjectId(str):
 
 
 # ==================== Base Models ====================
-
 class UserBase(BaseModel):
     """Base user model with common fields"""
     email: EmailStr
@@ -157,7 +151,6 @@ class UserProfileResponse(BaseModel):
 
 
 # ==================== Social Account Models ====================
-
 class SocialAccountBase(BaseModel):
     """Base social account model"""
     platform: str
@@ -219,7 +212,6 @@ class SocialAccountInDB(SocialAccountBase):
 
 
 # ==================== Post Models ====================
-
 class PostBase(BaseModel):
     """Base post model"""
     content: str = Field(..., min_length=1, max_length=5000)
@@ -307,7 +299,6 @@ class BulkPostCreate(BaseModel):
 
 
 # ==================== Analytics Models ====================
-
 class AnalyticsBase(BaseModel):
     """Base analytics model"""
     platform: str
@@ -352,7 +343,6 @@ class AnalyticsTimeRange(BaseModel):
 
 
 # ==================== Automation Models ====================
-
 class AutomationRuleBase(BaseModel):
     """Base automation rule model"""
     name: str
@@ -435,7 +425,6 @@ class AutomationExecution(BaseModel):
 
 
 # ==================== Webhook Models ====================
-
 class WebhookBase(BaseModel):
     """Base webhook model"""
     name: str
@@ -469,7 +458,6 @@ class WebhookResponse(WebhookBase):
 
 
 # ==================== Utility Functions ====================
-
 def serialize_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
     """Convert MongoDB document to JSON serializable format"""
     if doc is None:
