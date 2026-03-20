@@ -4,10 +4,6 @@ import React, { useState } from 'react';
 import { useAuth } from '@/components/hooks/useAutomation';
 import { toast } from 'react-toastify';
 
-/**
- * AuthModal - Enhanced Login/Register modal with polished UI
- * Provides a clean, modern interface for users to authenticate
- */
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' or 'register'
   const [email, setEmail] = useState('');
