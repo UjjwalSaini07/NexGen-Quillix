@@ -1,28 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
-import "../index.css";
-import { toast } from "react-toastify";
-import Header from "../../components/common/Header";
-import WorkInProgress from "../../components/common/comingSoon";
+import React from "react";
+import { AutomationDashboard } from "../../components/automation";
 
-export default function MCPAutomation() {
-  useEffect(() => {
-    toast.info("👷 Work in Progress: We're building something awesome for you here at NexGen-Quillix. Check back soon!", {
-      toastId: "work-in-progress-toast",
-    });
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, []);
-
+export default function AutomationPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white overflow-hidden">
-      <Header />
-      <main className="items-center justify-center mt-10">
-        <WorkInProgress />
-      </main>
+    <div className="min-h-screen bg-black">
+      <AutomationDashboard />
     </div>
   );
 }
