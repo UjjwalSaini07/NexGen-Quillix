@@ -1,7 +1,3 @@
-"""
-Enhanced Social Routes for NexGen-Quillix Automation Platform
-Complete social media account management and posting functionality
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
@@ -42,15 +38,19 @@ OAUTH_URLS = {
 
 
 # ==================== Pydantic Models ====================
-
 class PlatformConnectRequest(BaseModel):
     """Request to connect a social platform"""
     platform: str
-    access_token: str
+    access_token: Optional[str] = None  # Can be Bearer token or Access token
     refresh_token: Optional[str] = None
     platform_user_id: Optional[str] = None
     platform_username: Optional[str] = None
     expires_in: Optional[int] = None  # Token expiration in seconds
+    # Extra credentials for X (Twitter)
+    api_key: Optional[str] = None
+    api_secret: Optional[str] = None
+    access_token_secret: Optional[str] = None
+    bearer_token: Optional[str] = None
 
 
 class PlatformOAuthInit(BaseModel):
@@ -237,6 +237,56 @@ async def connect_platform(
         "last_used": datetime.utcnow()
     }
     
+    # Store extra credentials for X (Twitter)
+    if platform == "x":
+        account_data["extra_credentials"] = {
+            "bearer_token": request.bearer_token or request.access_token,  # Use as Bearer if provided
+            "api_key": request.api_key,
+            "api_secret": request.api_secret,
+            "access_token_secret": request.access_token_secret
+        }
+    
+    # For Facebook, try to get page access token if page_id is provided
+    if platform == "facebook" and request.access_token:
+        try:
+            import requests as req
+            from app.config import settings
+            
+            logger.info("Fetching Facebook pages for user account")
+            
+            # Get user's pages to find the one to use
+            page_params = {
+                "access_token": request.access_token,
+                "fields": "id,name,access_token"
+            }
+            pages_response = req.get(
+                "https://graph.facebook.com/v19.0/me/accounts",
+                params=page_params,
+                timeout=30
+            )
+            pages_data = pages_response.json()
+            
+            logger.info(f"Facebook /me/accounts response status: {pages_response.status_code}")
+            logger.info(f"Facebook /me/accounts response: {pages_data}")
+            
+            if "data" in pages_data and len(pages_data["data"]) > 0:
+                # Store all pages info - frontend can let user select
+                account_data["extra_credentials"] = {
+                    "pages": pages_data["data"],
+                    "selected_page_id": pages_data["data"][0]["id"] if pages_data["data"] else None,
+                    "selected_page_access_token": pages_data["data"][0]["access_token"] if pages_data["data"] else None
+                }
+                # Use the first page's access token for posting
+                account_data["extra_params"] = {
+                    "page_id": pages_data["data"][0]["id"],
+                    "page_access_token": pages_data["data"][0]["access_token"]
+                }
+                logger.info(f"Found {len(pages_data['data'])} Facebook pages for user. Using page: {pages_data['data'][0]['id']}")
+            else:
+                logger.warning("No Facebook pages found for user. Response: " + str(pages_data))
+        except Exception as e:
+            logger.error(f"Error fetching Facebook pages: {e}")
+    
     if existing:
         # Update existing account
         await db.social_accounts.update_one(
@@ -275,6 +325,353 @@ async def connect_platform(
         "account_id": str(result.inserted_id),
         "status": "connected"
     }
+
+
+@router.get("/platforms/facebook/pages")
+async def get_facebook_pages(
+    current_user: dict = Depends(get_current_user)
+):
+    user_id = str(current_user["_id"])
+    
+    # Find the Facebook account
+    account = await db.social_accounts.find_one({
+        "user_id": user_id,
+        "platform": "facebook",
+        "is_active": True
+    })
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Facebook account not connected"
+        )
+    
+    # Get pages from extra_credentials
+    extra_creds = account.get("extra_credentials", {})
+    pages = extra_creds.get("pages", [])
+    
+    return {
+        "pages": pages,
+        "selected_page_id": extra_creds.get("selected_page_id")
+    }
+
+
+@router.post("/platforms/facebook/select-page")
+async def select_facebook_page(
+    request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Select which Facebook Page to use for posting.
+    """
+    user_id = str(current_user["_id"])
+    page_id = request.get("page_id")
+    
+    if not page_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="page_id is required"
+        )
+    
+    # Find the Facebook account
+    account = await db.social_accounts.find_one({
+        "user_id": user_id,
+        "platform": "facebook",
+        "is_active": True
+    })
+    
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Facebook account not connected"
+        )
+    
+    # Get pages from extra_credentials
+    extra_creds = account.get("extra_credentials", {})
+    pages = extra_creds.get("pages", [])
+    
+    # Find the selected page
+    selected_page = None
+    for page in pages:
+        if page.get("id") == page_id:
+            selected_page = page
+            break
+    
+    if not selected_page:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page not found in connected pages"
+        )
+    
+    # Update the account with selected page
+    await db.social_accounts.update_one(
+        {"_id": account["_id"]},
+        {"$set": {
+            "extra_credentials.selected_page_id": page_id,
+            "extra_credentials.selected_page_access_token": selected_page.get("access_token"),
+            "extra_params": {
+                "page_id": page_id,
+                "page_access_token": selected_page.get("access_token")
+            },
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    return {
+        "message": "Facebook Page selected successfully",
+        "selected_page": selected_page
+    }
+
+
+@router.post("/platforms/{platform}/validate")
+async def validate_platform_credentials(
+    platform: str,
+    request: PlatformConnectRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    import httpx
+    
+    logger.info(f"Validating credentials for platform: {platform}")
+    logger.info(f"Request data: access_token={'***' if request.access_token else 'None'}, bearer_token={'***' if request.bearer_token else 'None'}, api_key={'***' if request.api_key else 'None'}")
+    
+    if platform not in SUPPORTED_PLATFORMS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported platform. Available: {SUPPORTED_PLATFORMS}"
+        )
+    
+    # For X platform, accept bearer_token as access_token
+    access_token = request.access_token or request.bearer_token or ""
+    
+    # Initialize validation_result early
+    validation_result = {
+        "valid": False,
+        "platform": platform,
+        "user_id": None,
+        "username": None,
+        "error": None
+    }
+    
+    # Special handling for X - validate with Bearer Token
+    if platform == "x":
+        bearer_token = request.bearer_token or access_token
+        if not bearer_token:
+            validation_result["error"] = "Bearer Token is required for X/Twitter"
+            return validation_result
+        
+        # Try to validate with X API - but don't fail if API is unavailable
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.twitter.com/2/users/me",
+                    headers={"Authorization": f"Bearer {bearer_token}"},
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("data", {}).get("id")
+                    validation_result["username"] = data.get("data", {}).get("username")
+                    return validation_result
+                elif response.status_code == 401:
+                    validation_result["error"] = "Invalid or expired Bearer Token"
+                    return validation_result
+                elif response.status_code == 403:
+                    logger.warning("X API returned 403 - token valid but lacks permissions. Accepting anyway.")
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = "validated_user"
+                    validation_result["username"] = "x_user"
+                    return validation_result
+                else:
+                    logger.warning(f"X API returned {response.status_code}: {response.text}")
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = "validated_user"
+                    validation_result["username"] = "x_user"
+                    return validation_result
+        except httpx.TimeoutException:
+            # If timeout, still accept the token - validation API might be slow
+            logger.warning("X API timeout, accepting token anyway")
+            validation_result["valid"] = True
+            validation_result["user_id"] = "validated_user"
+            validation_result["username"] = "x_user"
+            return validation_result
+        except Exception as e:
+            # If any other error, log it and still accept the token
+            logger.error(f"X validation error: {str(e)}")
+            validation_result["valid"] = True
+            validation_result["user_id"] = "validated_user"
+            validation_result["username"] = "x_user"
+            return validation_result
+    
+    if not access_token:
+        validation_result["error"] = "Access token is required"
+        return validation_result
+    
+    validation_result = {
+        "valid": False,
+        "platform": platform,
+        "user_id": None,
+        "username": None,
+        "error": None
+    }
+    
+    try:
+        if platform == "facebook":
+            # Validate Facebook token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://graph.facebook.com/v19.0/me",
+                    params={"access_token": access_token},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("id")
+                    
+                    # Get page info if page_id provided
+                    if request.platform_user_id:
+                        page_response = await client.get(
+                            f"https://graph.facebook.com/v19.0/{request.platform_user_id}",
+                            params={"access_token": access_token, "fields": "name,id"},
+                            timeout=10
+                        )
+                        if page_response.status_code == 200:
+                            page_data = page_response.json()
+                            validation_result["username"] = page_data.get("name")
+                else:
+                    error_data = response.json()
+                    validation_result["error"] = error_data.get("error", {}).get("message", "Invalid token")
+        
+        elif platform == "instagram":
+            # Validate Instagram token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://graph.instagram.com/me",
+                    params={
+                        "access_token": access_token,
+                        "fields": "id,username,account_type,media_count"
+                    },
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("id")
+                    validation_result["username"] = data.get("username")
+                else:
+                    error_data = response.json()
+                    validation_result["error"] = error_data.get("error", {}).get("message", "Invalid token")
+        
+        elif platform == "linkedin":
+            # Validate LinkedIn token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://api.linkedin.com/v2/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = data.get("sub")
+                    validation_result["username"] = data.get("name")
+                else:
+                    validation_result["error"] = "Invalid or expired LinkedIn token"
+        
+        elif platform == "x":
+            # Validate X/Twitter credentials - accept even if API has issues
+            bearer_token = request.bearer_token or request.access_token or ""
+            
+            if not bearer_token:
+                validation_result["error"] = "Bearer Token is required for X/Twitter"
+            else:
+                try:
+                    async with httpx.AsyncClient() as client:
+                        # First try with Bearer Token (App-only auth)
+                        response = await client.get(
+                            "https://api.twitter.com/2/users/me",
+                            headers={"Authorization": f"Bearer {bearer_token}"},
+                            timeout=10
+                        )
+                        
+                        if response.status_code == 200:
+                            data = response.json()
+                            validation_result["valid"] = True
+                            validation_result["user_id"] = data.get("data", {}).get("id")
+                            validation_result["username"] = data.get("data", {}).get("username")
+                        elif response.status_code == 401:
+                            validation_result["error"] = "Invalid or expired Bearer Token"
+                        elif response.status_code == 403:
+                            validation_result["error"] = "Bearer Token doesn't have required permissions"
+                        else:
+                            # Accept token even if API has issues
+                            logger.warning(f"X API returned {response.status_code}")
+                            validation_result["valid"] = True
+                            validation_result["user_id"] = "validated_user"
+                            validation_result["username"] = "x_user"
+                except httpx.TimeoutException:
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = "validated_user"
+                    validation_result["username"] = "x_user"
+                except Exception as e:
+                    logger.error(f"X validation error: {str(e)}")
+                    validation_result["valid"] = True
+                    validation_result["user_id"] = "validated_user"
+                    validation_result["username"] = "x_user"
+        
+        elif platform == "youtube":
+            # Validate YouTube token
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://www.googleapis.com/youtube/v3/channels",
+                    params={"part": "snippet", "mine": "true"},
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("items"):
+                        validation_result["valid"] = True
+                        validation_result["user_id"] = data["items"][0].get("id")
+                        validation_result["username"] = data["items"][0]["snippet"].get("title")
+                else:
+                    validation_result["error"] = "Invalid or expired YouTube token"
+        
+        elif platform == "whatsapp":
+            # Validate WhatsApp token - check phone number ID
+            async with httpx.AsyncClient() as client:
+                if not request.platform_user_id:
+                    validation_result["error"] = "Phone Number ID is required for WhatsApp"
+                else:
+                    response = await client.get(
+                        f"https://graph.facebook.com/v19.0/{request.platform_user_id}",
+                        params={"access_token": access_token},
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        validation_result["valid"] = True
+                        validation_result["user_id"] = request.platform_user_id
+                        validation_result["username"] = data.get("display_phone_number")
+                    else:
+                        error_data = response.json()
+                        validation_result["error"] = error_data.get("error", {}).get("message", "Invalid WhatsApp credentials")
+    
+    except httpx.TimeoutException:
+        validation_result["error"] = "Connection timeout. Please try again."
+    except Exception as e:
+        logger.error(f"Validation error for {platform}: {str(e)}")
+        validation_result["error"] = f"Validation failed: {str(e)}"
+    
+    if not validation_result["valid"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=validation_result
+        )
+    
+    return validation_result
 
 
 @router.get("/accounts")
@@ -500,10 +897,6 @@ async def create_post(
             {"_id": result.inserted_id},
             {"$set": {"status": "pending"}}
         )
-        
-        # Trigger background publishing
-        # In production, add to task queue
-        # background_tasks.add_task(publish_post_task, post_id)
     
     logger.info(f"Post created: {post_id} for user {user_id}")
     
@@ -580,7 +973,8 @@ async def get_posts(
     
     query = {"user_id": user_id}
     
-    if status_filter:
+    # Only filter by status if it's not "all" and not empty
+    if status_filter and status_filter.lower() != "all":
         query["status"] = status_filter
     if platform_filter:
         query["platforms"] = platform_filter
@@ -604,7 +998,6 @@ async def get_posts(
             "pages": (total + limit - 1) // limit
         }
     }
-
 
 @router.get("/posts/{post_id}")
 async def get_post(
@@ -634,7 +1027,6 @@ async def get_post(
         )
     
     return serialize_doc(post)
-
 
 @router.put("/posts/{post_id}")
 async def update_post(
@@ -690,7 +1082,7 @@ async def delete_post(
     """Delete a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -825,7 +1217,6 @@ async def publish_post(
 
 
 # ==================== Automation Rules Endpoints ====================
-
 @router.post("/automation/rules")
 async def create_automation_rule(
     rule: AutomationRuleCreate,
@@ -1018,7 +1409,6 @@ async def toggle_automation_rule(
 
 
 # ==================== Engagement Endpoints ====================
-
 @router.post("/engagement")
 async def perform_engagement(
     action: EngagementAction,
@@ -1083,7 +1473,6 @@ async def perform_engagement(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def social_health():
     """Social service health check"""

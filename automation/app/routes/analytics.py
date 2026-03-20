@@ -1,7 +1,3 @@
-"""
-Enhanced Analytics Routes for NexGen-Quillix Automation Platform
-Complete analytics and reporting functionality
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional, List
 from datetime import datetime, timedelta
@@ -11,6 +7,7 @@ import logging
 from app.database import db
 from app.core.security import get_current_user
 from app.models import serialize_doc
+from app.services.analytics_service import analytics_service
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +15,6 @@ router = APIRouter()
 
 
 # ==================== Response Models ====================
-
 class AnalyticsSummary(BaseModel):
     """Analytics summary response"""
     total_posts: int
@@ -44,7 +40,6 @@ class PlatformStats(BaseModel):
 
 
 # ==================== Analytics Endpoints ====================
-
 @router.get("/summary")
 async def get_analytics_summary(
     current_user: dict = Depends(get_current_user),
@@ -217,7 +212,7 @@ async def get_post_performance(
     """Get performance metrics for a specific post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     try:
         post = await db.posts.find_one({
@@ -429,7 +424,7 @@ async def track_post_metrics(
     """Track metrics for a post"""
     from bson import ObjectId
     
-    user_id = str(currentUser["_id"])
+    user_id = str(current_user["_id"])
     
     analytics_doc = {
         "user_id": user_id,
@@ -451,8 +446,158 @@ async def track_post_metrics(
     }
 
 
-# ==================== Health Check ====================
+# ==================== Advanced Analytics Endpoints ====================
+@router.get("/time-series")
+async def get_time_series_analytics(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=7, le=365),
+    granularity: str = Query("daily", pattern="^(daily|weekly|monthly)$")
+):
+    """
+    Get time-series analytics with configurable granularity
+    
+    Returns daily/weekly/monthly engagement data for charts
+    """
+    user_id = str(current_user["_id"])
+    
+    results = await analytics_service.get_time_series_analytics(
+        user_id=user_id,
+        platform=platform,
+        days=days,
+        granularity=granularity
+    )
+    
+    return {
+        "time_series": results,
+        "period_days": days,
+        "granularity": granularity
+    }
 
+
+@router.get("/top-posts")
+async def get_top_posts(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=7, le=365),
+    limit: int = Query(10, ge=1, le=50),
+    sort_by: str = Query("engagement", pattern="^(engagement|likes|comments|shares|impressions)$")
+):
+    """
+    Get top performing posts based on engagement metrics
+    """
+    user_id = str(current_user["_id"])
+    
+    posts = await analytics_service.get_top_performing_posts(
+        user_id=user_id,
+        platform=platform,
+        days=days,
+        limit=limit,
+        sort_by=sort_by
+    )
+    
+    return {
+        "top_posts": posts,
+        "period_days": days,
+        "sort_by": sort_by
+    }
+
+
+@router.get("/audience-insights")
+async def get_audience_insights(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=7, le=365)
+):
+    """
+    Get audience engagement insights
+    
+    Returns:
+    - Best posting times (hourly)
+    - Best posting days (weekly)
+    - Platform comparison
+    - Content type performance
+    """
+    user_id = str(current_user["_id"])
+    
+    insights = await analytics_service.get_audience_insights(
+        user_id=user_id,
+        platform=platform,
+        days=days
+    )
+    
+    return insights
+
+
+@router.get("/predictions")
+async def get_predictive_insights(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=14, le=365)
+):
+    """
+    Get predictive analytics and trend insights
+    
+    Returns:
+    - Trend direction (up/down/stable)
+    - Percentage changes in engagement
+    - AI-generated predictions
+    """
+    user_id = str(current_user["_id"])
+    
+    predictions = await analytics_service.get_predictive_insights(
+        user_id=user_id,
+        platform=platform,
+        days=days
+    )
+    
+    return predictions
+
+
+@router.get("/engagement-metrics")
+async def get_engagement_metrics(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=7, le=365)
+):
+    """
+    Get detailed engagement metrics for charts
+    """
+    user_id = str(current_user["_id"])
+    
+    metrics = await analytics_service.get_engagement_metrics(
+        user_id=user_id,
+        platform=platform,
+        days=days
+    )
+    
+    return {
+        "metrics": metrics,
+        "period_days": days
+    }
+
+
+@router.get("/growth-metrics")
+async def get_growth_metrics(
+    current_user: dict = Depends(get_current_user),
+    platform: Optional[str] = None,
+    days: int = Query(30, ge=7, le=365)
+):
+    """
+    Get growth metrics over time
+    """
+    user_id = str(current_user["_id"])
+    
+    growth = await analytics_service.get_growth_metrics(
+        user_id=user_id,
+        platform=platform,
+        days=days
+    )
+    
+    return growth
+
+
+# ==================== Health Check ====================
 @router.get("/health")
 async def analytics_health():
     """Analytics service health check"""

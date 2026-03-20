@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.9" 
 
 services:
 
@@ -7,6 +7,10 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/nexgen_quillix
+      - MONGO_DB_NAME=nexgen_quillix
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - redis
       - mongo
@@ -14,6 +18,10 @@ services:
   worker:
     build: .
     command: celery -A app.tasks.worker.celery worker --loglevel=info
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/nexgen_quillix
+      - MONGO_DB_NAME=nexgen_quillix
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - redis
       - mongo

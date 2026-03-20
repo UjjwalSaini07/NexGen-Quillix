@@ -41,3 +41,9 @@ aioredis
 
 # Validation
 email-validator
+
+# Timezone
+pytz
+
+# Cloudinary
+cloudinary

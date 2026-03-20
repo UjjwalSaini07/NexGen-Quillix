@@ -1,9 +1,6 @@
-"""
-Enhanced AI Routes for NexGen-Quillix Automation Platform
-AI-powered content generation and assistance
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional, List
+from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
 import logging
 
@@ -19,16 +16,17 @@ ai_service = GroqService()
 
 
 # ==================== Pydantic Models ====================
-
 class GeneratePostRequest(BaseModel):
     """Request to generate a post"""
-    niche: str = Field(..., min_length=1, max_length=100)
+    prompt: Optional[str] = Field(None, description="Short prompt/topic for the post")
+    niche: Optional[str] = Field(None, min_length=1, max_length=100)
     tone: str = Field("professional", pattern="^(professional|friendly|humorous|inspirational|educational)$")
     platform: Optional[str] = None
     include_emoji: bool = True
     include_cta: bool = True
     include_hashtags: bool = True
     length: str = Field("medium", pattern="^(short|medium|long)$")
+    word_count: Optional[int] = Field(None, ge=10, le=1000, description="Exact word count for generated content")
 
 
 class GenerateReplyRequest(BaseModel):
@@ -61,26 +59,33 @@ class ContentOptimizationRequest(BaseModel):
 
 
 # ==================== AI Endpoints ====================
-
 @router.post("/generate-post")
-async def generate_post(request: GeneratePostRequest):
+async def generate_post(
+    request: GeneratePostRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate a social media post using AI"""
     try:
+        # If prompt is provided, use it; otherwise use niche
+        topic = request.prompt or request.niche
+        
         result = ai_service.generate_post(
-            niche=request.niche,
+            niche=topic,
             tone=request.tone,
             platform=request.platform,
             include_emoji=request.include_emoji,
             include_cta=request.include_cta,
             include_hashtags=request.include_hashtags,
-            length=request.length
+            length=request.length,
+            word_count=request.word_count
         )
         
         return {
             "success": True,
             "content": result.get("content"),
-            "niche": request.niche,
-            "tone": request.tone
+            "niche": topic,
+            "tone": request.tone,
+            "word_count": request.word_count
         }
         
     except Exception as e:
@@ -92,7 +97,10 @@ async def generate_post(request: GeneratePostRequest):
 
 
 @router.post("/generate-reply")
-async def generate_reply(request: GenerateReplyRequest):
+async def generate_reply(
+    request: GenerateReplyRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate a reply to a comment"""
     try:
         result = ai_service.generate_reply(
@@ -115,8 +123,41 @@ async def generate_reply(request: GenerateReplyRequest):
         )
 
 
+class GenerateMediaRequest(BaseModel):
+    """Request to generate media suggestions"""
+    prompt: str = Field(..., min_length=1, max_length=500)
+    media_type: str = Field("image", pattern="^(image|video)$")
+    scheduled_time: Optional[str] = Field(None, description="ISO format datetime for scheduled post")
+
+
+@router.post("/generate-media")
+async def generate_media(
+    request: GenerateMediaRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate relevant image or video suggestions based on the prompt"""
+    try:
+        result = ai_service.generate_media(
+            prompt=request.prompt,
+            media_type=request.media_type,
+            scheduled_time=request.scheduled_time
+        )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Media generation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate media suggestions"
+        )
+
+
 @router.post("/generate-hashtags")
-async def generate_hashtags(request: GenerateHashtagsRequest):
+async def generate_hashtags(
+    request: GenerateHashtagsRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate relevant hashtags"""
     try:
         result = ai_service.generate_hashtags(
@@ -139,7 +180,10 @@ async def generate_hashtags(request: GenerateHashtagsRequest):
 
 
 @router.post("/optimize-content")
-async def optimize_content(request: ContentOptimizationRequest):
+async def optimize_content(
+    request: ContentOptimizationRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Optimize content for a specific platform"""
     try:
         result = ai_service.optimize_content(
@@ -165,7 +209,10 @@ async def optimize_content(request: ContentOptimizationRequest):
 
 
 @router.post("/generate-captions")
-async def generate_captions(request: GenerateCaptionsRequest):
+async def generate_captions(
+    request: GenerateCaptionsRequest,
+    current_user: dict = Depends(get_current_user)
+):
     """Generate captions for images"""
     try:
         result = ai_service.generate_caption(
@@ -188,7 +235,10 @@ async def generate_captions(request: GenerateCaptionsRequest):
 
 
 @router.post("/analyze-sentiment")
-async def analyze_sentiment(text: str):
+async def analyze_sentiment(
+    text: str,
+    current_user: dict = Depends(get_current_user)
+):
     """Analyze sentiment of text"""
     try:
         result = ai_service.analyze_sentiment(text)
@@ -210,7 +260,8 @@ async def analyze_sentiment(text: str):
 @router.post("/translate")
 async def translate_content(
     content: str,
-    target_language: str
+    target_language: str,
+    current_user: dict = Depends(get_current_user)
 ):
     """Translate content to another language"""
     try:
@@ -232,7 +283,6 @@ async def translate_content(
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def ai_health():
     """AI service health check"""

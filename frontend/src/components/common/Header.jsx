@@ -12,6 +12,8 @@ import {
   FaFacebookF,
   FaYoutube,
 } from "react-icons/fa6";
+import { GiAutogun } from "react-icons/gi";
+import { GiAutoRepair } from "react-icons/gi";
 import { FaHireAHelper } from "react-icons/fa";
 import useWindowSize from "../hooks/use-WindowSize";
 import "react-toastify/dist/ReactToastify.css";
@@ -112,6 +114,12 @@ const Header = () => {
       icon: <FaYoutube className="w-5 h-5 sm:w-6 sm:h-6" />,
       color: "text-pink-400",
       href: "/youtube",
+    },
+    {
+      name: "Automation",
+      icon: <GiAutoRepair className="w-5 h-5 sm:w-6 sm:h-6" />,
+      color: "text-green-400",
+      href: "/mcpAutomation",
     },
     {
       name: "Help",

@@ -1,7 +1,3 @@
-"""
-Enhanced Authentication Routes for NexGen-Quillix Automation Platform
-Complete authentication system with JWT, OAuth 2.0, and token management
-"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import JSONResponse
 from typing import Optional, List
@@ -41,7 +37,6 @@ router = APIRouter()
 
 
 # ==================== User Registration & Login ====================
-
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate):
     """
@@ -307,7 +302,6 @@ async def logout(
 
 
 # ==================== OAuth Endpoints ====================
-
 @router.get("/oauth/{provider}")
 async def oauth_init(
     provider: str,
@@ -350,6 +344,9 @@ async def oauth_callback(
     
     Exchange authorization code for access token and store account.
     """
+    import requests
+    from app.config import settings
+    
     try:
         # Verify state
         state_data = verify_oauth_state(state)
@@ -360,16 +357,94 @@ async def oauth_callback(
                 detail="OAuth state mismatch"
             )
         
-        # Exchange code for token (platform-specific implementation needed)
-        # This is a placeholder - actual implementation depends on platform API
+        user_id = str(current_user["_id"])
+        access_token = None
+        refresh_token = None
+        expires_in = None
         
-        logger.info(f"OAuth callback for {provider} - code received")
+        # Exchange code for token based on provider
+        if provider == "facebook":
+            token_url = "https://graph.facebook.com/v19.0/oauth/access_token"
+            params = {
+                "client_id": settings.FACEBOOK_CLIENT_ID,
+                "client_secret": settings.FACEBOOK_CLIENT_SECRET,
+                "redirect_uri": settings.FACEBOOK_REDIRECT_URI,
+                "code": code
+            }
+            response = requests.get(token_url, params=params, timeout=30)
+            token_data = response.json()
+            
+            if "access_token" in token_data:
+                access_token = token_data["access_token"]
+                expires_in = token_data.get("expires_in", 5184000)  # Default 60 days
+                
+                # Exchange short-lived token for long-lived token
+                exchange_url = "https://graph.facebook.com/v19.0/oauth/access_token"
+                exchange_params = {
+                    "grant_type": "fb_exchange_token",
+                    "client_id": settings.FACEBOOK_CLIENT_ID,
+                    "client_secret": settings.FACEBOOK_CLIENT_SECRET,
+                    "fb_exchange_token": access_token
+                }
+                exchange_response = requests.get(exchange_url, params=exchange_params, timeout=30)
+                exchange_data = exchange_response.json()
+                
+                if "access_token" in exchange_data:
+                    access_token = exchange_data["access_token"]
+                    expires_in = exchange_data.get("expires_in", 5184000)
+                
+                # Get user info
+                user_info_url = f"https://graph.facebook.com/v19.0/me"
+                user_params = {"access_token": access_token, "fields": "id,name,email"}
+                user_response = requests.get(user_info_url, params=user_params, timeout=30)
+                user_info = user_response.json()
+                
+                # Store account in database
+                from app.database import db
+                from datetime import datetime, timedelta
+                
+                expires_at = datetime.utcnow() + timedelta(seconds=expires_in) if expires_in else None
+                
+                # Upsert social account
+                await db.social_accounts.update_one(
+                    {"user_id": user_id, "platform": "facebook"},
+                    {
+                        "$set": {
+                            "access_token_encrypted": access_token,
+                            "refresh_token_encrypted": None,  # Long-lived token doesn't need refresh
+                            "platform_user_id": user_info.get("id"),
+                            "platform_username": user_info.get("name"),
+                            "expires_at": expires_at,
+                            "is_active": True,
+                            "connected_at": datetime.utcnow(),
+                            "permissions": settings.FACEBOOK_SCOPES.split(",")
+                        }
+                    },
+                    upsert=True
+                )
+                
+                logger.info(f"Facebook account connected for user {user_id}")
+                
+                return {
+                    "message": "Successfully connected Facebook account",
+                    "provider": provider,
+                    "platform_user_id": user_info.get("id"),
+                    "platform_username": user_info.get("name"),
+                    "token_expires_in": expires_in
+                }
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Token exchange failed: {token_data.get('error', 'Unknown error')}"
+                )
         
-        return {
-            "message": f"Successfully connected {provider} account",
-            "provider": provider,
-            "note": "Token exchange implementation required for production"
-        }
+        # Other providers can be added here
+        else:
+            return {
+                "message": f"OAuth callback for {provider} - implementation pending",
+                "provider": provider,
+                "note": "Token exchange not yet implemented for this provider"
+            }
         
     except HTTPException:
         raise
@@ -382,7 +457,6 @@ async def oauth_callback(
 
 
 # ==================== User Profile ====================
-
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(current_user: dict = Depends(get_current_user)):
     """Get current authenticated user's profile"""
@@ -524,7 +598,6 @@ async def delete_user_account(
 
 
 # ==================== Password Management ====================
-
 @router.post("/password/reset-request")
 async def request_password_reset(email: str = Query(...)):
     """Request password reset email"""
@@ -608,7 +681,6 @@ async def confirm_password_reset(token: str = Query(...), new_password: str = Qu
 
 
 # ==================== Token Validation ====================
-
 @router.get("/verify")
 async def verify_token(current_user: dict = Depends(get_current_user)):
     """Verify if current access token is valid"""
@@ -620,7 +692,6 @@ async def verify_token(current_user: dict = Depends(get_current_user)):
 
 
 # ==================== Health Check ====================
-
 @router.get("/health")
 async def auth_health():
     """Authentication service health check"""

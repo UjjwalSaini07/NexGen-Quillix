@@ -120,3 +120,96 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Cyberpunk Loading Animations */
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    filter: blur(1px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(2px);
+  }
+}
+
+/* Custom Range Slider Styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.6);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+}
+
+/* Blue slider for variations */
+.variation-slider::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+.variation-slider::-moz-range-thumb {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* Purple slider thumb for AI word count */
+.slider-thumb-purple::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+}
+
+.slider-thumb-purple::-moz-range-thumb {
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+}

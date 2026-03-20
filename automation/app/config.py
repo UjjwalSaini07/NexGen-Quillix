@@ -38,9 +38,19 @@ class Settings(BaseSettings):
     X_CLIENT_SECRET: Optional[str] = Field(None, env="X_CLIENT_SECRET")
     X_REDIRECT_URI: Optional[str] = Field(None, env="X_REDIRECT_URI")
     
+    # Twitter API Credentials
+    TWITTER_API_KEY: Optional[str] = Field(None, env="TWITTER_API_KEY")
+    TWITTER_API_SECRET: Optional[str] = Field(None, env="TWITTER_API_SECRET")
+    TWITTER_ACCESS_TOKEN: Optional[str] = Field(None, env="TWITTER_ACCESS_TOKEN")
+    TWITTER_ACCESS_SECRET: Optional[str] = Field(None, env="TWITTER_ACCESS_SECRET")
+    TWITTER_BEARER_TOKEN: Optional[str] = Field(None, env="TWITTER_BEARER_TOKEN")
+    
     # Instagram (uses Meta)
     INSTAGRAM_CLIENT_ID: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_ID")
     INSTAGRAM_CLIENT_SECRET: Optional[str] = Field(None, env="INSTAGRAM_CLIENT_SECRET")
+    
+    # Quillix Image Generation API
+    QUILLIX_IMAGE_ACCESS_KEY: Optional[str] = Field(None, env="QUILLIX_IMAGE_ACCESS_KEY")
     INSTAGRAM_REDIRECT_URI: Optional[str] = Field(None, env="INSTAGRAM_REDIRECT_URI")
     
     # WhatsApp (Business API)
@@ -58,6 +68,17 @@ class Settings(BaseSettings):
     # AI Services
     GROQ_API_KEY: Optional[str] = Field(None, env="GROQ_API_KEY")
     OPENAI_API_KEY: Optional[str] = Field(None, env="OPENAI_API_KEY")
+    
+    # Stock Media APIs
+    UNSPLASH_ACCESS_KEY: Optional[str] = Field(None, env="UNSPLASH_ACCESS_KEY")
+    PIXABAY_API_KEY: Optional[str] = Field(None, env="PIXABAY_API_KEY")
+    
+    # Cloudinary Configuration
+    CLOUDINARY_CLOUD_NAME: Optional[str] = Field(None, env="CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY: Optional[str] = Field(None, env="CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET: Optional[str] = Field(None, env="CLOUDINARY_API_SECRET")
+    CLOUDINARY_UPLOAD_PRESET: Optional[str] = Field(None, env="CLOUDINARY_UPLOAD_PRESET")
+    CLOUDINARY_UPLOAD_FOLDER: str = Field("Quillix-Engine", env="CLOUDINARY_UPLOAD_FOLDER")
     
     # CORS
     CORS_ORIGINS: List[str] = Field(

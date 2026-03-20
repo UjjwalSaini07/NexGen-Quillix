@@ -1,6 +1,6 @@
 {
   "name": "nexgen-quillix-frontend",
-  "version": "0.1.2",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "title": "NexGen-Quillix: AI-Powered Content Creation",
@@ -68,8 +68,10 @@
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^2.15.4",
     "redis": "^5.8.1",
     "sonner": "^2.0.6",
+    "sweetalert2": "^11.26.23",
     "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0"
   },

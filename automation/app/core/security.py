@@ -1,7 +1,3 @@
-"""
-Enhanced Security Module for NexGen-Quillix Automation Platform
-Complete authentication system with JWT, OAuth 2.0, and token management
-"""
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from jose import jwt
@@ -25,7 +21,6 @@ security = HTTPBearer(auto_error=False)
 
 
 # ==================== Pydantic Models ====================
-
 class TokenData(BaseModel):
     """JWT token data structure"""
     user_id: str
@@ -169,7 +164,6 @@ class OAuthProvider(str):
 
 
 # ==================== Password Functions ====================
-
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt"""
     # Truncate to 72 bytes (bcrypt limit)
@@ -185,7 +179,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 # ==================== Token Functions ====================
-
 def create_access_token(user_data: Dict[str, Any]) -> str:
     """Create JWT access token"""
     to_encode = user_data.copy()
@@ -376,7 +369,6 @@ async def revoke_all_user_tokens(user_id: str) -> bool:
 
 
 # ==================== OAuth Functions ====================
-
 def get_oauth_url(provider: str, state: str) -> str:
     """Generate OAuth authorization URL for a provider"""
     
@@ -504,7 +496,6 @@ def _urlencode(params: Dict[str, str]) -> str:
 
 
 # ==================== Current User Dependency ====================
-
 async def get_current_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security)
@@ -529,7 +520,6 @@ async def get_current_active_user(
 
 
 # ==================== Optional Authentication ====================
-
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
 ) -> Optional[Dict[str, Any]]:

@@ -1,7 +1,3 @@
-"""
-Redis Client for NexGen-Quillix Automation Platform
-Caching and session management
-"""
 import redis.asyncio as redis
 from typing import Optional
 import logging

@@ -98,11 +98,15 @@ class FacebookService(BasePlatformService):
         media_urls = post_data.get("media_urls", [])
         link_url = post_data.get("link_url")
         
-        if not self.page_id:
-            raise PlatformError(
-                self.PLATFORM_NAME,
-                "No Facebook page ID configured"
-            )
+        # Determine the endpoint based on whether page_id is available
+        # If page_id is provided, post to page; otherwise post to user's timeline
+        if self.page_id:
+            feed_endpoint = f"{self.page_id}/feed"
+            platform_url_base = f"https://www.facebook.com/{self.page_id}/posts/"
+        else:
+            # Post to user's personal profile timeline
+            feed_endpoint = "me/feed"
+            platform_url_base = "https://www.facebook.com/"
         
         # Prepare post data
         post_payload = {"message": content}
@@ -127,14 +131,14 @@ class FacebookService(BasePlatformService):
             post_payload["link"] = link_url
         
         # Make the post
-        result = self._make_request("POST", f"{self.page_id}/feed", data=post_payload)
+        result = self._make_request("POST", feed_endpoint, data=post_payload)
         
         post_id = result.get("id")
         
         return {
             "success": True,
             "post_id": post_id,
-            "platform_url": f"https://www.facebook.com/{self.page_id}/posts/{post_id}" if post_id else None,
+            "platform_url": f"{platform_url_base}{post_id}" if post_id else None,
             "raw_response": result
         }
     
@@ -149,7 +153,12 @@ class FacebookService(BasePlatformService):
         Returns:
             Media ID
         """
-        endpoint = f"{self.page_id}/assets" if media_type == "video" else f"{self.page_id}/photos"
+        # Determine endpoint based on whether we have page_id
+        if self.page_id:
+            endpoint = f"{self.page_id}/assets" if media_type == "video" else f"{self.page_id}/photos"
+        else:
+            # For user profile, use me/photos endpoint
+            endpoint = "me/photos"
         
         payload = {
             "url": media_url,
