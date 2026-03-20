@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAutomation, useSocialAccounts, useAutomationRules, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
+import { Orbitron } from "next/font/google";
+import Link from "next/link";
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
 import { 
@@ -18,6 +20,8 @@ import {
 } from './AnalyticsCharts';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+
+const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
 
 // Platform icons with colors
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -812,12 +816,11 @@ export default function AutomationDashboard() {
       <header className="relative z-10 bg-black/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-                <span className="text-white text-xl">⚡</span>
-              </div>
+              <img src="/NexGenQuillixLogo.png" alt="NexGen Quillix Logo" className="w-10 h-10 rounded-xl" />
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                <h1 className={`text-white font-extrabold text-lg sm:text-xl tracking-wide hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white transition duration-200 mb-2 sm:mb-0 sm:mr-4 ${orbitron.className}`} >
                   NexGen Quillix
                 </h1>
                 <p className="text-xs text-gray-500 -mt-0.5">Automation Platform</p>
