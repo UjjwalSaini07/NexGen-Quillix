@@ -6,6 +6,16 @@ import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
+import { 
+  EngagementLineChart, 
+  EngagementAreaChart, 
+  PlatformBarChart,
+  EngagementRateChart,
+  ImpressionsChart,
+  ContentTypePieChart,
+  MetricsComparisonChart,
+  PostingHeatmap
+} from './AnalyticsCharts';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
@@ -302,7 +312,7 @@ export default function AutomationDashboard() {
   const { checkHealth, posts, loading: postsLoading, deletePost, publishPost, getPosts, fetchPosts, triggerScheduledPosts } = useAutomation();
   const { accounts, fetchAccounts, connect, disconnect } = useSocialAccounts();
   const { rules, loading: rulesLoading, fetchRules, createRule, remove: removeRule, toggleRule } = useAutomationRules();
-  const { analytics, loading: analyticsLoading, fetchAnalytics, fetchPlatformStats, platformStats } = useAnalytics();
+  const { analytics, loading: analyticsLoading, fetchAnalytics, fetchPlatformStats, platformStats, fetchTimeSeriesAnalytics, fetchAudienceInsights, fetchPredictions, fetchEngagementMetrics, fetchGrowthMetrics, timeSeriesData, audienceInsights, predictions, engagementMetrics, growthMetrics } = useAnalytics();
   const { user: profile, fetchUser, isAuthenticated, logout } = useAuth();
 
   // Auth modal - use useEffect to sync with isAuthenticated
@@ -435,9 +445,14 @@ export default function AutomationDashboard() {
       if (activeTab === 'analytics') {
         fetchAnalytics(dateRange);
         fetchPlatformStats(null, dateRange);
+        fetchTimeSeriesAnalytics({ days: dateRange, granularity: 'daily' });
+        fetchAudienceInsights({ days: dateRange });
+        fetchPredictions({ days: dateRange });
+        fetchEngagementMetrics({ days: dateRange });
+        fetchGrowthMetrics({ days: dateRange });
       }
     }
-  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchRules, fetchAnalytics, fetchPlatformStats, getPosts, postStatusFilter]);
+  }, [activeTab, apiStatus, dateRange, fetchAccounts, fetchRules, fetchAnalytics, fetchPlatformStats, fetchTimeSeriesAnalytics, fetchAudienceInsights, fetchPredictions, fetchEngagementMetrics, fetchGrowthMetrics, getPosts, postStatusFilter]);
 
   // Tab definitions
   const tabs = [
@@ -1254,6 +1269,251 @@ export default function AutomationDashboard() {
                     <p className="text-gray-400">Publish posts and connect accounts to see your analytics</p>
                   </div>
                 )}
+
+                {/* Predictive Insights */}
+                {predictions && predictions.trend_direction && (
+                  <div className={`p-6 rounded-2xl border mb-6 ${
+                    predictions.trend_direction === 'up' ? 'bg-green-500/10 border-green-500/30' :
+                    predictions.trend_direction === 'down' ? 'bg-red-500/10 border-red-500/30' :
+                    'bg-blue-500/10 border-blue-500/30'
+                  }`}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">{
+                        predictions.trend_direction === 'up' ? '📈' :
+                        predictions.trend_direction === 'down' ? '📉' : '➡️'
+                      }</span>
+                      <h3 className="text-lg font-semibold text-white">Trend: {predictions.trend_direction.toUpperCase()}</h3>
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        predictions.overall_change > 0 ? 'bg-green-500/30 text-green-400' :
+                        predictions.overall_change < 0 ? 'bg-red-500/30 text-red-400' :
+                        'bg-gray-500/30 text-gray-400'
+                      }`}>
+                        {predictions.overall_change > 0 ? '+' : ''}{predictions.overall_change}%
+                      </span>
+                    </div>
+                    <p className="text-gray-300">{predictions.prediction}</p>
+                    <div className="grid grid-cols-4 gap-4 mt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{predictions.recent_period?.likes || 0}</p>
+                        <p className="text-xs text-gray-400">Likes</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{predictions.recent_period?.comments || 0}</p>
+                        <p className="text-xs text-gray-400">Comments</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{predictions.recent_period?.shares || 0}</p>
+                        <p className="text-xs text-gray-400">Shares</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-white">{(predictions.recent_period?.impressions || 0).toLocaleString()}</p>
+                        <p className="text-xs text-gray-400">Impressions</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Time Series Chart (Simplified Display) */}
+                {timeSeriesData?.time_series && timeSeriesData.time_series.length > 0 && (
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">📊 Engagement Over Time</h3>
+                    <div className="overflow-x-auto">
+                      <div className="flex gap-2 pb-2">
+                        {timeSeriesData.time_series.slice(-14).map((item, idx) => (
+                          <div key={idx} className="flex-shrink-0 w-16 text-center">
+                            <div className="flex flex-col justify-end h-32 bg-gray-800 rounded-lg overflow-hidden">
+                              <div 
+                                className="bg-gradient-to-t from-purple-600 to-pink-500 w-full"
+                                style={{ height: `${Math.min(100, (item.engagement / Math.max(...timeSeriesData.time_series.map(t => t.engagement || 1))) * 100)}%` }}
+                              />
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">{item.date?.slice(5) || ''}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-4 mt-4 text-xs text-gray-400">
+                      <span>🟣 Likes</span>
+                      <span>💬 Comments</span>
+                      <span>🔄 Shares</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced Charts Section - Always show with demo data fallback */}
+                {(() => {
+                  // Generate demo data if no real data available
+                  const generateDemoData = () => Array.from({ length: 14 }, (_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (13 - i));
+                    return {
+                      date: date.toISOString().split('T')[0],
+                      likes: Math.floor(Math.random() * 500) + 100,
+                      comments: Math.floor(Math.random() * 100) + 20,
+                      shares: Math.floor(Math.random() * 50) + 10,
+                      impressions: Math.floor(Math.random() * 5000) + 1000,
+                      reach: Math.floor(Math.random() * 3000) + 500,
+                      engagement: Math.floor(Math.random() * 600) + 100,
+                      engagement_rate: parseFloat((Math.random() * 5 + 1).toFixed(2))
+                    };
+                  });
+                  
+                  const demoPlatformData = [
+                    { platform: 'facebook', likes: 1250, comments: 320, shares: 180, impressions: 15000, engagement: 1750 },
+                    { platform: 'instagram', likes: 2100, comments: 450, shares: 220, impressions: 22000, engagement: 2770 },
+                    { platform: 'linkedin', likes: 890, comments: 180, shares: 95, impressions: 8500, engagement: 1165 },
+                    { platform: 'x', likes: 560, comments: 120, shares: 85, impressions: 6500, engagement: 765 }
+                  ];
+                  
+                  const chartData = (engagementMetrics?.metrics && engagementMetrics.metrics.length > 0) 
+                    ? engagementMetrics.metrics : generateDemoData();
+                  const platformData = (platformStats?.platforms && platformStats.platforms.length > 0)
+                    ? platformStats.platforms.map(p => ({
+                        platform: p.platform, likes: p.likes || 0, comments: p.comments || 0,
+                        shares: p.shares || 0, impressions: p.impressions || 0,
+                        engagement: (p.likes || 0) + (p.comments || 0) + (p.shares || 0)
+                      })) : demoPlatformData;
+                  const hasRealData = (engagementMetrics?.metrics && engagementMetrics.metrics.length > 0);
+                  
+                  return (
+                    <>
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4 text-sm text-yellow-200">
+                        {hasRealData ? '📊 Showing real analytics data' : '📊 Showing demo data - Publish posts to see real analytics'}
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <EngagementLineChart data={chartData} title="📈 Engagement Metrics" />
+                        <EngagementAreaChart data={chartData} title="📊 Engagement Trends" />
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <PlatformBarChart data={platformData} title="🏆 Platform Performance" />
+                        <ImpressionsChart data={chartData} title="👁️ Impressions & Reach" />
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <EngagementRateChart data={chartData} title="📊 Engagement Rate %" />
+                        <EngagementAreaChart data={chartData} title="🚀 Growth Trends" />
+                      </div>
+                      <MetricsComparisonChart data={platformData} title="📊 Platform Comparison" />
+                    </>
+                  );
+                })()}
+
+                {/* Audience Insights */}
+                {audienceInsights && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Best Posting Times */}
+                    {audienceInsights.best_posting_times?.length > 0 && (
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">⏰ Best Posting Times</h3>
+                        <div className="space-y-2">
+                          {audienceInsights.best_posting_times.slice(0, 5).map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-center">
+                              <span className="text-gray-300">{item.hour}:00</span>
+                              <div className="flex-1 mx-3 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                  style={{ width: `${Math.min(100, (item.engagement / Math.max(...audienceInsights.best_posting_times.map(t => t.engagement || 1))) * 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-white font-medium">{item.engagement}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Best Posting Days */}
+                    {audienceInsights.best_posting_days?.length > 0 && (
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">📅 Best Posting Days</h3>
+                        <div className="space-y-2">
+                          {audienceInsights.best_posting_days.slice(0, 7).map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-center">
+                              <span className="text-gray-300">{item.day}</span>
+                              <div className="flex-1 mx-3 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                                  style={{ width: `${Math.min(100, (item.engagement / Math.max(...audienceInsights.best_posting_days.map(t => t.engagement || 1))) * 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-white font-medium">{item.engagement}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content Type Performance */}
+                    {audienceInsights.content_type_performance?.length > 0 && (
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">📝 Content Performance</h3>
+                        <div className="space-y-3">
+                          {audienceInsights.content_type_performance.map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-center p-3 bg-black/20 rounded-lg">
+                              <div>
+                                <span className="text-white font-medium capitalize">{item.type}</span>
+                                <p className="text-xs text-gray-400">{item.posts} posts</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-white font-bold">{item.engagement.toLocaleString()}</p>
+                                <p className="text-xs text-gray-400">engagement</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Growth Metrics Summary - Always show */}
+                {(() => {
+                  const demoGrowth = {
+                    growth_rate: 12.5,
+                    total_impressions: 52000,
+                    total_reach: 35000
+                  };
+                  const growth = growthMetrics || demoGrowth;
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">🚀</span>
+                          <h4 className="text-white font-medium">Growth Rate</h4>
+                        </div>
+                        <p className={`text-3xl font-bold ${growth.growth_rate >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {growth.growth_rate >= 0 ? '+' : ''}{growth.growth_rate}%
+                        </p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">👁️</span>
+                          <h4 className="text-white font-medium">Total Impressions</h4>
+                        </div>
+                        <p className="text-3xl font-bold text-white">
+                          {(growth.total_impressions || 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">👥</span>
+                          <h4 className="text-white font-medium">Total Reach</h4>
+                        </div>
+                        <p className="text-3xl font-bold text-white">
+                          {(growth.total_reach || 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-2xl">📅</span>
+                          <h4 className="text-white font-medium">Period</h4>
+                        </div>
+                        <p className="text-3xl font-bold text-white">
+                          {dateRange} days
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
