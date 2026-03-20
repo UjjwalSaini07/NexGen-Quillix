@@ -1,7 +1,3 @@
-"""
-Cloudinary Service for NexGen-Quillix Automation Platform
-Handles image uploads to Cloudinary with expiration support
-"""
 import os
 import logging
 import uuid
@@ -153,17 +149,6 @@ class CloudinaryService:
         base64_data: str,
         scheduled_time: Optional[str] = None
     ) -> Dict[str, Any]:
-        """
-        Upload a base64 image to Cloudinary with smart expiration
-        
-        Args:
-            base64_data: Base64 encoded image data
-            scheduled_time: ISO format datetime string for scheduled post
-                           If provided, image expires at scheduled_time + 1 hour
-            
-        Returns:
-            Dictionary with upload result
-        """
         # Calculate expiration
         if scheduled_time:
             try:
@@ -212,16 +197,6 @@ class CloudinaryService:
             return {"success": False, "error": str(e)}
     
     def generate_signed_url(self, public_id: str, expiration_seconds: int = 3600) -> str:
-        """
-        Generate a signed URL that expires
-        
-        Args:
-            public_id: The public ID of the image
-            expiration_seconds: Seconds until URL expires
-            
-        Returns:
-            Signed URL string
-        """
         if not self.is_configured:
             return ""
         

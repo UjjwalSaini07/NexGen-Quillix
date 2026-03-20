@@ -1,7 +1,3 @@
-"""
-Dependencies for FastAPI application
-Dependency injection for authentication, database, and other services
-"""
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, Dict, Any
@@ -18,10 +14,6 @@ security = HTTPBearer(auto_error=False)
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
 ) -> Optional[Dict[str, Any]]:
-    """
-    Get current user if authenticated, otherwise return None.
-    Useful for endpoints that support both authenticated and unauthenticated access.
-    """
     if not credentials:
         return None
     

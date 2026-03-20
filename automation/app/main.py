@@ -1,7 +1,3 @@
-"""
-Enhanced Main Application for NexGen-Quillix Automation Platform
-FastAPI application with middleware, error handling, and proper CORS
-"""
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,7 +50,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-
 # ==================== Middleware ====================
 @app.middleware("http")
 async def add_request_id(request: Request, call_next: Callable):
@@ -100,10 +95,7 @@ async def rate_limit_by_ip(request: Request, call_next: Callable):
     
     # Simple in-memory rate limiting (use Redis for production)
     client_ip = request.client.host if request.client else "unknown"
-    
-    # For production, implement proper rate limiting with Redis
-    # This is a placeholder
-    
+
     response = await call_next(request)
     
     # Add rate limit headers
@@ -111,7 +103,6 @@ async def rate_limit_by_ip(request: Request, call_next: Callable):
     response.headers["X-RateLimit-Remaining"] = str(settings.RATE_LIMIT_PER_MINUTE - 1)
     
     return response
-
 
 # Configure CORS
 app.add_middleware(
@@ -122,7 +113,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining"]
 )
-
 
 # ==================== Exception Handlers ====================
 @app.exception_handler(FastAPIHTTPException)

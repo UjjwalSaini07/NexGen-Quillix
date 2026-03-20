@@ -1,7 +1,3 @@
-"""
-Enhanced Groq AI Service for NexGen-Quillix Automation Platform
-AI-powered content generation and assistance using Groq LLM
-"""
 import os
 import logging
 from typing import Optional, List, Dict, Any
@@ -365,16 +361,6 @@ Format each tweet on a separate line.
         return {"tweets": tweets}
     
     def generate_media(self, prompt: str, media_type: str = "image", scheduled_time: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Generate relevant image or video suggestions based on the prompt.
-        Uses AI to find relevant media from free stock sources.
-        
-        Args:
-            prompt: The prompt to generate media for
-            media_type: Type of media ("image" or "video")
-            scheduled_time: Optional ISO format datetime for scheduled post
-                          If provided, images will expire at scheduled_time + 1 hour
-        """
         try:
             # Generate search terms using AI
             if self.is_available():
@@ -494,10 +480,6 @@ No other text. Prioritize the most specific and descriptive terms first.
                 logger.info(f"Quillix API response ({i+1}/3): {response.status_code}")
                 
                 if response.status_code == 200:
-                    # The API returns binary image data
-                    # We need to return the URL or handle the image differently
-                    # Since Quillix returns the image directly, we'll use a placeholder approach
-                    # Try to get the image URL from response or use data URL
                     image_data = response.content
                     import base64
                     b64_image = base64.b64encode(image_data).decode('utf-8')

@@ -1,7 +1,3 @@
-"""
-Cloudinary Cleanup Task
-Periodically deletes expired images from Cloudinary
-"""
 import logging
 from datetime import datetime
 from typing import List, Dict, Any
@@ -12,35 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_expired_public_ids() -> List[str]:
-    """
-    Get list of public IDs that have expired based on their tags
-    
-    Note: Cloudinary doesn't provide a direct API to list by tags with metadata.
-    This is a simplified implementation that would need proper Cloudinary 
-    resource listing API in production.
-    
-    Returns:
-        List of expired public IDs
-    """
-    # In production, you would:
-    # 1. Store image metadata (public_id, expires_at) in your database
-    # 2. Query for expired images
-    # 3. Return their public_ids
-    
-    # For now, this is a placeholder that returns empty list
-    # In a real implementation, you would integrate with your database
     return []
 
 
 def cleanup_expired_images() -> Dict[str, Any]:
-    """
-    Cleanup expired images from Cloudinary
-    
-    This task should be run periodically (e.g., every hour via Celery)
-    
-    Returns:
-        Dictionary with cleanup results
-    """
     if not cloudinary_service.is_available():
         logger.warning("Cloudinary not available for cleanup")
         return {
@@ -80,15 +51,6 @@ def cleanup_expired_images() -> Dict[str, Any]:
 
 
 def delete_image_by_public_id(public_id: str) -> Dict[str, Any]:
-    """
-    Delete a specific image by its public ID
-    
-    Args:
-        public_id: The Cloudinary public ID of the image
-        
-    Returns:
-        Dictionary with deletion result
-    """
     if not cloudinary_service.is_available():
         return {"success": False, "error": "Cloudinary not available"}
     

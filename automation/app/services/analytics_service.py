@@ -1,7 +1,3 @@
-"""
-Advanced Analytics Service for NexGen-Quillix
-Provides time-series, top posts, audience insights, and predictive analytics
-"""
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
@@ -22,18 +18,6 @@ class AdvancedAnalyticsService:
         days: int = 30,
         granularity: str = "daily"
     ) -> List[Dict[str, Any]]:
-        """
-        Get time-series analytics with configurable granularity
-        
-        Args:
-            user_id: The user ID
-            platform: Optional platform filter
-            days: Number of days to look back
-            granularity: daily, weekly, or monthly
-            
-        Returns:
-            List of time-series data points
-        """
         start_date = datetime.utcnow() - timedelta(days=days)
         
         # Build match query
