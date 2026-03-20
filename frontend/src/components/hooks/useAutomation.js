@@ -689,11 +689,103 @@ export function useAnalytics() {
     }
   }, []);
 
+  // New advanced analytics states
+  const [timeSeriesData, setTimeSeriesData] = useState(null);
+  const [audienceInsights, setAudienceInsights] = useState(null);
+  const [predictions, setPredictions] = useState(null);
+  const [engagementMetrics, setEngagementMetrics] = useState(null);
+  const [growthMetrics, setGrowthMetrics] = useState(null);
+
+  // Fetch time-series analytics
+  const fetchTimeSeriesAnalytics = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getTimeSeriesAnalytics(options);
+      setTimeSeriesData(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch audience insights
+  const fetchAudienceInsights = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getAudienceInsights(options);
+      setAudienceInsights(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch predictive insights
+  const fetchPredictions = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getPredictiveInsights(options);
+      setPredictions(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch engagement metrics for charts
+  const fetchEngagementMetrics = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getEngagementMetrics(options);
+      setEngagementMetrics(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch growth metrics
+  const fetchGrowthMetrics = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.getGrowthMetrics(options);
+      setGrowthMetrics(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     analytics,
     platformStats,
     trends,
     topPosts,
+    timeSeriesData,
+    audienceInsights,
+    predictions,
+    engagementMetrics,
+    growthMetrics,
     loading,
     error,
     fetchAnalytics,
@@ -702,6 +794,11 @@ export function useAnalytics() {
     fetchTopPosts,
     fetchPostPerformance,
     trackMetrics,
+    fetchTimeSeriesAnalytics,
+    fetchAudienceInsights,
+    fetchPredictions,
+    fetchEngagementMetrics,
+    fetchGrowthMetrics,
   };
 }
 

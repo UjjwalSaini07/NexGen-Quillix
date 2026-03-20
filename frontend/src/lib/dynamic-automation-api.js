@@ -138,6 +138,11 @@ export const ENDPOINTS = {
     TRENDS: '/analytics/trends',
     TOP_POSTS: '/analytics/top-posts',
     TRACK: '/analytics/track',
+    TIME_SERIES: '/analytics/time-series',
+    AUDIENCE_INSIGHTS: '/analytics/audience-insights',
+    PREDICTIONS: '/analytics/predictions',
+    ENGAGEMENT_METRICS: '/analytics/engagement-metrics',
+    GROWTH_METRICS: '/analytics/growth-metrics',
   },
   
   // AI Endpoints
@@ -516,6 +521,47 @@ export async function trackPostMetrics(postId, platform, metrics) {
       metrics,
     }),
   });
+}
+
+// Get time-series analytics
+export async function getTimeSeriesAnalytics(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.days) params.append('days', options.days);
+  if (options.granularity) params.append('granularity', options.granularity);
+  return fetchAPI(`${ENDPOINTS.ANALYTICS.TIME_SERIES}?${params.toString()}`);
+}
+
+// Get audience insights
+export async function getAudienceInsights(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.days) params.append('days', options.days);
+  return fetchAPI(`${ENDPOINTS.ANALYTICS.AUDIENCE_INSIGHTS}?${params.toString()}`);
+}
+
+// Get predictive insights
+export async function getPredictiveInsights(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.days) params.append('days', options.days);
+  return fetchAPI(`${ENDPOINTS.ANALYTICS.PREDICTIONS}?${params.toString()}`);
+}
+
+// Get engagement metrics for charts
+export async function getEngagementMetrics(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.days) params.append('days', options.days);
+  return fetchAPI(`${ENDPOINTS.ANALYTICS.ENGAGEMENT_METRICS}?${params.toString()}`);
+}
+
+// Get growth metrics
+export async function getGrowthMetrics(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.days) params.append('days', options.days);
+  return fetchAPI(`${ENDPOINTS.ANALYTICS.GROWTH_METRICS}?${params.toString()}`);
 }
 
 // ==================== AI API ====================
