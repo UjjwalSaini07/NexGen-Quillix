@@ -514,11 +514,14 @@ export default function PostCreator({ onClose }) {
   };
 
   return (
-    <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/10 overflow-hidden">
-      {/* Glassmorphism background effect */}
+    <div 
+      className="relative bg-black/60 backdrop-blur-2xl rounded-2xl p-6 shadow-2xl border border-white/10 overflow-hidden"
+    >
+      {/* Enhanced Glassmorphism background effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 pointer-events-none" />
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDelay: '0.5s' }} />
       
       {/* Header */}
       <div className="relative flex justify-between items-center mb-6">
@@ -530,7 +533,7 @@ export default function PostCreator({ onClose }) {
           {isDirty && (
             <button
               onClick={clearDraft}
-              className="text-xs text-gray-400 hover:text-white"
+              className="text-xs text-gray-400 hover:text-white transition-colors"
             >
               Clear
             </button>
@@ -538,15 +541,15 @@ export default function PostCreator({ onClose }) {
         </div>
       </div>
       
-      {/* Progress Bar */}
+      {/* Progress Bar - Enhanced */}
       <div className="relative mb-6">
         <div className="flex justify-between text-xs text-gray-400 mb-1">
           <span>Completion</span>
           <span>{completionProgress()}%</span>
         </div>
-        <div className="h-2 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
+        <div className="h-2 bg-black/40 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
           <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 transition-all duration-500"
             style={{ width: `${completionProgress()}%` }}
           />
         </div>

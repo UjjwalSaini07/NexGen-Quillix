@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAutomation, useSocialAccounts, useAutomationRules, useAnalytics, useAIGeneration, useAuth } from '@/components/hooks/useAutomation';
 import ConnectAccountModal from './ConnectAccountModal';
 import AuthModal from './AuthModal';
-import { Orbitron } from "next/font/google";
+import { Orbitron, Exo_2 } from "next/font/google";
 import Link from "next/link";
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
@@ -20,8 +20,10 @@ import {
 } from './AnalyticsCharts';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "900"] });
+const exo2 = Exo_2({ subsets: ["latin"], weight: ["300", "400", "600"] });
 
 // Platform icons - Using public social logo images
 const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
@@ -56,28 +58,38 @@ const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
   return <span className={data.color}>{data.icon}</span>;
 };
 
-// Stats Card Component
+// Stats Card Component - Enhanced Glassmorphism
 const StatCard = ({ title, value, icon, gradient, trend, trendValue }) => (
-  <div className={`relative overflow-hidden bg-gradient-to-br ${gradient} bg-opacity-20 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:scale-[1.02] transition-transform duration-300`}>
-    <div className="flex items-start justify-between">
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.02 }}
+    className={`relative overflow-hidden bg-gradient-to-br ${gradient} bg-opacity-10 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all duration-300 group`}
+  >
+    {/* Animated shine effect */}
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+    
+    {/* Glow effect */}
+    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-300" />
+    
+    <div className="relative flex items-start justify-between">
       <div>
         <p className="text-gray-400 text-sm font-medium mb-1">{title}</p>
-        <p className="text-3xl font-bold text-white">{value}</p>
+        <p className={`text-4xl font-bold text-white ${orbitron.className}`}>{value}</p>
         {trend && (
           <p className={`text-sm mt-2 flex items-center gap-1 ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
             {trend === 'up' ? '↑' : '↓'} {trendValue}
           </p>
         )}
       </div>
-      <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl">
+      <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-3xl backdrop-blur-xl border border-white/10">
         {icon}
       </div>
     </div>
-    <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-white/5 rounded-full blur-xl" />
-  </div>
+  </motion.div>
 );
 
-// Platform Account Card
+// Platform Account Card - Enhanced Glassmorphism
 const AccountCard = ({ account, onDisconnect }) => {
   const platformColors = {
     facebook: 'from-blue-600 to-blue-700',
@@ -89,14 +101,25 @@ const AccountCard = ({ account, onDisconnect }) => {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all group">
-      <div className="flex items-center justify-between mb-4">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 hover:border-white/25 transition-all group overflow-hidden relative"
+    >
+      {/* Gradient background glow */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${platformColors[account.platform] || 'from-gray-600 to-gray-700'} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+      
+      {/* Animated border */}
+      <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-white/20 transition-colors duration-300" />
+      
+      <div className="relative flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${platformColors[account.platform] || 'from-gray-600 to-gray-700'} flex items-center justify-center text-white`}>
-            <PlatformIcon platform={account.platform} size="w-6 h-6" />
+          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${platformColors[account.platform] || 'from-gray-600 to-gray-700'} flex items-center justify-center text-white shadow-lg`}>
+            <PlatformIcon platform={account.platform} size="w-7 h-7" />
           </div>
           <div>
-            <h3 className="font-semibold text-white capitalize">{account.platform}</h3>
+            <h3 className="font-semibold text-white text-lg capitalize">{account.platform}</h3>
             <p className="text-xs text-gray-400">{account.platform_username || 'Connected'}</p>
           </div>
         </div>
@@ -105,20 +128,20 @@ const AccountCard = ({ account, onDisconnect }) => {
           Active
         </span>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         <span className="text-xs text-gray-500">Connected {account.created_at ? new Date(account.created_at).toLocaleDateString() : 'recently'}</span>
         <button
           onClick={() => onDisconnect(account.platform)}
-          className="text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+          className="text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
         >
           Disconnect
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Post Card Component
+// Post Card Component - Enhanced Glassmorphism
 const PostCard = ({ post, onDelete, onPublish }) => {
   const [timeRemaining, setTimeRemaining] = useState('');
   
@@ -178,11 +201,19 @@ const PostCard = ({ post, onDelete, onPublish }) => {
   }, [post.status, post.scheduled_time]);
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
-      <div className="flex justify-between items-start mb-3">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.01 }}
+      className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 hover:border-white/25 transition-all overflow-hidden relative group"
+    >
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <div className="relative flex justify-between items-start mb-3">
         <div className="flex gap-2 flex-wrap">
           {post.platforms?.map((platform) => (
-            <span key={platform} className="flex items-center gap-1 text-xs bg-white/10 px-2 py-1 rounded-lg text-gray-300 capitalize">
+            <span key={platform} className="flex items-center gap-1 text-xs bg-white/10 px-2 py-1 rounded-lg text-gray-300 capitalize backdrop-blur-sm border border-white/5">
               <PlatformIcon platform={platform} size="w-3 h-3" />
               {platform}
             </span>
@@ -192,8 +223,8 @@ const PostCard = ({ post, onDelete, onPublish }) => {
           {statusIcons[post.status] || ''} {post.status}
         </span>
       </div>
-      <p className="text-gray-300 mb-4 line-clamp-2">{post.content}</p>
-      <div className="flex justify-between items-center text-sm">
+      <p className="text-gray-300 mb-4 line-clamp-2 relative">{post.content}</p>
+      <div className="relative flex justify-between items-center text-sm">
         <span className="text-gray-500">
           {post.status === 'scheduled' && post.scheduled_time 
             ? timeRemaining 
@@ -205,7 +236,7 @@ const PostCard = ({ post, onDelete, onPublish }) => {
           {(post.status === 'draft' || post.status === 'scheduled') && (
             <button
               onClick={() => onPublish(post._id)}
-              className="text-green-400 hover:text-green-300 hover:bg-green-500/10 px-3 py-1.5 rounded-lg transition-all"
+              className="text-green-400 hover:text-green-300 hover:bg-green-500/20 px-3 py-1.5 rounded-lg transition-all"
             >
               Publish Now
             </button>
@@ -213,18 +244,18 @@ const PostCard = ({ post, onDelete, onPublish }) => {
           {(post.status !== 'published') && (
             <button
               onClick={() => onDelete(post._id)}
-              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all"
+              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-all"
             >
               Delete
             </button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Automation Rule Card
+// Automation Rule Card - Enhanced Glassmorphism
 const RuleCard = ({ rule, onToggle, onDelete }) => {
   const triggerIcons = {
     new_follower: '👤', new_comment: '💭', mention: '@', scheduled: '⏰',
@@ -237,14 +268,22 @@ const RuleCard = ({ rule, onToggle, onDelete }) => {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
-      <div className="flex justify-between items-start mb-4">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 hover:border-white/25 transition-all overflow-hidden relative group"
+    >
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <div className="relative flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center text-xl">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/30 to-blue-600/30 flex items-center justify-center text-2xl border border-white/10">
             {triggerIcons[rule.trigger] || '⚡'}
           </div>
           <div>
-            <h3 className="font-semibold text-white">{rule.name}</h3>
+            <h3 className="font-semibold text-white text-lg">{rule.name}</h3>
             <p className="text-xs text-gray-400 capitalize">{rule.platform} • {rule.trigger.replace('_', ' ')}</p>
           </div>
         </div>
@@ -255,12 +294,12 @@ const RuleCard = ({ rule, onToggle, onDelete }) => {
             onChange={() => onToggle(rule._id)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500"></div>
+          <div className="w-12 h-7 bg-gray-700/50 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-green-500 peer-checked:to-emerald-500 shadow-lg"></div>
         </label>
       </div>
-      <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+      <div className="relative flex items-center gap-4 text-sm text-gray-400 mb-4">
         <span className="flex items-center gap-1">
-          <span className="text-lg">{actionIcons[rule.action] || '⚡'}</span>
+          <span className="text-xl">{actionIcons[rule.action] || '⚡'}</span>
           {rule.action.replace('_', ' ')}
         </span>
         {rule.execution_count > 0 && (
@@ -269,32 +308,44 @@ const RuleCard = ({ rule, onToggle, onDelete }) => {
       </div>
       <button
         onClick={() => onDelete(rule._id)}
-        className="w-full text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 py-2 rounded-lg transition-all"
+        className="w-full text-sm text-red-400 hover:text-red-300 hover:bg-red-500/20 py-2 rounded-lg transition-all backdrop-blur-sm"
       >
         Delete Rule
       </button>
-    </div>
+    </motion.div>
   );
 };
 
-// Tab Navigation
+// Tab Navigation - Enhanced Glassmorphism
 const TabNav = ({ tabs, activeTab, onChange }) => (
-  <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 flex gap-1">
+  <motion.div 
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl p-1.5 flex gap-1"
+  >
     {tabs.map((tab) => (
-      <button
+      <motion.button
         key={tab.id}
         onClick={() => onChange(tab.id)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${
           activeTab === tab.id
-            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/25'
-            : 'text-gray-400 hover:text-white hover:bg-white/10'
+            ? 'bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 text-white shadow-lg shadow-purple-500/30'
+            : 'text-gray-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10'
         }`}
       >
-        <span className="text-lg">{tab.icon}</span>
+        <span className="text-xl">{tab.icon}</span>
         <span className="hidden sm:inline">{tab.label}</span>
-      </button>
+        {activeTab === tab.id && (
+          <motion.span
+            layoutId="activeTab"
+            className="absolute w-1 h-1 bg-white rounded-full"
+          />
+        )}
+      </motion.button>
     ))}
-  </div>
+  </motion.div>
 );
 
 // Main Dashboard Component
@@ -801,13 +852,21 @@ export default function AutomationDashboard() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Background Effects */}
+      {/* Enhanced Background Effects - Professional Glassmorphism */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black pointer-events-none"></div>
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[150px] pointer-events-none animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+      
+      {/* Grid pattern overlay */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(120,0,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(120,0,255,0.02)_1px,transparent_1px)]" style={{ backgroundSize: '60px 60px' }} pointer-events-none></div>
       
       {/* Header */}
-      <header className="relative z-10 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 bg-black/60 backdrop-blur-2xl border-b border-white/10 shadow-lg shadow-purple-500/5"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
@@ -873,12 +932,18 @@ export default function AutomationDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/10 to-transparent border border-white/10 rounded-3xl p-8">
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
-              </h2>
-              <p className="text-gray-400 text-lg">Here's what's happening with your social media today.</p>
+            {/* Welcome Section - Enhanced Glassmorphism */}
+            <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/10 to-cyan-500/10 border border-white/10 rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden">
+              {/* Animated background elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+              
+              <div className="relative z-10">
+                <h2 className={`text-4xl font-bold text-white mb-2 ${orbitron.className}`}>
+                  Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
+                </h2>
+                <p className="text-gray-400 text-lg">Here's what's happening with your social media today.</p>
+              </div>
             </div>
 
             {/* Quick Stats */}
