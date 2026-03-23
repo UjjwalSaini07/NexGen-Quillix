@@ -514,10 +514,15 @@ export default function PostCreator({ onClose }) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6 shadow-2xl">
+    <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/10 overflow-hidden">
+      {/* Glassmorphism background effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 pointer-events-none" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+      
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Create Post</h2>
+      <div className="relative flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">Create Post</h2>
         <div className="flex items-center gap-3">
           {draftSaved && (
             <span className="text-xs text-green-400">✓ Draft saved</span>
@@ -534,12 +539,12 @@ export default function PostCreator({ onClose }) {
       </div>
       
       {/* Progress Bar */}
-      <div className="mb-6">
+      <div className="relative mb-6">
         <div className="flex justify-between text-xs text-gray-400 mb-1">
           <span>Completion</span>
           <span>{completionProgress()}%</span>
         </div>
-        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
           <div 
             className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
             style={{ width: `${completionProgress()}%` }}
@@ -548,7 +553,7 @@ export default function PostCreator({ onClose }) {
       </div>
       
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div className="relative flex gap-2 mb-6">
         {[
           { id: 'create', label: '✏️ Create' },
           { id: 'ai', label: '🤖 AI Generate' },
@@ -557,10 +562,10 @@ export default function PostCreator({ onClose }) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all backdrop-blur-sm ${
               activeTab === tab.id 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25' 
+                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'
             }`}
           >
             {tab.label}
@@ -571,7 +576,7 @@ export default function PostCreator({ onClose }) {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Platform Selection - Only show in Create tab */}
         {activeTab === 'create' && (
-        <div className="bg-gray-900/50 rounded-lg p-4">
+        <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/10">
           <div className="flex justify-between items-center mb-3">
             <label className="text-sm font-medium text-gray-300">
               Select Platforms ({selectedPlatforms.length} selected)
@@ -580,7 +585,7 @@ export default function PostCreator({ onClose }) {
               <button
                 type="button"
                 onClick={selectAllPlatforms}
-                className="text-xs text-blue-400 hover:text-blue-300"
+                className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Select All
               </button>
@@ -588,7 +593,7 @@ export default function PostCreator({ onClose }) {
               <button
                 type="button"
                 onClick={clearPlatforms}
-                className="text-xs text-gray-400 hover:text-white"
+                className="text-xs text-gray-400 hover:text-white transition-colors"
               >
                 Clear
               </button>
@@ -600,10 +605,10 @@ export default function PostCreator({ onClose }) {
                 key={platform.id}
                 type="button"
                 onClick={() => togglePlatform(platform.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 hover:shadow-lg ${
                   selectedPlatforms.includes(platform.id)
-                    ? platform.bgColor + ' text-white shadow-lg'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? platform.bgColor + ' text-white shadow-lg' + (platform.id === 'x' ? ' border-2 border-white' : '')
+                    : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'
                 }`}
                 style={selectedPlatforms.includes(platform.id) ? { backgroundColor: platform.color } : {}}
               >
@@ -615,7 +620,7 @@ export default function PostCreator({ onClose }) {
           
           {/* Platform-specific limits warning */}
           {selectedPlatforms.length > 0 && (
-            <div className="mt-3 text-xs text-gray-500">
+            <div className="mt-3 text-xs text-gray-500/70">
               Character limit: {getCharacterLimit().toLocaleString()} | Optimal: {getOptimalLength()} chars
             </div>
           )}
@@ -624,7 +629,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Content Tab */}
         {activeTab === 'create' && (
-          <div className="space-y-4">
+          <div className="relative space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Post Content
@@ -633,7 +638,7 @@ export default function PostCreator({ onClose }) {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind? Start typing or use AI to generate..."
-                className="w-full h-48 bg-gray-900 text-white rounded-lg p-4 border border-gray-700 focus:border-blue-500 focus:outline-none resize-none transition-all"
+                className="w-full h-48 bg-black/30 backdrop-blur-sm text-white rounded-xl p-4 border border-white/10 focus:border-purple-500 focus:outline-none resize-none transition-all placeholder:text-gray-500"
                 maxLength={getCharacterLimit() + 100}
               />
               
@@ -647,10 +652,10 @@ export default function PostCreator({ onClose }) {
                     {content.length} / {getCharacterLimit().toLocaleString()} characters
                   </span>
                   {content.length >= getOptimalLength() && (
-                    <span className="text-blue-400">✓ Optimal length</span>
+                    <span className="text-purple-400">✓ Optimal length</span>
                   )}
                 </div>
-                <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-1 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
                   <div 
                     className={`h-full transition-all ${
                       getCharacterStatus() === 'good' ? 'bg-green-500' :
@@ -679,14 +684,14 @@ export default function PostCreator({ onClose }) {
               
               {/* AI Panel */}
               {showAIPanel && (
-                <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                <div className="mt-4 p-4 bg-black/30 backdrop-blur-md rounded-xl border border-white/10">
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">Tone</label>
                       <select
                         value={selectedTone}
                         onChange={(e) => setSelectedTone(e.target.value)}
-                        className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
+                        className="w-full bg-black/30 backdrop-blur-sm text-white rounded-lg px-3 py-2 text-sm border border-white/10 focus:border-purple-500 focus:outline-none"
                       >
                         {TONE_OPTIONS.map(opt => (
                           <option key={opt.id} value={opt.id}>{opt.icon} {opt.label}</option>
@@ -698,7 +703,7 @@ export default function PostCreator({ onClose }) {
                       <select
                         value={selectedNiche}
                         onChange={(e) => setSelectedNiche(e.target.value)}
-                        className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
+                        className="w-full bg-black/30 backdrop-blur-sm text-white rounded-lg px-3 py-2 text-sm border border-white/10 focus:border-purple-500 focus:outline-none"
                       >
                         {NICHE_OPTIONS.map(opt => (
                           <option key={opt.id} value={opt.id}>{opt.icon} {opt.label}</option>
@@ -710,7 +715,7 @@ export default function PostCreator({ onClose }) {
                     type="button"
                     onClick={handleGenerateContent}
                     disabled={aiGenerating || !aiPrompt.trim()}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 backdrop-blur-sm"
                   >
                     {aiGenerating ? '🤖 Generating...' : '🚀 Generate with AI'}
                   </button>
@@ -729,13 +734,13 @@ export default function PostCreator({ onClose }) {
                   value={mediaUrl}
                   onChange={(e) => setMediaUrl(e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                  className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  className="flex-1 bg-black/30 backdrop-blur-sm text-white rounded-xl p-3 border border-white/10 focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
                 />
                 {mediaUrl && (
                   <button
                     type="button"
                     onClick={() => setShowMediaPreview(!showMediaPreview)}
-                    className="px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                    className="px-4 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 border border-white/10 transition-all"
                   >
                     {showMediaPreview ? 'Hide' : 'Preview'}
                   </button>
@@ -772,7 +777,7 @@ export default function PostCreator({ onClose }) {
               
               {/* Media preview */}
               {showMediaPreview && mediaUrl && (
-                <div className="mt-3 p-3 bg-gray-900 rounded-lg">
+                <div className="mt-3 p-3 bg-black/30 backdrop-blur-md rounded-xl border border-white/10">
                   {mediaType === 'image' ? (
                     <img 
                       src={mediaUrl} 
@@ -795,7 +800,7 @@ export default function PostCreator({ onClose }) {
         
         {/* AI Tab */}
         {activeTab === 'ai' && (
-          <div className="space-y-4">
+          <div className="relative space-y-4">
             {/* Simple Prompt Input */}
             <div>
               <label className="text-sm text-gray-400 mb-2 block">
@@ -805,15 +810,15 @@ export default function PostCreator({ onClose }) {
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="e.g., Launching our new AI product, Tips for remote work, Happy Diwali wishes..."
-                className="w-full h-32 bg-gray-900 text-white rounded-lg p-4 border border-gray-700 focus:border-purple-500 focus:outline-none resize-none"
+                className="w-full h-32 bg-black/30 backdrop-blur-sm text-white rounded-xl p-4 border border-white/10 focus:border-purple-500 focus:outline-none resize-none placeholder:text-gray-500"
               />
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-500/70 mt-2">
                 Enter a short description or topic, and our AI will create engaging content for you!
               </p>
             </div>
             
             {/* Word Count Slider */}
-            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+            <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-5 border border-white/10">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm text-gray-300 font-medium">
                   📊 Number of Words
@@ -844,7 +849,7 @@ export default function PostCreator({ onClose }) {
             </div>
             
             {/* Number of Variations Slider */}
-            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+            <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-5 border border-white/10">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm text-gray-300 font-medium">
                   🎨 Number of Variations
@@ -872,13 +877,13 @@ export default function PostCreator({ onClose }) {
                 <span>7</span>
                 <span>10</span>
               </div>
-              <p className="text-xs text-gray-400 mt-3">
+              <p className="text-xs text-gray-400/70 mt-3">
                 💡 Coming soon: Generate multiple variations and pick the best one!
               </p>
             </div>
             
             {/* Tone Selector */}
-            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+            <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-5 border border-white/10">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm text-gray-300 font-medium">
                   🎭 Select Tone
@@ -904,13 +909,13 @@ export default function PostCreator({ onClose }) {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-3">
+              <p className="text-xs text-gray-400/70 mt-3">
                 ✨ Content will be generated with a {TONE_OPTIONS.find(t => t.id === selectedTone)?.label.toLowerCase()} tone
               </p>
             </div>
             
             {/* Media Type Selector */}
-            <div className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
+            <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-5 border border-white/10">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm text-gray-300 font-medium">
                   🖼️ Include Media
@@ -981,13 +986,13 @@ export default function PostCreator({ onClose }) {
               </div>
               
               {aiMediaType !== 'none' && (
-                <p className="text-xs text-gray-400 mt-3">
+                <p className="text-xs text-gray-400/70 mt-3">
                   ✨ AI will search and find the most relevant {aiMediaType === 'video' ? 'videos' : 'images'} based on your prompt
                 </p>
               )}
               
               {aiMediaType === 'none' && (
-                <p className="text-xs text-gray-400 mt-3">
+                <p className="text-xs text-gray-400/70 mt-3">
                   📝 Your post will be text-only with no media attachments
                 </p>
               )}
@@ -1016,7 +1021,7 @@ export default function PostCreator({ onClose }) {
             
             {/* AI-Generated Media Suggestions */}
             {(mediaSuggestions.length > 0 || isGeneratingMedia) && (
-              <div className="mt-4 bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
+              <div className="mt-4 relative bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm text-gray-300 font-medium">
                     {aiMediaType === 'video' ? '🎬' : '🖼️'} AI-Generated {aiMediaType === 'video' ? 'Videos' : 'Images'}
@@ -1084,7 +1089,7 @@ export default function PostCreator({ onClose }) {
                     </div>
                     
                     {selectedMedia && (
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-400/70">
                         {selectedMedia.type === 'video' ? (
                           <p>🎬 Video from {selectedMedia.source}</p>
                         ) : (
@@ -1118,14 +1123,14 @@ export default function PostCreator({ onClose }) {
                     >
                       <p className="text-white text-sm">{variation.content}</p>
                       <div className="mt-2 flex justify-between items-center">
-                        <span className="text-xs text-gray-400">{variation.tone}</span>
+                        <span className="text-xs text-gray-400/70">{variation.tone}</span>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             copyToClipboard(variation.content);
                           }}
-                          className="text-xs text-blue-400 hover:text-blue-300"
+                          className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
                         >
                           📋 Copy
                         </button>
@@ -1140,7 +1145,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Preview Tab */}
         {activeTab === 'preview' && (
-          <div className="space-y-4">
+          <div className="relative space-y-4">
             <h3 className="text-white font-medium">Platform Previews</h3>
             
             {selectedPlatforms.length === 0 ? (
@@ -1156,7 +1161,7 @@ export default function PostCreator({ onClose }) {
                   return (
                     <div
                       key={platformId}
-                      className="bg-gray-900 rounded-lg p-4 border-l-4"
+                      className="bg-black/30 backdrop-blur-md rounded-xl p-4 border-l-4"
                       style={{ borderLeftColor: config.color }}
                     >
                       <div className="flex items-center gap-2 mb-2">
@@ -1166,7 +1171,7 @@ export default function PostCreator({ onClose }) {
                           {previewContent.length}/{config.maxChars}
                         </span>
                       </div>
-                      <div className="bg-gray-800 rounded p-3 text-white text-sm whitespace-pre-wrap">
+                      <div className="bg-black/20 backdrop-blur-sm rounded p-3 text-white text-sm whitespace-pre-wrap border border-white/5">
                         {previewContent || 'No content yet...'}
                       </div>
                       {mediaUrl && config.supportsMedia && (
@@ -1183,12 +1188,14 @@ export default function PostCreator({ onClose }) {
         )}
         
         {/* Schedule Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-3">
           <button
             type="button"
             onClick={() => setShowScheduler(!showScheduler)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-              showScheduler ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all backdrop-blur-sm ${
+              showScheduler 
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/25' 
+                : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'
             }`}
           >
             <span>📅</span>
@@ -1202,7 +1209,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Schedule Time */}
         {showScheduler && (
-          <div className="bg-gray-900/50 p-4 rounded-lg">
+          <div className="relative bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/10">
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Schedule Date & Time
             </label>
@@ -1216,7 +1223,7 @@ export default function PostCreator({ onClose }) {
                   setIsSchedule(true);
                 }}
                 min={new Date().toISOString().split('T')[0]}
-                className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
+                className="flex-1 bg-black/30 backdrop-blur-sm text-white rounded-xl p-3 border border-white/10 focus:border-green-500 focus:outline-none"
               />
               <input
                 type="time"
@@ -1229,7 +1236,7 @@ export default function PostCreator({ onClose }) {
                 min={scheduleTime && scheduleTime.split('T')[0] === new Date().toISOString().split('T')[0] 
                   ? new Date().toTimeString().slice(0, 5) 
                   : '00:00'}
-                className="flex-1 bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
+                className="flex-1 bg-black/30 backdrop-blur-sm text-white rounded-xl p-3 border border-white/10 focus:border-green-500 focus:outline-none"
               />
               <select
                 value={scheduleTime && parseInt(scheduleTime.split('T')[1]?.split(':')[0] || '0') >= 12 ? 'PM' : 'AM'}
@@ -1243,7 +1250,7 @@ export default function PostCreator({ onClose }) {
                   setScheduleTime(`${datePart}T${String(hours).padStart(2, '0')}:${minutes}:00`);
                   setIsSchedule(true);
                 }}
-                className="bg-gray-900 text-white rounded-lg p-3 border border-gray-700 focus:border-green-500 focus:outline-none"
+                className="bg-black/30 backdrop-blur-sm text-white rounded-xl p-3 border border-white/10 focus:border-green-500 focus:outline-none"
               >
                 <option value="AM">AM</option>
                 <option value="PM">PM</option>
@@ -1254,7 +1261,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-red-500/20 border border-red-500 rounded-lg">
+          <div className="relative p-4 bg-red-500/10 backdrop-blur-md border border-red-500/30 rounded-xl">
             <div className="flex items-start gap-2">
               <span className="text-red-400">⚠️</span>
               <p className="text-red-400 text-sm">{error}</p>
@@ -1264,7 +1271,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Success Message */}
         {result && (
-          <div className="p-4 bg-green-500/20 border border-green-500 rounded-lg">
+          <div className="relative p-4 bg-green-500/10 backdrop-blur-md border border-green-500/30 rounded-xl">
             <div className="flex items-center gap-2">
               <span className="text-green-400">✅</span>
               <p className="text-green-400">{result.message || 'Post published successfully!'}</p>
@@ -1276,7 +1283,7 @@ export default function PostCreator({ onClose }) {
         <button
           type="submit"
           disabled={loading || completionProgress() < 50}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02]"
+          className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] shadow-lg shadow-purple-500/25"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
@@ -1292,7 +1299,7 @@ export default function PostCreator({ onClose }) {
         
         {/* Tips */}
         {selectedPlatforms.length > 0 && (
-          <div className="text-xs text-gray-500 text-center mt-2">
+          <div className="text-xs text-gray-500/50 text-center mt-2">
             Tip: {selectedPlatforms.map(p => PLATFORM_CONFIG[p].label).join(', ')} work best with{' '}
             {getOptimalLength()}-{getCharacterLimit()} characters
           </div>
@@ -1301,12 +1308,12 @@ export default function PostCreator({ onClose }) {
       
       {/* Media Preview Modal */}
       {previewMedia && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewMedia(null)}>
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-gray-900 rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPreviewMedia(null)}>
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-black/60 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Close button */}
             <button
               onClick={() => setPreviewMedia(null)}
-              className="absolute top-3 right-3 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white text-xl transition-colors"
+              className="absolute top-3 right-3 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white text-xl transition-colors border border-white/20"
             >
               ✕
             </button>
@@ -1328,7 +1335,7 @@ export default function PostCreator({ onClose }) {
             )}
             
             {/* Info */}
-            <div className="p-4 bg-gray-800">
+            <div className="p-4 bg-black/30 backdrop-blur-xl border-t border-white/10">
               <p className="text-white font-medium">
                 {previewMedia.type === 'video' ? '🎬 Video' : '🖼️ Image'} from {previewMedia.source}
               </p>
