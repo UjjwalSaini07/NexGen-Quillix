@@ -859,7 +859,7 @@ export default function AutomationDashboard() {
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[150px] pointer-events-none animate-pulse" style={{ animationDelay: '0.5s' }}></div>
       
       {/* Grid pattern overlay */}
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(120,0,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(120,0,255,0.02)_1px,transparent_1px)]" style={{ backgroundSize: '60px 60px' }} pointer-events-none></div>
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(120,0,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(120,0,255,0.02)_1px,transparent_1px)] pointer-events-none" style={{ backgroundSize: '60px 60px' }}></div>
       
       {/* Header */}
       <header 
@@ -939,7 +939,7 @@ export default function AutomationDashboard() {
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
               
               <div className="relative z-10">
-                <h2 className={`text-4xl font-bold text-white mb-2 ${orbitron.className}`}>
+                <h2 className="text-4xl font-bold text-white mb-2">
                   Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
                 </h2>
                 <p className="text-gray-400 text-lg">Here's what's happening with your social media today.</p>
@@ -1083,6 +1083,16 @@ export default function AutomationDashboard() {
                 <h2 className="text-2xl font-bold text-white">Connected Accounts</h2>
                 <p className="text-gray-400">Manage your social media connections</p>
               </div>
+              <button
+                onClick={() => {
+                  fetchAccounts();
+                  toast.info('Refreshing accounts...');
+                }}
+                className="px-3 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+                title="Refresh Accounts"
+              >
+                <span className="animate-spin">↻</span> Refresh
+              </button>
             </div>
 
             {accounts.length > 0 ? (
@@ -1185,12 +1195,24 @@ export default function AutomationDashboard() {
                 <h2 className="text-2xl font-bold text-white">Posts</h2>
                 <p className="text-gray-400">Manage your content across platforms</p>
               </div>
-              <button
-                onClick={() => setShowPostCreator(true)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2"
-              >
-                <span>✨</span> Create Post
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    getPosts({ status_filter: postStatusFilter });
+                    toast.info('Refreshing posts...');
+                  }}
+                  className="px-3 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+                  title="Refresh Posts"
+                >
+                  <span className="animate-spin">↻</span> Refresh
+                </button>
+                <button
+                  onClick={() => setShowPostCreator(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2"
+                >
+                  <span>✨</span> Create Post
+                </button>
+              </div>
             </div>
 
             {/* Status Filter Tabs */}
@@ -1247,17 +1269,29 @@ export default function AutomationDashboard() {
                 <h2 className="text-2xl font-bold text-white">Automation Rules</h2>
                 <p className="text-gray-400">Create rules to automate your social media</p>
               </div>
-              <button
-                onClick={() => setShowCreateRuleModal(true)}
-                disabled={accounts.length === 0}
-                className={`px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
-                  accounts.length === 0
-                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
-                }`}
-              >
-                <span>+</span> New Rule
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    fetchRules();
+                    toast.info('Refreshing rules...');
+                  }}
+                  className="px-3 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+                  title="Refresh Rules"
+                >
+                  <span className="animate-spin">↻</span> Refresh
+                </button>
+                <button
+                  onClick={() => setShowCreateRuleModal(true)}
+                  disabled={accounts.length === 0}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                    accounts.length === 0
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
+                  }`}
+                >
+                  <span>+</span> New Rule
+                </button>
+              </div>
             </div>
 
             {accounts.length === 0 && (
@@ -1296,15 +1330,33 @@ export default function AutomationDashboard() {
                 <h2 className="text-2xl font-bold text-white">Analytics</h2>
                 <p className="text-gray-400">Track your social media performance</p>
               </div>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(Number(e.target.value))}
-                className="bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:outline-none focus:border-purple-500"
-              >
-                <option value={7} className="text-black">Last 7 days</option>
-                <option value={30} className="text-black">Last 30 days</option>
-                <option value={90} className="text-black">Last 90 days</option>
-              </select>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    fetchAnalytics(dateRange);
+                    fetchPlatformStats(null, dateRange);
+                    fetchTimeSeriesAnalytics({ days: dateRange, granularity: 'daily' });
+                    fetchAudienceInsights({ days: dateRange });
+                    fetchPredictions({ days: dateRange });
+                    fetchEngagementMetrics({ days: dateRange });
+                    fetchGrowthMetrics({ days: dateRange });
+                    toast.info('Refreshing analytics...');
+                  }}
+                  className="px-3 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+                  title="Refresh Analytics"
+                >
+                  <span className="animate-spin">↻</span> Refresh
+                </button>
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(Number(e.target.value))}
+                  className="bg-white/5 border border-white/10 text-white rounded-xl px-4 py-2 focus:outline-none focus:border-purple-500"
+                >
+                  <option value={7} className="text-black">Last 7 days</option>
+                  <option value={30} className="text-black">Last 30 days</option>
+                  <option value={90} className="text-black">Last 90 days</option>
+                </select>
+              </div>
             </div>
 
             {analyticsLoading ? (
@@ -1640,14 +1692,6 @@ export default function AutomationDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPostCreator(false)} />
           <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 rounded-2xl border border-white/10">
-            <button
-              onClick={() => setShowPostCreator(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
             <PostCreator onClose={() => { setShowPostCreator(false); getPosts({ status_filter: postStatusFilter }); }} />
           </div>
         </div>

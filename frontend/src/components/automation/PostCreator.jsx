@@ -5,6 +5,39 @@ import { useAutomation } from '@/components/hooks/useAutomation';
 import { toast } from 'react-toastify';
 import { generateMedia } from '@/lib/dynamic-automation-api';
 
+// Platform icons component
+const PlatformIcon = ({ platform, size = "w-8 h-8" }) => {
+  const icons = {
+    facebook: { 
+      icon: <img src="/social/Facebook.png" alt="Facebook" className={size} />, 
+      color: '' 
+    },
+    instagram: { 
+      icon: <img src="/social/Instagram.png" alt="Instagram" className={size} />, 
+      color: '' 
+    },
+    linkedin: { 
+      icon: <img src="/social/LinkedIn.png" alt="LinkedIn" className={size} />, 
+      color: '' 
+    },
+    x: { 
+      icon: <img src="/social/X.png" alt="X" className={size} />, 
+      color: '' 
+    },
+    youtube: { 
+      icon: <img src="/social/Youtube.png" alt="YouTube" className={size} />, 
+      color: '' 
+    },
+    whatsapp: { 
+      icon: <img src="/social/whatsapp.png" alt="WhatsApp" className={size} />, 
+      color: '' 
+    },
+  };
+  
+  const data = icons[platform] || { icon: <div className={`${size} bg-gray-500 rounded`} />, color: '' };
+  return <span className={data.color}>{data.icon}</span>;
+};
+
 // Platform configuration with character limits and features
 const PLATFORM_CONFIG = {
   facebook: {
@@ -523,6 +556,51 @@ export default function PostCreator({ onClose }) {
       <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none animate-pulse" style={{ animationDelay: '0.5s' }} />
       
+      {/* Floating Quick Actions Button */}
+      <div className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => setShowScheduler(!showScheduler)}
+          className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-purple-500/50 transition-all hover:scale-110"
+          title="Quick Actions"
+        >
+          ⚡
+        </button>
+        {showScheduler && (
+          <div className="absolute top-12 right-0 w-48 bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-2 shadow-2xl animate-fadeIn">
+            <button
+              onClick={() => { setActiveTab('ai'); setShowScheduler(false); }}
+              className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              🤖 AI Generate
+            </button>
+            <button
+              onClick={() => { setActiveTab('preview'); setShowScheduler(false); }}
+              className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              👁️ Preview
+            </button>
+            <button
+              onClick={() => { setIsSchedule(true); setShowScheduler(false); }}
+              className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              📅 Schedule
+            </button>
+            <button
+              onClick={clearDraft}
+              className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+            >
+              🗑️ Clear All
+            </button>
+            <button
+              onClick={() => { if (onClose) onClose(); }}
+              className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              ❌ Close
+            </button>
+          </div>
+        )}
+      </div>
+      
       {/* Header */}
       <div className="relative flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">Create Post</h2>
@@ -554,6 +632,63 @@ export default function PostCreator({ onClose }) {
           />
         </div>
       </div>
+      
+      {/* {content.length > 20 && selectedPlatforms.length > 0 && (
+        <div className="relative mb-6 p-4 bg-black/30 backdrop-blur-md rounded-xl border border-white/10 animate-pulse">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-400">🔮 Predicted Engagement</p>
+            <span className="text-xs text-purple-400 animate-pulse">Live</span>
+          </div>
+          
+          <div className="flex items-end justify-center gap-1 mb-3">
+            {(() => {
+              let score = 0;
+              if (content.length >= 50 && content.length <= 280) score += 30;
+              else if (content.length > 280) score += 20;
+              else score += 10;
+              
+              if (content.includes('?')) score += 15;
+              if (content.includes('!')) score += 10;
+              if (content.match(/#[\w]+/g)?.length > 0) score += 15;
+              if (content.match(/@[\w]+/g)?.length > 0) score += 10;
+              if (content.includes('http')) score += 10;
+              if (content.length > 100 && content.length < 500) score += 15;
+              
+              const percentage = Math.min(score, 100);
+              return (
+                <>
+                  <div className="text-4xl font-bold text-white">{percentage}%</div>
+                  <div className="ml-2 text-xs text-gray-500 mb-1">
+                    {percentage >= 70 ? '🔥 Hot' : percentage >= 40 ? '⭐ Good' : '💤 Low'}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+          
+          <div className="flex flex-wrap gap-1 justify-center">
+            {content.includes('?') && (
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">? Question</span>
+            )}
+            {content.includes('!') && (
+              <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">! Excitement</span>
+            )}
+            {(content.match(/#[\w]+/g) || []).length > 0 && (
+              <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full">
+                # {(content.match(/#[\w]+/g) || []).length} tags
+              </span>
+            )}
+            {(content.match(/@[\w]+/g) || []).length > 0 && (
+              <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                @ {(content.match(/@[\w]+/g) || []).length} mentions
+              </span>
+            )}
+            {content.includes('http') && (
+              <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full">🔗 Link</span>
+            )}
+          </div>
+        </div>
+      )} */}
       
       {/* Tabs */}
       <div className="relative flex gap-2 mb-6">
@@ -668,6 +803,175 @@ export default function PostCreator({ onClose }) {
                   />
                 </div>
               </div>
+              
+              {/* Real-time Platform Character Preview */}
+              {selectedPlatforms.length > 0 && content.length > 0 && (
+                <div className="mt-3 p-3 bg-black/30 backdrop-blur-md rounded-xl border border-white/10">
+                  <p className="text-xs text-gray-400 mb-2">Platform Character Limits:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPlatforms.map(platform => {
+                      const limit = PLATFORM_CONFIG[platform]?.maxChars || 280;
+                      const isOver = content.length > limit;
+                      const percentage = (content.length / limit) * 100;
+                      return (
+                        <div key={platform} className="flex items-center gap-2">
+                          <PlatformIcon platform={platform} size="w-4 h-4" />
+                          <span className="text-xs text-gray-400">{content.length}/{limit}</span>
+                          {isOver ? (
+                            <span className="text-xs text-red-400">Exceeds!</span>
+                          ) : percentage > 80 ? (
+                            <span className="text-xs text-yellow-400">⚠️</span>
+                          ) : (
+                            <span className="text-xs text-green-400">✓</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+               
+              {/* Smart Content Analysis */}
+              {content.length > 10 && (
+                <div className="mt-3 p-3 bg-black/30 backdrop-blur-md rounded-xl border border-white/10">
+                  <p className="text-xs text-white mb-2">📊 Content Analysis:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {/* Word count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      📝 {content.split(/\s+/).filter(Boolean).length} words
+                    </span>
+                    {/* Sentence count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      📄 {content.split(/[.!?]+/).filter(Boolean).length} sentences
+                    </span>
+                    {/* Hashtag count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      #️⃣ {(content.match(/#[\w]+/g) || []).length} hashtags
+                    </span>
+                    {/* Mention count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      @ {(content.match(/@[\w]+/g) || []).length} mentions
+                    </span>
+                    {/* URL count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      🔗 {(content.match(/https?:\/\//g) || []).length} URLs
+                    </span>
+                    {/* Emoji count */}
+                    <span className="text-xs text-white bg-white/10 px-2 py-1 rounded-lg">
+                      😀 {content.match(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|#[\u{1F600}-\u{1F64F}]/gu)?.length || 0} emojis
+                    </span>
+                  </div>
+                  
+                  {/* Predicted Engagement */}
+                  {(() => {
+                    const hashtagCount = (content.match(/#[\w]+/g) || []).length;
+                    const mentionCount = (content.match(/@[\w]+/g) || []).length;
+                    const emojiCount = content.match(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|#[\u{1F600}-\u{1F64F}]/gu)?.length || 0;
+                    const hasQuestion = content.includes('?');
+                    const hasExclamation = content.includes('!');
+                    const urlCount = (content.match(/https?:\/\//g) || []).length;
+                    const wordCount = content.split(/\s+/).filter(Boolean).length;
+                    
+                    // Calculate engagement score (0-100)
+                    let score = 30; // Base score
+                    
+                    // Content length scoring
+                    if (wordCount >= 10 && wordCount <= 50) score += 15;
+                    else if (wordCount > 50 && wordCount <= 150) score += 20;
+                    else if (wordCount > 150 && wordCount <= 280) score += 15;
+                    
+                    // Hashtag scoring (3-5 optimal)
+                    if (hashtagCount >= 3 && hashtagCount <= 5) score += 15;
+                    else if (hashtagCount > 0 && hashtagCount <= 2) score += 10;
+                    else if (hashtagCount > 5) score -= 5;
+                    
+                    // Mention scoring
+                    if (mentionCount >= 1 && mentionCount <= 3) score += 10;
+                    else if (mentionCount > 3) score += 5;
+                    
+                    // Emoji scoring (1-3 optimal)
+                    if (emojiCount >= 1 && emojiCount <= 3) score += 10;
+                    else if (emojiCount > 3) score += 5;
+                    
+                    // Question scoring
+                    if (hasQuestion) score += 10;
+                    
+                    // Exclamation scoring
+                    if (hasExclamation) score += 5;
+                    
+                    // URL scoring
+                    if (urlCount === 1) score += 5;
+                    
+                    // Cap score at 100
+                    score = Math.min(100, Math.max(0, score));
+                    
+                    // Determine rating
+                    let rating = 'Poor';
+                    let ratingColor = 'text-red-400';
+                    let ratingEmoji = '⚠️';
+                    
+                    if (score >= 80) {
+                      rating = 'Excellent';
+                      ratingColor = 'text-green-400';
+                      ratingEmoji = '🌟';
+                    } else if (score >= 60) {
+                      rating = 'Good';
+                      ratingColor = 'text-green-400';
+                      ratingEmoji = '⭐';
+                    } else if (score >= 40) {
+                      rating = 'Fair';
+                      ratingColor = 'text-yellow-400';
+                      ratingEmoji = '👍';
+                    }
+                    
+                    // Interaction indicators
+                    const totalInteractions = hashtagCount + mentionCount;
+                    
+                    return (
+                      <div className="mt-3 pt-2 border-t border-white/10">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-white">🎯 Predicted Engagement:</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-white font-bold">{score}%</span>
+                            <span className={`text-xs ${ratingColor}`}>{ratingEmoji} {rating}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Engagement bar */}
+                        <div className="mt-2 h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              score >= 80 ? 'bg-green-500' : 
+                              score >= 60 ? 'bg-green-400' : 
+                              score >= 40 ? 'bg-yellow-400' : 'bg-red-400'
+                            }`}
+                            style={{ width: `${score}%` }}
+                          />
+                        </div>
+                        
+                        {/* Interaction count */}
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-white"># {totalInteractions} tags or interaction</span>
+                          {hasQuestion && <span className="text-xs text-blue-400">! Question</span>}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Content Tips */}
+                  <div className="mt-2 pt-2 border-t border-white/10">
+                    <p className="text-xs text-white mb-1">💡 Tips:</p>
+                    <ul className="text-xs text-white space-y-1">
+                      {content.length < 100 && <li className="text-yellow-400">• Content is very short. Consider adding more details.</li>}
+                      {content.length > 100 && content.length < 280 && <li className="text-green-400">• Good length for Twitter/X!</li>}
+                      {(content.match(/#[\w]+/g) || []).length === 0 && <li className="text-blue-400">• Add hashtags to increase visibility</li>}
+                      {(content.match(/#[\w]+/g) || []).length > 5 && <li className="text-yellow-400">• Too many hashtags may look spammy (3-5 recommended)</li>}
+                      {!content.includes('?') && <li className="text-white">• Consider adding a question to increase engagement</li>}
+                      {content.endsWith('!') && <li className="text-green-400">• Exclamation marks show enthusiasm! 🎉</li>}
+                    </ul>
+                  </div>
+                </div>
+              )}
               
               {/* Quick actions */}
               <div className="flex justify-between items-center mt-3">
