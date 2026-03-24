@@ -932,90 +932,265 @@ export default function AutomationDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Welcome Section - Enhanced Glassmorphism */}
-            <div className="bg-gradient-to-r from-purple-600/20 via-blue-600/10 to-cyan-500/10 border border-white/10 rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden">
+            {/* Welcome Section - Dark Navy Background */}
+            <div className="bg-[#191f24] border border-white/10 rounded-3xl p-8 relative overflow-hidden">
               {/* Animated background elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
-              
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+               
               <div className="relative z-10">
                 <h2 className="text-4xl font-bold text-white mb-2">
                   Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}! 👋
                 </h2>
                 <p className="text-gray-400 text-lg">Here's what's happening with your social media today.</p>
+                
+                {/* Quick Stats Row */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-purple-600/20 to-pink-600/10 border border-white/10 rounded-2xl p-4 hover:border-purple-500/30 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400 text-xs">Connected Accounts</span>
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-lg">🔗</div>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{accounts.length}</p>
+                    <p className="text-green-400 text-xs mt-1 flex items-center gap-1">
+                      <span>↓</span> {accounts.length > 0 ? 'Active' : 'None'}
+                    </p>
+                  </div>
+                  
+                  <div className="relative overflow-hidden bg-gradient-to-br from-blue-600/20 to-cyan-600/10 border border-white/10 rounded-2xl p-4 hover:border-blue-500/30 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400 text-xs">Total Posts</span>
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">📝</div>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{posts?.length || 0}</p>
+                    <p className="text-green-400 text-xs mt-1 flex items-center gap-1">
+                      <span>↑</span> +{posts?.length || 0} this month
+                    </p>
+                  </div>
+                  
+                  <div className="relative overflow-hidden bg-gradient-to-br from-green-600/20 to-emerald-600/10 border border-white/10 rounded-2xl p-4 hover:border-green-500/30 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400 text-xs">Active Rules</span>
+                      <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-lg">🤖</div>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{rules.filter(r => r.is_active !== false).length}</p>
+                    <p className="text-yellow-400 text-xs mt-1 flex items-center gap-1">
+                      <span>⚡</span> {rules.filter(r => r.is_active !== false).length > 0 ? 'Running' : 'No active'}
+                    </p>
+                  </div>
+                  
+                  <div className="relative overflow-hidden bg-gradient-to-br from-orange-600/20 to-red-600/10 border border-white/10 rounded-2xl p-4 hover:border-orange-500/30 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-400 text-xs">Total Engagements</span>
+                      <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-lg">💬</div>
+                    </div>
+                    <p className="text-3xl font-bold text-white">{(analytics?.total_likes || 0) + (analytics?.total_comments || 0) + (analytics?.total_shares || 0)}</p>
+                    <p className="text-purple-400 text-xs mt-1 flex items-center gap-1">
+                      <span>↑</span> +{(analytics?.total_likes || 0) + (analytics?.total_comments || 0) + (analytics?.total_shares || 0)} total
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard 
-                title="Connected Accounts" 
-                value={accounts.length} 
-                icon="🔗" 
-                gradient="from-purple-600 to-pink-600" 
-              />
-              <StatCard 
-                title="Total Posts" 
-                value={posts?.length || 0} 
-                icon="📝" 
-                gradient="from-blue-600 to-cyan-600" 
-              />
-              <StatCard 
-                title="Active Rules" 
-                value={rules.filter(r => r.is_active !== false).length} 
-                icon="🤖" 
-                gradient="from-green-600 to-emerald-600" 
-              />
-              <StatCard 
-                title="Total Engagements" 
-                value={(analytics?.total_likes || 0) + (analytics?.total_comments || 0) + (analytics?.total_shares || 0)} 
-                icon="💬" 
-                gradient="from-orange-600 to-red-600" 
-              />
+            {/* Performance Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Content Performance - Unique Section */}
+              <div className="lg:col-span-2 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">🚀 Content Velocity</h3>
+                    <p className="text-gray-400 text-sm">Your posting rhythm & growth</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1 text-xs bg-purple-500/20 text-purple-400 rounded-lg">This Week</button>
+                    <button className="px-3 py-1 text-xs bg-white/5 text-gray-400 rounded-lg hover:bg-white/10">This Month</button>
+                  </div>
+                </div>
+                
+                {/* Velocity Stats */}
+                <div className="grid grid-cols-4 gap-3 mb-6">
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{posts?.length || 0}</p>
+                    <p className="text-gray-400 text-xs">Total Posts</p>
+                  </div>
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-green-400">{posts?.filter(p => p.status === 'published').length || 0}</p>
+                    <p className="text-gray-400 text-xs">Published</p>
+                  </div>
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-yellow-400">{posts?.filter(p => p.status === 'scheduled').length || 0}</p>
+                    <p className="text-gray-400 text-xs">Scheduled</p>
+                  </div>
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-purple-400">{rules?.filter(r => r.is_active).length || 0}</p>
+                    <p className="text-gray-400 text-xs">Active Rules</p>
+                  </div>
+                </div>
+                
+                {/* Growth Indicator */}
+                <div className="bg-black/30 rounded-xl p-4 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white text-sm">🔥 Viral Potential Score</span>
+                    <span className="text-purple-400 font-bold">
+                      {Math.min(100, ((posts?.length || 0) * 5) + ((analytics?.total_likes || 0) * 0.1) + ((analytics?.total_shares || 0) * 0.2))}%
+                    </span>
+                  </div>
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full" 
+                      style={{ width: `${Math.min(100, ((posts?.length || 0) * 5) + ((analytics?.total_likes || 0) * 0.1) + ((analytics?.total_shares || 0) * 0.2))}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Platform Reach */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-xl font-bold text-pink-400">{analytics?.total_likes || 0}</p>
+                    <p className="text-gray-400 text-xs">❤️ Reactions</p>
+                  </div>
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-xl font-bold text-blue-400">{analytics?.total_comments || 0}</p>
+                    <p className="text-gray-400 text-xs">💬 Comments</p>
+                  </div>
+                  <div className="bg-black/30 rounded-xl p-3 text-center">
+                    <p className="text-xl font-bold text-green-400">{analytics?.total_shares || 0}</p>
+                    <p className="text-gray-400 text-xs">🔄 Shares</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Platform Performance - Dynamic Data */}
+              <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-white">🎯 Platform Performance</h3>
+                  <p className="text-gray-400 text-sm">Engagement by platform</p>
+                </div>
+                
+                <div className="space-y-4">
+                  {(() => {
+                    // Get dynamic platform data
+                    const platformBreakdown = analytics?.platform_breakdown || {};
+                    const platforms = Object.entries(platformBreakdown).map(([name, data]) => ({
+                      name: name.charAt(0).toUpperCase() + name.slice(1),
+                      engagement: (data.likes || 0) + (data.comments || 0) + (data.shares || 0),
+                      impressions: data.impressions || 0,
+                      color: name === 'x' ? 'bg-black' : name === 'linkedin' ? 'bg-blue-600' : name === 'instagram' ? 'bg-pink-500' : name === 'facebook' ? 'bg-blue-500' : name === 'youtube' ? 'bg-red-600' : 'bg-purple-500',
+                      icon: name === 'x' ? '𝕏' : name === 'linkedin' ? 'in' : name === 'instagram' ? '📷' : name === 'facebook' ? 'f' : name === 'youtube' ? '▶️' : '📱'
+                    }));
+                    
+                    // If no real data, show connected accounts with default values
+                    if (platforms.length === 0 && accounts.length > 0) {
+                      accounts.forEach(acc => {
+                        platforms.push({
+                          name: acc.platform.charAt(0).toUpperCase() + acc.platform.slice(1),
+                          engagement: 0,
+                          impressions: 0,
+                          color: acc.platform === 'x' ? 'bg-black' : acc.platform === 'linkedin' ? 'bg-blue-600' : acc.platform === 'instagram' ? 'bg-pink-500' : acc.platform === 'facebook' ? 'bg-blue-500' : acc.platform === 'youtube' ? 'bg-red-600' : 'bg-purple-500',
+                          icon: acc.platform === 'x' ? '𝕏' : acc.platform === 'linkedin' ? 'in' : acc.platform === 'instagram' ? '📷' : acc.platform === 'facebook' ? 'f' : acc.platform === 'youtube' ? '▶️' : '📱'
+                        });
+                      });
+                    }
+                    
+                    // Calculate max for percentage
+                    const maxEngagement = Math.max(...platforms.map(p => p.engagement), 1);
+                    
+                    return platforms.length > 0 ? platforms.map((platform, i) => {
+                      const percentage = Math.round((platform.engagement / maxEngagement) * 100);
+                      return (
+                        <div key={i} className="bg-black/30 rounded-xl p-3 hover:bg-black/40 transition-colors">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-8 h-8 ${platform.color} rounded-lg flex items-center justify-center text-white text-sm font-bold`}>
+                                {platform.icon}
+                              </span>
+                              <span className="text-white text-sm">{platform.name}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-purple-400 text-sm font-bold">{platform.engagement}</span>
+                              <span className="text-gray-500 text-xs ml-1">eng</span>
+                            </div>
+                          </div>
+                          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${platform.color} rounded-full transition-all duration-500`} 
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between mt-1 text-xs text-gray-500">
+                            <span>{percentage}%</span>
+                            <span>{platform.impressions.toLocaleString()} impressions</span>
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No platform data available yet.</p>
+                        <p className="text-sm mt-1">Start posting to see analytics!</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => setActiveTab('accounts')}
-                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-purple-500/50 transition-all group text-left"
-              >
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-                  ➕
-                </div>
-                <h3 className="text-white font-semibold mb-1">Connect Account</h3>
-                <p className="text-gray-400 text-sm">Link a new social platform</p>
-              </button>
+            {/* Quick Actions & Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Quick Actions */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">⚡ Quick Actions</h3>
+                <button
+                  onClick={() => setActiveTab('accounts')}
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-purple-500/50 transition-all group text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      ➕
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold">Connect Account</h4>
+                      <p className="text-gray-400 text-sm">Link a new social platform</p>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('posts')}
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-blue-500/50 transition-all group text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      ✨
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold">AI Generate</h4>
+                      <p className="text-gray-400 text-sm">Create content with AI</p>
+                    </div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('automation')}
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-green-500/50 transition-all group text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      ⚡
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold">New Automation</h4>
+                      <p className="text-gray-400 text-sm">Set up a new rule</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
               
-              <button
-                onClick={() => setActiveTab('posts')}
-                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-blue-500/50 transition-all group text-left"
-              >
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-                  ✨
-                </div>
-                <h3 className="text-white font-semibold mb-1">AI Generate</h3>
-                <p className="text-gray-400 text-sm">Create content with AI</p>
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('automation')}
-                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-green-500/50 transition-all group text-left"
-              >
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-                  ⚡
-                </div>
-                <h3 className="text-white font-semibold mb-1">New Automation</h3>
-                <p className="text-gray-400 text-sm">Set up a new rule</p>
-              </button>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Posts */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Recent Posts</h3>
+                  <h3 className="text-lg font-semibold text-white">📝 Recent Posts</h3>
                   <button onClick={() => setActiveTab('posts')} className="text-purple-400 hover:text-purple-300 text-sm">View All →</button>
                 </div>
                 {postsLoading ? (
@@ -1024,11 +1199,11 @@ export default function AutomationDashboard() {
                   </div>
                 ) : posts?.length > 0 ? (
                   <div className="space-y-3">
-                    {posts.slice(0, 3).map((post) => (
-                      <div key={post._id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl">
+                    {posts.slice(0, 4).map((post) => (
+                      <div key={post._id} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl hover:bg-black/50 transition-colors">
                         <div className="flex gap-1">
                           {post.platforms?.slice(0, 2).map((p) => (
-                            <PlatformIcon key={p} platform={p} size="w-4 h-4" />
+                            <PlatformIcon key={p} platform={p} size="w-5 h-5" />
                           ))}
                         </div>
                         <p className="flex-1 text-gray-300 text-sm truncate">{post.content}</p>
@@ -1039,6 +1214,9 @@ export default function AutomationDashboard() {
                         }`}>
                           {post.status === 'partial_failure' ? 'Failed' : post.status}
                         </span>
+                        <span className="text-gray-500 text-xs">
+                          {post.created_at ? new Date(post.created_at).toLocaleDateString() : ''}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -1048,29 +1226,36 @@ export default function AutomationDashboard() {
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Platform Overview */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Connected Platforms</h3>
-                  <button onClick={() => setActiveTab('accounts')} className="text-purple-400 hover:text-purple-300 text-sm">Manage →</button>
+            {/* Connected Platforms */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">🔗 Connected Platforms</h3>
+                  <p className="text-gray-400 text-sm">Manage your social media connections</p>
                 </div>
-                {accounts.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {accounts.map((acc) => (
-                      <div key={acc.platform} className="flex items-center gap-3 p-3 bg-black/30 rounded-xl">
-                        <PlatformIcon platform={acc.platform} size="w-6 h-6" />
-                        <span className="text-white capitalize">{acc.platform}</span>
-                        <span className="w-2 h-2 bg-green-400 rounded-full ml-auto"></span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No accounts connected yet.</p>
-                  </div>
-                )}
+                <button onClick={() => setActiveTab('accounts')} className="text-purple-400 hover:text-purple-300 text-sm">Manage →</button>
               </div>
+              {accounts.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {accounts.map((acc) => (
+                    <div key={acc.platform} className="flex items-center gap-3 p-4 bg-black/30 rounded-xl hover:bg-black/50 transition-colors">
+                      <PlatformIcon platform={acc.platform} size="w-8 h-8" />
+                      <div>
+                        <span className="text-white capitalize font-medium">{acc.platform}</span>
+                        <p className="text-green-400 text-xs flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Connected
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No accounts connected yet.</p>
+                </div>
+              )}
             </div>
           </div>
         )}
