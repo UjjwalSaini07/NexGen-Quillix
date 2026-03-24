@@ -1,141 +1,334 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 
 const platformGuides = {
   facebook: {
     name: 'Facebook',
     icon: '/social/Facebook.png',
-    description: 'Connect your Facebook Page and automate posts effortlessly.',
-    color: '#1877F2',
+    color: 'from-blue-600 to-blue-800',
+    bgGlow: 'bg-blue-500/20',
+    description: 'Connect your Facebook Page',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developers.facebook.com/docs/development',
     steps: [
-      { title: 'Visit Developers Portal', description: 'Go to developers.facebook.com and sign in with your account', icon: '🌐' },
-      { title: 'Create New Application', description: 'Click "My Apps" → "Create App" and select "Consumer" type', icon: '➕' },
-      { title: 'Add Facebook Login', description: 'Add Facebook Login product from the dashboard and configure settings', icon: '🔐' },
-      { title: 'Get Credentials', description: 'Navigate to Settings → Basic to copy your App ID and Secret', icon: '🔑' },
-      { title: 'Generate Token', description: 'Use Graph API Explorer to get access token with needed permissions', icon: '🎫' }
+      { 
+        title: 'Go to Developers Portal', 
+        desc: 'developers.facebook.com', 
+        time: '1 min', 
+        icon: '🌐',
+        details: 'Open your browser and visit developers.facebook.com. Click "My Apps" then "Create App". Select "Consumer" as the app type and give your app a name.'
+      },
+      { 
+        title: 'Add Facebook Login', 
+        desc: 'Enable login product', 
+        time: '2 min', 
+        icon: '🔐',
+        details: 'In your app dashboard, scroll to "Add products to your app". Find "Facebook Login" and click "Set Up". This enables OAuth for your app.'
+      },
+      { 
+        title: 'Configure Settings', 
+        desc: 'Set valid OAuth URLs', 
+        time: '2 min', 
+        icon: '⚙️',
+        details: 'Go to Facebook Login > Settings. Add your website URL in "Valid OAuth redirect URIs". For local testing, add http://localhost:3000/'
+      },
+      { 
+        title: 'Get Credentials', 
+        desc: 'App ID & Secret', 
+        time: '1 min', 
+        icon: '🔑',
+        details: 'In the left menu, go to "App Settings" > "Basic". You will find your App ID (copy this) and App Secret. Click "Show" to reveal the secret.'
+      },
+      { 
+        title: 'Generate Access Token', 
+        desc: 'Via Graph API Explorer', 
+        time: '3 min', 
+        icon: '🎫',
+        details: 'Go to Graph API Explorer (developers.facebook.com/tools/explorer). Select your app, click "Get Token" > "Get User Access Token". Grant permissions and copy the token.'
+      }
     ],
-    tips: [
-      'Keep your App Secret safe and never expose it',
-      'Use long-lived tokens for extended access',
-      'Request only necessary permissions',
-      'Test with sandbox accounts first'
+    moreInfo: [
+      'Your access token expires in ~1 hour. Implement token refresh for long-term use.',
+      'To get a permanent page token, use the Graph API with your user token and page permissions.',
+      'Add "pages_manage_posts" permission to post to your Facebook Page.',
+      'Test your setup by making a simple API call to /me/accounts.'
     ]
   },
   instagram: {
     name: 'Instagram',
     icon: '/social/Instagram.png',
-    description: 'Link your Instagram Business account for content automation.',
-    color: '#E4405F',
+    color: 'from-purple-600 to-pink-600',
+    bgGlow: 'bg-pink-500/20',
+    description: 'Link Instagram Business',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developers.facebook.com/docs/instagram',
     steps: [
-      { title: 'Open Meta Developers', description: 'Visit developers.facebook.com with your connected app', icon: '🌐' },
-      { title: 'Enable Basic Display', description: 'Add Instagram Basic Display product to your app', icon: '⚡' },
-      { title: 'Add Test Account', description: 'Add your Instagram account as test user in settings', icon: '👤' },
-      { title: 'Get Long-Lived Token', description: 'Generate long-lived access token via Graph API Explorer', icon: '🎫' },
-      { title: 'Retrieve Account ID', description: 'Use API to fetch your Instagram Business Account ID', icon: '📋' }
+      { 
+        title: 'Open Meta Developers', 
+        desc: 'developers.facebook.com', 
+        time: '1 min', 
+        icon: '🌐',
+        details: 'Navigate to developers.facebook.com and log in with your Facebook account. If you don\'t have one, create a new developer account.'
+      },
+      { 
+        title: 'Create or Select App', 
+        desc: 'Choose existing or new', 
+        time: '2 min', 
+        icon: '📱',
+        details: 'Click "My Apps" and either create a new app or select an existing one. The app must be linked to your Instagram Business account.'
+      },
+      { 
+        title: 'Add Instagram Basic Display', 
+        desc: 'In app products', 
+        time: '2 min', 
+        icon: '📦',
+        details: 'In your app dashboard, find "Add products to your app". Search for "Instagram Basic Display" and click "Set Up".'
+      },
+      { 
+        title: 'Add Test User', 
+        desc: 'Your Instagram account', 
+        time: '2 min', 
+        icon: '👤',
+        details: 'Go to Instagram Basic Display > Test Users. Add your Instagram username as a test user. You must follow your own account from the Instagram app.'
+      },
+      { 
+        title: 'Generate Token', 
+        desc: 'Long-lived access token', 
+        time: '2 min', 
+        icon: '🎫',
+        details: 'Click "Generate Token" for your test user. This token lasts 60 days. Use /refresh_access_token endpoint to extend it.'
+      }
     ],
-    tips: [
-      'Business accounts work best for automation',
-      'Long-lived tokens last 60 days',
-      'Use Instagram Graph API for insights',
-      'Maintain compliance with platform policies'
+    moreInfo: [
+      'Instagram Basic Display API allows reading profile, media, and insights.',
+      'For posting, you need Instagram Graph API (Business account required).',
+      'Convert to a business account in Instagram Settings > Account > Switch to professional account.',
+      'Your Instagram account must be a Business or Creator account to use the API.'
     ]
   },
   linkedin: {
     name: 'LinkedIn',
     icon: '/social/LinkedIn.png',
-    description: 'Automate LinkedIn posts and grow your professional network.',
-    color: '#0A66C2',
+    color: 'from-blue-700 to-blue-900',
+    bgGlow: 'bg-blue-500/20',
+    description: 'Automate LinkedIn posts',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developer.linkedin.com/',
     steps: [
-      { title: 'Access Developer Portal', description: 'Go to developer.linkedin.com and create account', icon: '🌐' },
-      { title: 'Build Your App', description: 'Create new app with company page association', icon: '🏢' },
-      { title: 'Request Permissions', description: 'Add "Share on LinkedIn" product for posting access', icon: '📝' },
-      { title: 'Copy Keys', description: 'Find Client ID and Secret in Authentication tab', icon: '🔑' },
-      { title: 'Create OAuth Token', description: 'Generate token with r_liteprofile and w_member_social', icon: '🎫' }
+      { 
+        title: 'Visit Developer Portal', 
+        desc: 'developer.linkedin.com', 
+        time: '1 min', 
+        icon: '🌐',
+        details: 'Go to developer.linkedin.com and sign in with your LinkedIn account. Click "Create App" to start.'
+      },
+      { 
+        title: 'Create New App', 
+        desc: 'App details & company', 
+        time: '3 min', 
+        icon: '📝',
+        details: 'Fill in your app name, upload a logo, and link it to a Company Page. You must be an admin of the Company Page.'
+      },
+      { 
+        title: 'Request Product Access', 
+        desc: 'Share on LinkedIn', 
+        time: '5 min', 
+        icon: '✅',
+        details: 'In the "Products" tab, find "Share on LinkedIn" and "Sign In with LinkedIn". Request access for each. This may require verification.'
+      },
+      { 
+        title: 'Copy API Keys', 
+        desc: 'Client ID & Secret', 
+        time: '1 min', 
+        icon: '🔑',
+        details: 'Go to "Auth" tab. Copy your Client ID. For Client Secret, you may need to create one. Keep these secure!'
+      },
+      { 
+        title: 'Generate OAuth Token', 
+        desc: 'User authorization flow', 
+        time: '3 min', 
+        icon: '🎫',
+        details: 'Build the OAuth authorization URL with your Client ID and required scopes. User visits URL, grants permission, you exchange code for token.'
+      }
     ],
-    tips: [
-      'Company page association is required',
-      'Personal profile needed for authentication',
-      'Review rate limits before publishing',
-      'Stay compliant with LinkedIn terms'
+    moreInfo: [
+      'Required scope: r_liteprofile, r_emailaddress, w_member_social for posting.',
+      'Tokens expire in ~365 days. Implement refresh before expiration.',
+      'LinkedIn requires app verification before going live with posting.',
+      'Your Company Page must have at least 10 followers for some features.'
     ]
   },
   x: {
     name: 'X',
     icon: '/social/X.png',
-    description: 'Post to X (Twitter) programmatically with API integration.',
-    color: '#000000',
+    color: 'from-gray-600 to-black',
+    bgGlow: 'bg-gray-500/20',
+    description: 'Post to X (Twitter)',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developer.twitter.com/en/docs',
     steps: [
-      { title: 'Join Developer Program', description: 'Apply for developer account at developer.twitter.com', icon: '📝' },
-      { title: 'Start New Project', description: 'Create project and select "Writing" as use case', icon: '📁' },
-      { title: 'Setup App', description: 'Create app within project to receive API keys', icon: '⚙️' },
-      { title: 'Copy Credentials', description: 'Get API Key, Secret, Bearer Token from keys tab', icon: '🔑' },
-      { title: 'Generate Tokens', description: 'Create Access Token and Secret for user-level access', icon: '🎫' }
+      { 
+        title: 'Join Developer Portal', 
+        desc: 'developer.twitter.com', 
+        time: '2 min', 
+        icon: '🌐',
+        details: 'Go to developer.twitter.com and apply for a developer account. Select "Making a bot" or "Building apps" as your use case.'
+      },
+      { 
+        title: 'Create Project', 
+        desc: 'Select API v2', 
+        time: '3 min', 
+        icon: '📁',
+        details: 'Create a new project and select "Twitter API v2". Give it a name and description. This gives you access to the latest APIs.'
+      },
+      { 
+        title: 'Create App', 
+        desc: 'Get API keys', 
+        time: '2 min', 
+        icon: '🔑',
+        details: 'Within your project, create an app. Go to "Keys and Tokens" to see your API Key, API Secret, Bearer Token, and Access Token.'
+      },
+      { 
+        title: 'Setup Authentication', 
+        desc: 'OAuth 2.0', 
+        time: '3 min', 
+        icon: '🔐',
+        details: 'Configure OAuth 2.0 in app settings. Set callback URL and website URL. Generate access tokens with the required scopes.'
+      },
+      { 
+        title: 'Get Access Token', 
+        desc: 'For API calls', 
+        time: '2 min', 
+        icon: '🎫',
+        details: 'Use your API Key and Secret to get a Bearer Token. For user actions, implement OAuth 1.0a or OAuth 2.0 with PKCE.'
+      }
     ],
-    tips: [
-      'Free tier has rate limits',
-      'Elevated access gives more tweets',
-      'API v2 is recommended for new apps',
-      'Monitor usage in developer portal'
+    moreInfo: [
+      'Essential scopes: tweet.read, tweet.write, users.read for posting.',
+      'Free tier: 1,500 tweets per month. Check your rate limits.',
+      'Apply for Elevated access for more features and higher limits.',
+      'Always handle rate limit errors - implement exponential backoff.'
     ]
   },
   youtube: {
     name: 'YouTube',
     icon: '/social/Youtube.png',
-    description: 'Manage and publish videos through YouTube Data API.',
-    color: '#FF0000',
+    color: 'from-red-600 to-red-800',
+    bgGlow: 'bg-red-500/20',
+    description: 'Manage YouTube videos',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developers.google.com/youtube/v3',
     steps: [
-      { title: 'Open Cloud Console', description: 'Go to console.cloud.google.com and create project', icon: '☁️' },
-      { title: 'Enable API', description: 'Search and enable YouTube Data API v3 in library', icon: '📚' },
-      { title: 'Create Credentials', description: 'Set up OAuth 2.0 credentials for authentication', icon: '🔐' },
-      { title: 'Configure Consent', description: 'Add your email as test user in OAuth consent screen', icon: '✅' },
-      { title: 'Download Keys', description: 'Get your client_id and client_secret JSON file', icon: '📥' }
+      { 
+        title: 'Open Cloud Console', 
+        desc: 'console.cloud.google.com', 
+        time: '1 min', 
+        icon: '☁️',
+        details: 'Go to console.cloud.google.com. Create a new project or select an existing one for your YouTube integration.'
+      },
+      { 
+        title: 'Enable YouTube API', 
+        desc: 'API Library', 
+        time: '2 min', 
+        icon: '✅',
+        details: 'Search for "YouTube Data API v3" in the API Library and enable it. Also enable "YouTube Analytics API" if needed.'
+      },
+      { 
+        title: 'Create Credentials', 
+        desc: 'OAuth 2.0 Client', 
+        time: '2 min', 
+        icon: '🔑',
+        details: 'Go to "Credentials" > "Create Credentials" > "OAuth client ID". Select "Web application" as the type.'
+      },
+      { 
+        title: 'Configure Consent', 
+        desc: 'OAuth consent screen', 
+        time: '5 min', 
+        icon: '📜',
+        details: 'Set up OAuth consent screen with your app name and email. Add test users who can access the app (required for external testing).'
+      },
+      { 
+        title: 'Download Keys', 
+        desc: 'JSON credentials', 
+        time: '1 min', 
+        icon: '📥',
+        details: 'Download the JSON file with your client ID and secret. For server-to-server, create a Service Account instead.'
+      }
     ],
-    tips: [
-      'OAuth 2.0 is required for most features',
-      'Quota allocation varies by project',
-      'Video uploads need larger quotas',
-      'Verify app before going public'
+    moreInfo: [
+      'Required scope: youtube.force-ssl for basic operations.',
+      'For uploading: youtube.upload scope and quota > 10,000 units.',
+      'Service accounts don\'t work with YouTube - use OAuth 2.0 for user data.',
+      'Default quota: 10,000 units/day. Request increase for production.'
     ]
   },
   whatsapp: {
     name: 'WhatsApp',
     icon: '/social/whatsapp.png',
-    description: 'Send automated messages via WhatsApp Business API.',
-    color: '#25D366',
+    color: 'from-green-500 to-green-700',
+    bgGlow: 'bg-green-500/20',
+    description: 'WhatsApp Business API',
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    docsUrl: 'https://developers.facebook.com/docs/whatsapp',
     steps: [
-      { title: 'Access Meta Developers', description: 'Go to developers.facebook.com and select WhatsApp', icon: '🌐' },
-      { title: 'Create Business App', description: 'Set up new app specifically for WhatsApp business', icon: '🏢' },
-      { title: 'Copy Temporary Token', description: 'Find temporary access token in API Setup tab', icon: '🎫' },
-      { title: 'Get Phone ID', description: 'Copy your WhatsApp Business Phone Number ID', icon: '📱' },
-      { title: 'Setup Webhook', description: 'Configure webhook URL for incoming message handling', icon: '🔗' }
+      { 
+        title: 'Access Meta Developers', 
+        desc: 'developers.facebook.com', 
+        time: '1 min', 
+        icon: '🌐',
+        details: 'Open developers.facebook.com and create a new app. Select "Other" > "Business" as the app type.'
+      },
+      { 
+        title: 'Add WhatsApp Product', 
+        desc: 'Setup WhatsApp', 
+        time: '2 min', 
+        icon: '💬',
+        details: 'In the app dashboard, find "WhatsApp" in the products list and click "Set Up". This enables the WhatsApp API.'
+      },
+      { 
+        title: 'Get Temporary Token', 
+        desc: 'For testing', 
+        time: '1 min', 
+        icon: '🎫',
+        details: 'In the WhatsApp > API Setup tab, copy the temporary access token. It\'s valid for 24 hours and for test numbers only.'
+      },
+      { 
+        title: 'Get Phone Number ID', 
+        desc: 'Business number ID', 
+        time: '1 min', 
+        icon: '📱',
+        details: 'In the same section, find your "Phone Number ID". This identifies your WhatsApp Business phone number.'
+      },
+      { 
+        title: 'Setup Webhook', 
+        desc: 'For incoming messages', 
+        time: '5 min', 
+        icon: '🪝',
+        details: 'Configure a webhook URL to receive messages. Verify your webhook with the challenge code. Subscribe to webhook fields.'
+      }
     ],
-    tips: [
-      'Temporary tokens expire in 24 hours',
-      'Webhooks need SSL verification',
-      'Business verification may be required',
-      'Message templates need approval'
+    moreInfo: [
+      'Use the temporary token only for testing with test numbers.',
+      'Request production access to use with real phone numbers.',
+      'Incoming messages are free. Outgoing messages cost per conversation.',
+      'You need pre-approved message templates for proactive messages.'
     ]
   }
 };
 
-export default function VideoGuidePage(props) {
-  const searchParams = use(props.searchParams);
+export default function VideoGuidePage({ searchParams }) {
   const platformParam = searchParams?.platform || 'facebook';
   const [selectedPlatform, setSelectedPlatform] = useState(platformParam);
   const [completedSteps, setCompletedSteps] = useState({});
-  const [viewMode, setViewMode] = useState('steps'); // 'steps' or 'tips'
+  const [viewMode, setViewMode] = useState('steps');
+  const [expandedStep, setExpandedStep] = useState(null);
   
   const currentGuide = platformGuides[selectedPlatform];
   
   useEffect(() => {
     setViewMode('steps');
+    setExpandedStep(null);
   }, [selectedPlatform]);
   
   const toggleStep = (stepIndex) => {
@@ -147,45 +340,58 @@ export default function VideoGuidePage(props) {
       }
     }));
   };
-  
-  const progress = currentGuide.steps.filter((_, i) => completedSteps[selectedPlatform]?.[i]).length;
-  const progressPercent = Math.round((progress / currentGuide.steps.length) * 100);
+
+  const toggleExpand = (stepIndex) => {
+    setExpandedStep(expandedStep === stepIndex ? null : stepIndex);
+  };
+
+  const completedCount = Object.values(completedSteps[selectedPlatform] || {}).filter(Boolean).length;
+  const totalSteps = currentGuide.steps.length;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className={`absolute top-0 left-1/4 w-96 h-96 ${currentGuide.bgGlow} rounded-full blur-3xl opacity-30`} />
+        <div className={`absolute bottom-0 right-1/4 w-96 h-96 ${currentGuide.bgGlow} rounded-full blur-3xl opacity-30`} />
+      </div>
+
       {/* Header */}
-      <div className="bg-black/80 border-b border-white/10">
+      <div className="relative bg-black/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               <button 
-                onClick={() => window.location.href = '/mcpAutomation'}
-                className="w-11 h-11 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all"
+                onClick={() => window.close()}
+                className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center hover:bg-white/10 hover:scale-105 transition-all"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                ✕
               </button>
-              <div>
-                <h1 className="text-xl font-bold">Credentials Guide</h1>
-                <p className="text-xs text-gray-500">Generate API credentials for each platform</p>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentGuide.color} flex items-center justify-center`}>
+                  <img src={currentGuide.icon} alt={currentGuide.name} className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold">{currentGuide.name}</h1>
+                  <p className="text-xs text-gray-500">{currentGuide.description}</p>
+                </div>
               </div>
             </div>
-            
+
             {/* Platform Tabs */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto">
               {Object.entries(platformGuides).map(([key, platform]) => (
                 <button
                   key={key}
                   onClick={() => setSelectedPlatform(key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all whitespace-nowrap ${
                     selectedPlatform === key
-                      ? 'bg-white text-black font-medium'
+                      ? `bg-gradient-to-r ${platform.color} text-white shadow-lg`
                       : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10'
                   }`}
                 >
                   <img src={platform.icon} alt={platform.name} className="w-4 h-4" />
-                  <span className="text-sm">{platform.name}</span>
+                  <span className="text-sm font-medium">{platform.name}</span>
                 </button>
               ))}
             </div>
@@ -194,13 +400,13 @@ export default function VideoGuidePage(props) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-          {/* Left Column - 5 cols */}
-          <div className="xl:col-span-5 space-y-6">
-            {/* Video Card */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-              <div className="aspect-video bg-black">
+      <div className="relative max-w-7xl mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left - Video & Stats */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Video Player */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="aspect-video bg-black relative">
                 <iframe
                   src={currentGuide.videoUrl}
                   title={`${currentGuide.name} Guide`}
@@ -209,108 +415,143 @@ export default function VideoGuidePage(props) {
                   allowFullScreen
                 />
               </div>
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <img src={currentGuide.icon} alt={currentGuide.name} className="w-8 h-8" />
+              <div className="p-4 flex items-center justify-between border-t border-white/5">
+                <div className="flex items-center gap-3">
+                  <img src={currentGuide.icon} alt={currentGuide.name} className="w-10 h-10" />
                   <div>
-                    <h2 className="text-lg font-semibold">{currentGuide.name}</h2>
-                    <p className="text-xs text-gray-500">API Setup Tutorial</p>
+                    <h2 className="font-semibold">{currentGuide.name} Setup</h2>
+                    <p className="text-xs text-gray-500">Step-by-step credentials guide</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-400">{currentGuide.description}</p>
+                <a
+                  href={currentGuide.docsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm flex items-center gap-2 transition-all"
+                >
+                  📖 Docs
+                </a>
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setViewMode('steps')}
-                className={`p-4 rounded-xl border transition-all text-left ${
-                  viewMode === 'steps'
-                    ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'
-                }`}
-              >
-                <div className="text-lg mb-1">📋</div>
-                <div className="font-medium">Setup Steps</div>
-                <div className="text-xs opacity-70">{currentGuide.steps.length} steps</div>
-              </button>
-              <button
-                onClick={() => setViewMode('tips')}
-                className={`p-4 rounded-xl border transition-all text-left ${
-                  viewMode === 'tips'
-                    ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'
-                }`}
-              >
-                <div className="text-lg mb-1">💡</div>
-                <div className="font-medium">Tips & Tricks</div>
-                <div className="text-xs opacity-70">{currentGuide.tips.length} tips</div>
-              </button>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="text-2xl font-bold">{totalSteps}</div>
+                <div className="text-xs text-gray-500">Total Steps</div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="text-2xl font-bold text-green-400">{completedCount}</div>
+                <div className="text-xs text-gray-500">Completed</div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="text-2xl font-bold">{totalSteps - completedCount}</div>
+                <div className="text-xs text-gray-500">Remaining</div>
+              </div>
             </div>
           </div>
 
-          {/* Right Column - 7 cols */}
-          <div className="xl:col-span-7">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          {/* Right - Steps/Details */}
+          <div className="lg:col-span-5 space-y-4">
+            {/* Toggle */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setViewMode('steps')}
+                className={`p-3 rounded-xl border text-center text-sm font-medium transition-all ${
+                  viewMode === 'steps'
+                    ? 'bg-white text-black border-white'
+                    : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                }`}
+              >
+                📋 {currentGuide.steps.length} Steps
+              </button>
+              <button
+                onClick={() => setViewMode('details')}
+                className={`p-3 rounded-xl border text-center text-sm font-medium transition-all ${
+                  viewMode === 'details'
+                    ? 'bg-white text-black border-white'
+                    : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                }`}
+              >
+                📖 More Details
+              </button>
+            </div>
+
+            {/* Content Cards */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
               {viewMode === 'steps' ? (
-                <>
-                  <h3 className="text-lg font-semibold mb-5">Step-by-Step Guide</h3>
-                  <div className="space-y-3">
-                    {currentGuide.steps.map((step, index) => {
-                      const isCompleted = completedSteps[selectedPlatform]?.[index];
-                      
-                      return (
-                        <div
-                          key={index}
-                          onClick={() => toggleStep(index)}
-                          className={`p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-4 ${
-                            isCompleted
-                              ? 'border-green-500/30 bg-green-500/5'
-                              : 'border-white/10 bg-white/5 hover:border-white/20'
-                          }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${
-                            isCompleted ? 'bg-green-500 text-white' : 'bg-white/10'
-                          }`}>
-                            {isCompleted ? '✓' : index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{step.icon}</span>
-                              <h4 className={`font-medium ${isCompleted ? 'text-green-400' : ''}`}>{step.title}</h4>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">{step.description}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-lg font-semibold mb-5">Best Practices & Tips</h3>
-                  <div className="space-y-3">
-                    {currentGuide.tips.map((tip, index) => (
-                      <div key={index} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
-                          <span className="text-sm">💡</span>
-                        </div>
-                        <p className="text-sm text-gray-300 mt-1">{tip}</p>
-                      </div>
-                    ))}
-                  </div>
+                currentGuide.steps.map((step, index) => {
+                  const isCompleted = completedSteps[selectedPlatform]?.[index];
+                  const isExpanded = expandedStep === index;
                   
-                  <div className="mt-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                    <div className="flex items-start gap-3">
-                      <span className="text-xl">📚</span>
-                      <div>
-                        <h4 className="font-medium text-blue-400">Official Documentation</h4>
-                        <p className="text-sm text-gray-400 mt-1">Check the official {currentGuide.name} documentation for the most up-to-date information and requirements.</p>
+                  return (
+                    <div key={index}>
+                      <div
+                        onClick={() => {
+                          toggleStep(index);
+                          toggleExpand(index);
+                        }}
+                        className={`group p-3 rounded-xl border cursor-pointer transition-all hover:scale-[1.02] ${
+                          isCompleted
+                            ? 'border-green-500/30 bg-green-500/5'
+                            : 'border-white/10 bg-white/5 hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
+                            isCompleted 
+                              ? 'bg-green-500 text-white' 
+                              : `bg-gradient-to-br ${currentGuide.color} text-white`
+                          }`}>
+                            {isCompleted ? '✓' : step.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-medium ${isCompleted ? 'text-green-400' : ''}`}>
+                              {step.title}
+                            </div>
+                            <div className="text-xs text-gray-500">{step.desc}</div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-gray-600 bg-white/5 px-2 py-1 rounded">
+                              ⏱ {step.time}
+                            </span>
+                            <span className={`text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                              ▼
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 animate-fadeIn">
+                          <div className="text-sm text-gray-300 leading-relaxed">
+                            {step.details}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-400 mb-4">
+                    Additional important information for {currentGuide.name}:
+                  </div>
+                  {currentGuide.moreInfo.map((info, index) => (
+                    <div
+                      key={index}
+                      className="p-3 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${currentGuide.color} flex items-center justify-center text-xs shrink-0`}>
+                          ℹ️
+                        </div>
+                        <div className="text-sm text-gray-300">{info}</div>
                       </div>
                     </div>
-                  </div>
-                </>
+                  ))}
+                </div>
               )}
             </div>
           </div>
