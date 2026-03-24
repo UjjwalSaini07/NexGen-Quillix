@@ -1426,6 +1426,14 @@ export default function AutomationDashboard() {
                       {/* Benefit text */}
                       <p className="text-xs text-gray-500 mb-3">{info.benefit}</p>
                       
+                      {/* Video Guide Link */}
+                      <button
+                        onClick={() => window.open(`/mcpAutomation/videoGuide?platform=${platform}`, '_blank')}
+                        className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 mb-3"
+                      >
+                        🎬 Video Guide
+                      </button>
+                      
                       {/* Account info if connected */}
                       {isConnected && connectedAccount && (
                         <div className="bg-black/20 rounded-lg p-2 mb-3 text-xs">
@@ -1460,14 +1468,29 @@ export default function AutomationDashboard() {
             </div>
             
             {/* Help Section */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-blue-400 text-xl">💡</span>
-                <div>
-                  <p className="text-blue-400 font-medium mb-1">Need help connecting?</p>
-                  <p className="text-blue-400/70 text-sm">Click on any platform above to connect. You'll be redirected to authorize access to your account.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-400 text-xl">💡</span>
+                  <div>
+                    <p className="text-blue-400 font-medium mb-1">Need help connecting?</p>
+                    <p className="text-blue-400/70 text-sm">Click on any platform above to connect. You'll be redirected to authorize access to your account.</p>
+                  </div>
                 </div>
               </div>
+              
+              <button
+                onClick={() => window.open('/mcpAutomation/videoGuide', '_blank')}
+                className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 hover:bg-purple-500/20 transition-all text-left"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 text-xl">🎬</span>
+                  <div>
+                    <p className="text-purple-400 font-medium mb-1">Video Guide to get Credentials</p>
+                    <p className="text-purple-400/70 text-sm">Watch step-by-step video tutorials for each platform.</p>
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         )}
