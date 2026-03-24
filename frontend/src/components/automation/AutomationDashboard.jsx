@@ -91,6 +91,9 @@ const StatCard = ({ title, value, icon, gradient, trend, trendValue }) => (
 
 // Platform Account Card - Enhanced Glassmorphism
 const AccountCard = ({ account, onDisconnect }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  
   const platformColors = {
     facebook: 'from-blue-600 to-blue-700',
     instagram: 'from-pink-600 to-purple-600',
@@ -100,11 +103,22 @@ const AccountCard = ({ account, onDisconnect }) => {
     whatsapp: 'from-green-500 to-green-600',
   };
 
+  const handleDisconnect = async () => {
+    setIsDisconnecting(true);
+    try {
+      await onDisconnect(account.platform);
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: 1.02 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 hover:border-white/25 transition-all group overflow-hidden relative"
     >
       {/* Gradient background glow */}
@@ -120,7 +134,7 @@ const AccountCard = ({ account, onDisconnect }) => {
           </div>
           <div>
             <h3 className="font-semibold text-white text-lg capitalize">{account.platform}</h3>
-            <p className="text-xs text-gray-400">{account.platform_username || 'Connected'}</p>
+            <p className="text-xs text-gray-400">@{account.platform_username || 'Connected'}</p>
           </div>
         </div>
         <span className="flex items-center gap-1.5 text-green-400 text-sm">
@@ -128,13 +142,35 @@ const AccountCard = ({ account, onDisconnect }) => {
           Active
         </span>
       </div>
+      
+      {/* Account Details */}
+      <div className="relative bg-black/20 rounded-xl p-3 mb-3">
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-gray-500">Connected</span>
+          <span className="text-gray-300">{account.created_at ? new Date(account.created_at).toLocaleDateString() : 'Recently'}</span>
+        </div>
+        {account.platform_id && (
+          <div className="flex justify-between items-center text-xs mt-1">
+            <span className="text-gray-500">Account ID</span>
+            <span className="text-gray-300 truncate max-w-[120px]">{account.platform_id}</span>
+          </div>
+        )}
+      </div>
+      
       <div className="relative flex items-center justify-between">
-        <span className="text-xs text-gray-500">Connected {account.created_at ? new Date(account.created_at).toLocaleDateString() : 'recently'}</span>
+        <span className="text-xs text-gray-500">Last sync: {account.last_sync ? new Date(account.last_sync).toLocaleString() : 'Never'}</span>
         <button
-          onClick={() => onDisconnect(account.platform)}
-          className="text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+          onClick={handleDisconnect}
+          disabled={isDisconnecting}
+          className="text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
         >
-          Disconnect
+          {isDisconnecting ? (
+            <>
+              <span className="animate-spin">↻</span> Disconnecting...
+            </>
+          ) : (
+            'Disconnect'
+          )}
         </button>
       </div>
     </motion.div>
@@ -1263,23 +1299,32 @@ export default function AutomationDashboard() {
         {/* Accounts Tab */}
         {activeTab === 'accounts' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            {/* Header with stats */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-white">Connected Accounts</h2>
                 <p className="text-gray-400">Manage your social media connections</p>
               </div>
-              <button
-                onClick={() => {
-                  fetchAccounts();
-                  toast.info('Refreshing accounts...');
-                }}
-                className="px-3 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
-                title="Refresh Accounts"
-              >
-                <span className="animate-spin">↻</span> Refresh
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Account Stats */}
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/10">
+                  <span className="text-green-400">●</span>
+                  <span className="text-gray-300 text-sm">{accounts.length} Connected</span>
+                </div>
+                <button
+                  onClick={() => {
+                    fetchAccounts();
+                    toast.info('Refreshing accounts...');
+                  }}
+                  className="px-4 py-2 bg-white/10 text-gray-300 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+                  title="Refresh Accounts"
+                >
+                  <span className="animate-spin">↻</span> Refresh
+                </button>
+              </div>
             </div>
 
+            {/* Connected Accounts Grid */}
             {accounts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {accounts.map((account) => (
@@ -1293,80 +1338,135 @@ export default function AutomationDashboard() {
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Accounts Connected</h3>
                 <p className="text-gray-400 mb-6">Connect your social media accounts to get started</p>
+                <p className="text-sm text-gray-500">Click on a platform below to connect</p>
               </div>
             )}
 
             {/* Available Platforms */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Available Platforms</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Available Platforms</h3>
+                <span className="text-gray-400 text-sm">{6 - accounts.length} platforms available</span>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {['facebook', 'instagram', 'linkedin', 'x', 'youtube', 'whatsapp'].map((platform) => {
                   const isConnected = accounts.some(a => a.platform === platform);
+                  const connectedAccount = accounts.find(a => a.platform === platform);
                   const platformInfo = {
                     facebook: { 
                       name: 'Facebook', 
                       icon: <img src="/social/Facebook.png" alt="Facebook" className="w-6 h-6" />,
                       desc: 'Connect your Facebook Page', 
-                      color: 'from-blue-600 to-blue-700' 
+                      color: 'from-blue-600 to-blue-700',
+                      benefit: 'Reach customers on Facebook'
                     },
                     instagram: { 
                       name: 'Instagram', 
                       icon: <img src="/social/Instagram.png" alt="Instagram" className="w-6 h-6" />,
                       desc: 'Connect your Instagram Business', 
-                      color: 'from-pink-600 to-purple-600' 
+                      color: 'from-pink-600 to-purple-600',
+                      benefit: 'Share visual content with your audience'
                     },
                     linkedin: { 
                       name: 'LinkedIn', 
                       icon: <img src="/social/LinkedIn.png" alt="LinkedIn" className="w-6 h-6" />,
                       desc: 'Connect your LinkedIn Profile', 
-                      color: 'from-blue-700 to-blue-800' 
+                      color: 'from-blue-700 to-blue-800',
+                      benefit: 'Build professional network'
                     },
                     x: { 
                       name: 'X (Twitter)', 
                       icon: <img src="/social/X.png" alt="X" className="w-6 h-6" />,
                       desc: 'Connect your X Account', 
-                      color: 'from-gray-700 to-gray-900' 
+                      color: 'from-gray-700 to-gray-900',
+                      benefit: 'Share updates with followers'
                     },
                     youtube: { 
                       name: 'YouTube', 
                       icon: <img src="/social/Youtube.png" alt="YouTube" className="w-6 h-6" />,
                       desc: 'Connect your YouTube Channel', 
-                      color: 'from-red-600 to-red-700' 
+                      color: 'from-red-600 to-red-700',
+                      benefit: 'Share videos with subscribers'
                     },
                     whatsapp: { 
                       name: 'WhatsApp', 
                       icon: <img src="/social/whatsapp.png" alt="WhatsApp" className="w-6 h-6" />,
                       desc: 'Connect WhatsApp Business', 
-                      color: 'from-green-500 to-green-600' 
+                      color: 'from-green-500 to-green-600',
+                      benefit: 'Direct customer communication'
                     },
                   };
                   const info = platformInfo[platform];
                   
                   return (
-                    <div key={platform} className={`bg-white/5 border border-white/10 rounded-2xl p-5 ${isConnected ? 'opacity-50' : ''}`}>
+                    <div 
+                      key={platform} 
+                      className={`bg-white/5 border border-white/10 rounded-2xl p-5 transition-all ${
+                        isConnected 
+                          ? 'opacity-60 hover:opacity-80' 
+                          : 'hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10'
+                      }`}
+                    >
                       <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${info.color} flex items-center justify-center text-white p-1.5`}>
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${info.color} flex items-center justify-center text-white p-1.5 shadow-lg`}>
                           {info.icon}
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold text-white">{info.name}</h4>
                           <p className="text-xs text-gray-400">{info.desc}</p>
                         </div>
+                        {isConnected && (
+                          <span className="flex items-center gap-1 text-green-400 text-xs">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                            Connected
+                          </span>
+                        )}
                       </div>
+                      
+                      {/* Benefit text */}
+                      <p className="text-xs text-gray-500 mb-3">{info.benefit}</p>
+                      
+                      {/* Account info if connected */}
+                      {isConnected && connectedAccount && (
+                        <div className="bg-black/20 rounded-lg p-2 mb-3 text-xs">
+                          <span className="text-gray-400">Connected as: </span>
+                          <span className="text-white">@{connectedAccount.platform_username}</span>
+                        </div>
+                      )}
+                      
                       <button
                         onClick={() => !isConnected && handleConnect(platform)}
                         disabled={isConnected}
-                        className={`w-full py-2.5 rounded-xl font-medium transition-all ${
+                        className={`w-full py-2.5 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
                           isConnected
                             ? 'bg-green-500/20 text-green-400 cursor-default'
-                            : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
+                            : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:shadow-purple-500/25'
                         }`}
                       >
-                        {isConnected ? '✓ Connected' : 'Connect'}
+                        {isConnected ? (
+                          <>
+                            <span>✓</span> Connected
+                          </>
+                        ) : (
+                          <>
+                            <span>+</span> Connect
+                          </>
+                        )}
                       </button>
                     </div>
                   );
                 })}
+              </div>
+            </div>
+            
+            {/* Help Section */}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-blue-400 text-xl">💡</span>
+                <div>
+                  <p className="text-blue-400 font-medium mb-1">Need help connecting?</p>
+                  <p className="text-blue-400/70 text-sm">Click on any platform above to connect. You'll be redirected to authorize access to your account.</p>
+                </div>
               </div>
             </div>
           </div>
