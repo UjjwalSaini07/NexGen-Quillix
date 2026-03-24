@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const platformGuides = {
   facebook: {
@@ -317,8 +318,9 @@ const platformGuides = {
   }
 };
 
-export default function VideoGuidePage({ searchParams }) {
-  const platformParam = searchParams?.platform || 'facebook';
+export default function VideoGuidePage() {
+  const searchParams = useSearchParams();
+  const platformParam = searchParams?.get('platform') || 'facebook';
   const [selectedPlatform, setSelectedPlatform] = useState(platformParam);
   const [completedSteps, setCompletedSteps] = useState({});
   const [viewMode, setViewMode] = useState('steps');
