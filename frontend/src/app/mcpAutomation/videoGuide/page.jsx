@@ -17,35 +17,35 @@ const platformGuides = {
         title: 'Go to Developers Portal', 
         desc: 'developers.facebook.com', 
         time: '1 min', 
-        icon: '🌐',
+        icon: '1',
         details: 'Open your browser and visit developers.facebook.com. Click "My Apps" then "Create App". Select "Consumer" as the app type and give your app a name.'
       },
       { 
         title: 'Add Facebook Login', 
         desc: 'Enable login product', 
         time: '2 min', 
-        icon: '🔐',
+        icon: '2',
         details: 'In your app dashboard, scroll to "Add products to your app". Find "Facebook Login" and click "Set Up". This enables OAuth for your app.'
       },
       { 
         title: 'Configure Settings', 
         desc: 'Set valid OAuth URLs', 
         time: '2 min', 
-        icon: '⚙️',
+        icon: '3',
         details: 'Go to Facebook Login > Settings. Add your website URL in "Valid OAuth redirect URIs". For local testing, add http://localhost:3000/'
       },
       { 
         title: 'Get Credentials', 
         desc: 'App ID & Secret', 
         time: '1 min', 
-        icon: '🔑',
+        icon: '4',
         details: 'In the left menu, go to "App Settings" > "Basic". You will find your App ID (copy this) and App Secret. Click "Show" to reveal the secret.'
       },
       { 
         title: 'Generate Access Token', 
         desc: 'Via Graph API Explorer', 
         time: '3 min', 
-        icon: '🎫',
+        icon: '5',
         details: 'Go to Graph API Explorer (developers.facebook.com/tools/explorer). Select your app, click "Get Token" > "Get User Access Token". Grant permissions and copy the token.'
       }
     ],
@@ -69,35 +69,35 @@ const platformGuides = {
         title: 'Open Meta Developers', 
         desc: 'developers.facebook.com', 
         time: '1 min', 
-        icon: '🌐',
+        icon: '1',
         details: 'Navigate to developers.facebook.com and log in with your Facebook account. If you don\'t have one, create a new developer account.'
       },
       { 
         title: 'Create or Select App', 
         desc: 'Choose existing or new', 
         time: '2 min', 
-        icon: '📱',
+        icon: '2',
         details: 'Click "My Apps" and either create a new app or select an existing one. The app must be linked to your Instagram Business account.'
       },
       { 
         title: 'Add Instagram Basic Display', 
         desc: 'In app products', 
         time: '2 min', 
-        icon: '📦',
+        icon: '3',
         details: 'In your app dashboard, find "Add products to your app". Search for "Instagram Basic Display" and click "Set Up".'
       },
       { 
         title: 'Add Test User', 
         desc: 'Your Instagram account', 
         time: '2 min', 
-        icon: '👤',
+        icon: '4',
         details: 'Go to Instagram Basic Display > Test Users. Add your Instagram username as a test user. You must follow your own account from the Instagram app.'
       },
       { 
         title: 'Generate Token', 
         desc: 'Long-lived access token', 
         time: '2 min', 
-        icon: '🎫',
+        icon: '5',
         details: 'Click "Generate Token" for your test user. This token lasts 60 days. Use /refresh_access_token endpoint to extend it.'
       }
     ],
@@ -121,35 +121,35 @@ const platformGuides = {
         title: 'Visit Developer Portal', 
         desc: 'developer.linkedin.com', 
         time: '1 min', 
-        icon: '🌐',
+        icon: '1',
         details: 'Go to developer.linkedin.com and sign in with your LinkedIn account. Click "Create App" to start.'
       },
       { 
         title: 'Create New App', 
         desc: 'App details & company', 
         time: '3 min', 
-        icon: '📝',
+        icon: '2',
         details: 'Fill in your app name, upload a logo, and link it to a Company Page. You must be an admin of the Company Page.'
       },
       { 
         title: 'Request Product Access', 
         desc: 'Share on LinkedIn', 
         time: '5 min', 
-        icon: '✅',
+        icon: '3',
         details: 'In the "Products" tab, find "Share on LinkedIn" and "Sign In with LinkedIn". Request access for each. This may require verification.'
       },
       { 
         title: 'Copy API Keys', 
         desc: 'Client ID & Secret', 
         time: '1 min', 
-        icon: '🔑',
+        icon: '4',
         details: 'Go to "Auth" tab. Copy your Client ID. For Client Secret, you may need to create one. Keep these secure!'
       },
       { 
         title: 'Generate OAuth Token', 
         desc: 'User authorization flow', 
         time: '3 min', 
-        icon: '🎫',
+        icon: '5',
         details: 'Build the OAuth authorization URL with your Client ID and required scopes. User visits URL, grants permission, you exchange code for token.'
       }
     ],
@@ -173,35 +173,35 @@ const platformGuides = {
         title: 'Join Developer Portal', 
         desc: 'developer.twitter.com', 
         time: '2 min', 
-        icon: '🌐',
+        icon: '1',
         details: 'Go to developer.twitter.com and apply for a developer account. Select "Making a bot" or "Building apps" as your use case.'
       },
       { 
         title: 'Create Project', 
         desc: 'Select API v2', 
         time: '3 min', 
-        icon: '📁',
+        icon: '2',
         details: 'Create a new project and select "Twitter API v2". Give it a name and description. This gives you access to the latest APIs.'
       },
       { 
         title: 'Create App', 
         desc: 'Get API keys', 
         time: '2 min', 
-        icon: '🔑',
+        icon: '3',
         details: 'Within your project, create an app. Go to "Keys and Tokens" to see your API Key, API Secret, Bearer Token, and Access Token.'
       },
       { 
         title: 'Setup Authentication', 
         desc: 'OAuth 2.0', 
         time: '3 min', 
-        icon: '🔐',
+        icon: '4',
         details: 'Configure OAuth 2.0 in app settings. Set callback URL and website URL. Generate access tokens with the required scopes.'
       },
       { 
         title: 'Get Access Token', 
         desc: 'For API calls', 
         time: '2 min', 
-        icon: '🎫',
+        icon: '5',
         details: 'Use your API Key and Secret to get a Bearer Token. For user actions, implement OAuth 1.0a or OAuth 2.0 with PKCE.'
       }
     ],
@@ -225,35 +225,35 @@ const platformGuides = {
         title: 'Open Cloud Console', 
         desc: 'console.cloud.google.com', 
         time: '1 min', 
-        icon: '☁️',
+        icon: '1',
         details: 'Go to console.cloud.google.com. Create a new project or select an existing one for your YouTube integration.'
       },
       { 
         title: 'Enable YouTube API', 
         desc: 'API Library', 
         time: '2 min', 
-        icon: '✅',
+        icon: '2',
         details: 'Search for "YouTube Data API v3" in the API Library and enable it. Also enable "YouTube Analytics API" if needed.'
       },
       { 
         title: 'Create Credentials', 
         desc: 'OAuth 2.0 Client', 
         time: '2 min', 
-        icon: '🔑',
+        icon: '3',
         details: 'Go to "Credentials" > "Create Credentials" > "OAuth client ID". Select "Web application" as the type.'
       },
       { 
         title: 'Configure Consent', 
         desc: 'OAuth consent screen', 
         time: '5 min', 
-        icon: '📜',
+        icon: '4',
         details: 'Set up OAuth consent screen with your app name and email. Add test users who can access the app (required for external testing).'
       },
       { 
         title: 'Download Keys', 
         desc: 'JSON credentials', 
         time: '1 min', 
-        icon: '📥',
+        icon: '5',
         details: 'Download the JSON file with your client ID and secret. For server-to-server, create a Service Account instead.'
       }
     ],
@@ -277,35 +277,35 @@ const platformGuides = {
         title: 'Access Meta Developers', 
         desc: 'developers.facebook.com', 
         time: '1 min', 
-        icon: '🌐',
+        icon: '1',
         details: 'Open developers.facebook.com and create a new app. Select "Other" > "Business" as the app type.'
       },
       { 
         title: 'Add WhatsApp Product', 
         desc: 'Setup WhatsApp', 
         time: '2 min', 
-        icon: '💬',
+        icon: '2',
         details: 'In the app dashboard, find "WhatsApp" in the products list and click "Set Up". This enables the WhatsApp API.'
       },
       { 
         title: 'Get Temporary Token', 
         desc: 'For testing', 
         time: '1 min', 
-        icon: '🎫',
+        icon: '3',
         details: 'In the WhatsApp > API Setup tab, copy the temporary access token. It\'s valid for 24 hours and for test numbers only.'
       },
       { 
         title: 'Get Phone Number ID', 
         desc: 'Business number ID', 
         time: '1 min', 
-        icon: '📱',
+        icon: '4',
         details: 'In the same section, find your "Phone Number ID". This identifies your WhatsApp Business phone number.'
       },
       { 
         title: 'Setup Webhook', 
         desc: 'For incoming messages', 
         time: '5 min', 
-        icon: '🪝',
+        icon: '5',
         details: 'Configure a webhook URL to receive messages. Verify your webhook with the challenge code. Subscribe to webhook fields.'
       }
     ],
