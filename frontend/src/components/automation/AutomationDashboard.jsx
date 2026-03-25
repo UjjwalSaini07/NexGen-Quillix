@@ -8,6 +8,8 @@ import { Orbitron, Exo_2 } from "next/font/google";
 import Link from "next/link";
 import CreateRuleModal from './CreateRuleModal';
 import PostCreator from './PostCreator';
+import ContentCalendar from './ContentCalendar';
+import EngagementHub from './EngagementHub';
 import { 
   EngagementLineChart, 
   EngagementAreaChart, 
@@ -526,8 +528,9 @@ export default function AutomationDashboard() {
     if (apiStatus === 'connected' && isAuthenticated) {
       if (activeTab === 'accounts') fetchAccounts();
       if (activeTab === 'posts') getPosts({ status_filter: postStatusFilter });
+      if (activeTab === 'calendar') getPosts({ status_filter: 'all' });
       if (activeTab === 'automation') fetchRules();
-      if (activeTab === 'analytics') {
+      if (activeTab === 'analytics' || activeTab === 'performance') {
         fetchAnalytics(dateRange);
         fetchPlatformStats(null, dateRange);
         fetchTimeSeriesAnalytics({ days: dateRange, granularity: 'daily' });
@@ -544,8 +547,10 @@ export default function AutomationDashboard() {
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'accounts', label: 'Accounts', icon: '🔗' },
     { id: 'posts', label: 'Posts', icon: '📝' },
+    { id: 'calendar', label: 'Calendar', icon: '📅' },
+    { id: 'engagement', label: 'Engagement', icon: '💬' },
     { id: 'automation', label: 'Automation', icon: '🤖' },
-    { id: 'analytics', label: 'Analytics', icon: '📈' },
+    { id: 'analytics', label: 'Analytics', icon: '📊' },
   ];
 
   // Handlers
@@ -1567,6 +1572,16 @@ export default function AutomationDashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Calendar Tab */}
+        {activeTab === 'calendar' && (
+          <ContentCalendar />
+        )}
+
+        {/* Engagement Hub Tab */}
+        {activeTab === 'engagement' && (
+          <EngagementHub />
         )}
 
         {/* Automation Tab */}
