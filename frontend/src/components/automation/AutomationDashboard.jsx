@@ -412,6 +412,7 @@ export default function AutomationDashboard() {
   }, [isAuthenticated]);
   const [showCreateRuleModal, setShowCreateRuleModal] = useState(false);
   const [showPostCreator, setShowPostCreator] = useState(false);
+  const [selectedPostForEdit, setSelectedPostForEdit] = useState(null);
   const [velocityPeriod, setVelocityPeriod] = useState('week'); // 'week' or 'month'
   const [velocityAnalytics, setVelocityAnalytics] = useState(null);
   const [velocityAnalyticsLoading, setVelocityAnalyticsLoading] = useState(false);
@@ -1690,7 +1691,10 @@ export default function AutomationDashboard() {
 
         {/* Calendar Tab */}
         {activeTab === 'calendar' && (
-          <ContentCalendar />
+          <ContentCalendar onEditPost={(post) => {
+            setSelectedPostForEdit(post);
+            setShowPostCreator(true);
+          }} />
         )}
 
         {/* Engagement Hub Tab */}
@@ -2129,7 +2133,14 @@ export default function AutomationDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPostCreator(false)} />
           <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 rounded-2xl border border-white/10">
-            <PostCreator onClose={() => { setShowPostCreator(false); getPosts({ status_filter: postStatusFilter }); }} />
+            <PostCreator 
+                editPost={selectedPostForEdit}
+                onClose={() => { 
+                  setShowPostCreator(false); 
+                  setSelectedPostForEdit(null);
+                  getPosts({ status_filter: postStatusFilter }); 
+                }} 
+              />
           </div>
         </div>
       )}

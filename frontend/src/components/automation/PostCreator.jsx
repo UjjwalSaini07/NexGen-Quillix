@@ -146,8 +146,10 @@ const NICHE_OPTIONS = [
   { id: 'lifestyle', label: 'Lifestyle', icon: '🌟' },
 ];
 
-export default function PostCreator({ onClose }) {
+export default function PostCreator({ onClose, editPost }) {
   // Core state
+  const [isEditing, setIsEditing] = useState(!!editPost);
+  const [editingPostId, setEditingPostId] = useState(editPost?._id || null);
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [mediaUrl, setMediaUrl] = useState('');
@@ -196,7 +198,19 @@ export default function PostCreator({ onClose }) {
   const [aiMediaType, setAiMediaType] = useState('none'); // image or video for AI
   const [previewMedia, setPreviewMedia] = useState(null); // Media preview modal
   
-  const { createPost, publishPost, schedulePost, generatePost } = useAutomation();
+  const { createPost, publishPost, schedulePost, generatePost, updatePost } = useAutomation();
+  
+  // Handle editing post
+  useEffect(() => {
+    if (editPost) {
+      setContent(editPost.content || '');
+      setMediaUrl(editPost.media_url || '');
+      setSelectedPlatforms(editPost.platforms || []);
+      setScheduledTime(editPost.scheduled_time || '');
+      setEditingPostId(editPost._id);
+      setIsEditing(true);
+    }
+  }, [editPost]);
   
   // Load draft on mount
   useEffect(() => {
@@ -467,8 +481,14 @@ export default function PostCreator({ onClose }) {
         postData.scheduled_time = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       }
       
-      // Create post
-      const response = await createPost(postData);
+      // Create or update post
+      let response;
+      if (isEditing && editingPostId) {
+        response = await updatePost(editingPostId, postData);
+        toast.success('Post updated successfully!');
+      } else {
+        response = await createPost(postData);
+      }
       
       // Handle publishing
       if (!isSchedule && response?.post_id) {
