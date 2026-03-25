@@ -156,6 +156,18 @@ export const ENDPOINTS = {
     ANALYZE_SENTIMENT: '/ai/analyze-sentiment',
     TRANSLATE: '/ai/translate',
   },
+  
+  // Engagement Endpoints
+  ENGAGEMENT: {
+    LIST: '/engagement/',
+    GET: (id) => `/engagement/${id}`,
+    REPLY: '/engagement/reply',
+    MARK_READ: '/engagement/mark-read',
+    ARCHIVE: '/engagement/archive',
+    COMMENTS: '/engagement/comments',
+    MESSAGES: '/engagement/messages',
+    MENTIONS: '/engagement/mentions',
+  },
 };
 
 // ==================== Supported Platforms ====================
@@ -658,6 +670,82 @@ export async function translateContent(content, targetLanguage) {
     body: JSON.stringify({
       content,
       target_language: targetLanguage,
+    }),
+  });
+}
+
+// ==================== Engagement API ====================
+
+// Get all engagement data (comments, messages, mentions)
+export async function getEngagement(options = {}) {
+  const params = new URLSearchParams();
+  if (options.type) params.append('type', options.type);
+  if (options.platform) params.append('platform', options.platform);
+  if (options.status) params.append('status', options.status);
+  if (options.limit) params.append('limit', options.limit);
+  if (options.offset) params.append('offset', options.offset);
+  return fetchAPI(`${ENDPOINTS.ENGAGEMENT.LIST}?${params.toString()}`);
+}
+
+// Get engagement by ID
+export async function getEngagementById(id) {
+  return fetchAPI(ENDPOINTS.ENGAGEMENT.GET(id));
+}
+
+// Get comments
+export async function getComments(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.status) params.append('status', options.status);
+  if (options.limit) params.append('limit', options.limit);
+  return fetchAPI(`${ENDPOINTS.ENGAGEMENT.COMMENTS}?${params.toString()}`);
+}
+
+// Get messages (DMs)
+export async function getMessages(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.status) params.append('status', options.status);
+  if (options.limit) params.append('limit', options.limit);
+  return fetchAPI(`${ENDPOINTS.ENGAGEMENT.MESSAGES}?${params.toString()}`);
+}
+
+// Get mentions
+export async function getMentions(options = {}) {
+  const params = new URLSearchParams();
+  if (options.platform) params.append('platform', options.platform);
+  if (options.status) params.append('status', options.status);
+  if (options.limit) params.append('limit', options.limit);
+  return fetchAPI(`${ENDPOINTS.ENGAGEMENT.MENTIONS}?${params.toString()}`);
+}
+
+// Reply to engagement (comment, message, mention)
+export async function replyToEngagement(engagementId, reply) {
+  return fetchAPI(ENDPOINTS.ENGAGEMENT.REPLY, {
+    method: 'POST',
+    body: JSON.stringify({
+      engagement_id: engagementId,
+      reply,
+    }),
+  });
+}
+
+// Mark engagement as read
+export async function markEngagementRead(engagementId) {
+  return fetchAPI(ENDPOINTS.ENGAGEMENT.MARK_READ, {
+    method: 'POST',
+    body: JSON.stringify({
+      engagement_id: engagementId,
+    }),
+  });
+}
+
+// Archive engagement
+export async function archiveEngagement(engagementId) {
+  return fetchAPI(ENDPOINTS.ENGAGEMENT.ARCHIVE, {
+    method: 'POST',
+    body: JSON.stringify({
+      engagement_id: engagementId,
     }),
   });
 }
